@@ -1,0 +1,177 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+			 xmlns:vm="clr-namespace:SoundMist.ViewModels"
+			 xmlns:model="clr-namespace:SoundMist.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SoundMist.Views.SearchView"
+			 x:DataType="vm:SearchViewModel">
+	<UserControl.DataTemplates>
+
+		<!-- =============================== -->
+		<!-- Users -->
+		<!-- =============================== -->
+		<DataTemplate DataType="{x:Type model:User}">
+			<Grid ColumnDefinitions="auto,*" Height="100">
+				<Border Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Transparent" />
+
+				<Border CornerRadius="50" ClipToBounds="True" Width="100" Height="100">
+					<Image asyncImageLoader:ImageLoader.Source="{Binding AvatarUrl}" />
+				</Border>
+
+				<StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="5 0">
+					<TextBlock Text="{Binding Username}" Margin="2" />
+					<StackPanel Orientation="Horizontal">
+						<Image Source="/Assets/followers.png" Width="15" Margin="2" />
+						<TextBlock Foreground="Gray" FontSize="12" Text="{Binding FollowersCount}" Margin="2" />
+						<TextBlock Foreground="Gray" FontSize="12" Text="followers" Margin="2" />
+					</StackPanel>
+					<Button Margin="2">
+						<StackPanel Orientation="Horizontal">
+							<Image Source="/Assets/follow.png" Width="20" />
+							<TextBlock Text=" Follow" />
+						</StackPanel>
+					</Button>
+				</StackPanel>
+				<Grid.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="About Uploader" Click="OpenAboutPage" />
+					</ContextMenu>
+				</Grid.ContextMenu>
+			</Grid>
+		</DataTemplate>
+
+		<!-- =============================== -->
+		<!-- Tracks -->
+		<!-- =============================== -->
+		<DataTemplate DataType="{x:Type model:Track}">
+			<Grid ColumnDefinitions="auto,*,auto" RowDefinitions="*,auto" Height="100">
+				<Border Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Transparent" />
+
+				<Image Grid.RowSpan="3" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" Width="100" Height="100" />
+
+				<StackPanel Grid.Column="1" Margin="5">
+					<TextBlock Foreground="Gray" FontSize="12" Text="{Binding ArtistName}" Margin="2" />
+					<TextBlock Text="{Binding Title}" Margin="2" />
+					<!-- soundcloud's track wave thingy; todo control -->
+				</StackPanel>
+				<StackPanel Grid.Column="1" Grid.Row="1" Margin="5">
+					<Button Margin="5" ToolTip.Tip="Like">
+						<StackPanel Orientation="Horizontal">
+							<Image Source="/Assets/favorite.png" Width="20" />
+							<TextBlock Text="{Binding LikesFormatted}" />
+						</StackPanel>
+					</Button>
+				</StackPanel>
+
+				<StackPanel Grid.Column="2" Margin="5">
+					<TextBlock Text="{Binding CreatedAgo}" HorizontalAlignment="Right" Foreground="Gray" ToolTip.Tip="{Binding CreatedLocalTime}" />
+					<Button CornerRadius="100" Margin="0 5" HorizontalAlignment="Right" IsVisible="{Binding HasGenre}">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="#" Foreground="LightGray" />
+							<TextBlock Text="{Binding Genre}" Foreground="LightGray" />
+						</StackPanel>
+					</Button>
+				</StackPanel>
+				<Grid.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="About Track" Click="OpenAboutPage" />
+						<MenuItem Header="About Uploader" Click="TrackItem_AboutUser" />
+					</ContextMenu>
+				</Grid.ContextMenu>
+			</Grid>
+		</DataTemplate>
+
+		<!-- =============================== -->
+		<!-- Playlists and albums -->
+		<!-- =============================== -->
+		<DataTemplate DataType="{x:Type model:Playlist}">
+			<Grid ColumnDefinitions="auto,*,auto" RowDefinitions="*,auto">
+				<Border Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Transparent" />
+
+				<Image VerticalAlignment="Top" Grid.RowSpan="3" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrFirstTrackArtwork}" Width="100" Height="100" />
+
+				<StackPanel Grid.Column="1" Margin="5">
+					<TextBlock Foreground="Gray" FontSize="12" Text="{Binding Author}" Margin="2" />
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="{Binding Title}" Margin="2" />
+						<StackPanel Orientation="Horizontal" IsVisible="{Binding IsAlbum}">
+							<TextBlock Foreground="Gray" FontSize="12" Text="Album" Margin="2" />
+							<TextBlock Foreground="Gray" FontSize="12" Text="{Binding ReleaseYear}" Margin="2" />
+						</StackPanel>
+					</StackPanel>
+					<!-- soundcloud's track wave thingy; todo control -->
+					<ListBox ItemsSource="{Binding FirstFiveTracks}" DoubleTapped="ListBox_DoubleTapped_PlaylistItem">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid ColumnDefinitions="auto,*,auto,auto" Height="20">
+									<Image Grid.Column="0" asyncImageLoader:ImageLoader.Source="{Binding ArtworkUrlSmall}" />
+									<TextBlock Grid.Column="1" Text="{Binding Title}" Margin="5 0 0 0" />
+									<Image Grid.Column="2" Source="/Assets/play.png" />
+									<TextBlock Grid.Column="3" Text="{Binding PlaybacksFormatted}" />
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+					<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsVisible="{Binding HasMoreTracks}">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="View " />
+							<TextBlock Text="{Binding TrackCount}" />
+							<TextBlock Text=" tracks" />
+						</StackPanel>
+					</Button>
+				</StackPanel>
+
+				<StackPanel Grid.Column="2" Margin="5">
+					<TextBlock Text="{Binding CreatedAgo}" HorizontalAlignment="Right" Foreground="Gray" ToolTip.Tip="{Binding CreatedLocalTime}" />
+					<Button CornerRadius="100" Margin="0 5" HorizontalAlignment="Right" IsVisible="{Binding HasGenre}">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="#" Foreground="LightGray" />
+							<TextBlock Text="{Binding Genre}" Foreground="LightGray" />
+						</StackPanel>
+					</Button>
+				</StackPanel>
+				<Grid.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="About Collection (WIP)" Click="OpenAboutPage" />
+						<MenuItem Header="About Uploader" Click="PlaylistItem_AboutUser" />
+					</ContextMenu>
+				</Grid.ContextMenu>
+			</Grid>
+		</DataTemplate>
+	</UserControl.DataTemplates>
+
+	<Grid RowDefinitions="auto,auto,*" ColumnDefinitions="*,auto">
+		<TextBox x:Name="SearchBox" Text="{Binding SearchFilter}" Watermark="Search..." Margin="5"
+				 KeyDown="TextBox_KeyDown" />
+		<ComboBox Grid.Column="1" Margin="5" SelectedValue="{Binding SelectedFilter}" ItemsSource="{Binding Filters}">
+		</ComboBox>
+
+		<Popup IsLightDismissEnabled="True" x:Name="SearchPopup" PlacementTarget="{Binding #SearchBox}" PlacementAnchor="Bottom" IsOpen="{Binding ShowQueryResults}">
+			<Border BorderThickness="1" BorderBrush="Gray" Background="DimGray" CornerRadius="5" Padding="8 5">
+				<ListBox x:Name="QueriesFlyout" Grid.Row="1" ItemsSource="{Binding QueryResults}" Background="DimGray">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Output}" Background="Transparent" Foreground="White" />
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+		</Popup>
+
+		<TextBlock Grid.Row="1" Text="{Binding ResultsMessage}" HorizontalAlignment="Center" Margin="3" />
+		<!--
+			Using StackPanel as items panel to disable items virtualization.
+			Without it, since the items have unpredictable size, it caused infinite loops and jitterring on the scrolling
+		-->
+		<ListBox x:Name="ResultsList" Grid.Row="2" Grid.ColumnSpan="2" ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedItem}" DoubleTapped="ListBox_DoubleTapped">
+			<ListBox.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel />
+				</ItemsPanelTemplate>
+			</ListBox.ItemsPanel>
+		</ListBox>
+	</Grid>
+</UserControl>

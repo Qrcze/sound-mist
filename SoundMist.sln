@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35728.132
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCPlayerTests", "SCPlayerTests\SCPlayerTests.csproj", "{AA0FEC9E-6212-466D-AA13-74591A492205}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundMist", "SoundMist\SoundMist.csproj", "{08A7ADB5-00D0-024E-913C-09DC8110FB47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundMist.Desktop", "SoundMist.Desktop\SoundMist.Desktop.csproj", "{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AA0FEC9E-6212-466D-AA13-74591A492205}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA0FEC9E-6212-466D-AA13-74591A492205}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA0FEC9E-6212-466D-AA13-74591A492205}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA0FEC9E-6212-466D-AA13-74591A492205}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

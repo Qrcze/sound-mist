@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:SoundMist.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+			 x:DataType="vm:LoginViewModel"
+             x:Class="SoundMist.Views.LoginView">
+	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+		<Button Command="{Binding OpenSoundcloudPageCommand}" HorizontalAlignment="Center" Background="Transparent" Margin="5" Height="160" Padding="0" >
+			<Image Source="/Assets/SoundCloud-Logo.png" />
+		</Button>
+		<Button Content="Open SoundCloud Page" Command="{Binding OpenSoundcloudPageCommand}" Margin="5" HorizontalAlignment="Center"/>
+		<TextBox Text="{Binding AuthToken}" Watermark="Authorization Token" Width="300" Margin="5" />
+		<Button IsDefault="True" Content="Log in" Command="{Binding UseTokenCommand}" HorizontalAlignment="Center" Margin="5" />
+		<Button Content="Continue as Guest" Command="{Binding GuestLoginCommand}" Margin="5" HorizontalAlignment="Center"/>
+		<TextBlock Text="{Binding ValidationMessage}" Foreground="Red" Margin="5" />
+		<Expander Width="700" Header="How to get Authorization Token">
+			<StackPanel>
+					<TextBlock>1. Open SoundCloud website </TextBlock>
+					<TextBlock>2. Log in </TextBlock>
+					<TextBlock>3. Open page cookies </TextBlock>
+					<TextBlock Margin="10 0">3.1. Right-click on the page </TextBlock>
+					<TextBlock Margin="10 0">3.2. Open developer tools by clicking "Inspect" or "Developer Tools > Inspect Element" </TextBlock>
+					<TextBlock Margin="10 0">3.3. Open "Application" tab ("Storage" in Firefox browsers) (could be hidden in the ">>" menu) </TextBlock>
+					<TextBlock Margin="10 0">3.4. On the list on the right, expand the "Cookies" section, and go to the first item </TextBlock>
+					<TextBlock>4. Copy the value of "oauth_token" cookie and paste it to the field above </TextBlock>
+			</StackPanel>
+		</Expander>
+	</StackPanel>
+</UserControl>

@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:vm="clr-namespace:SoundMist.ViewModels"
+             xmlns:views="clr-namespace:SoundMist.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SoundMist.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+	<Grid RowDefinitions="*,auto">
+		<TabControl SelectedIndex="{Binding OpenedTabIndex}">
+			<TabItem Header="Search">
+				<views:SearchView />
+			</TabItem>
+			<TabItem Header="Liked">
+				<views:LikedLibraryView />
+			</TabItem>
+			<TabItem Header="Downloaded">
+				<views:DownloadedView />
+			</TabItem>
+			<TabItem Header="Track Info" IsVisible="{Binding HasOpenedTrackInfo}">
+				<views:TrackInfoView />
+			</TabItem>
+			<TabItem Header="User Info" IsVisible="{Binding HasOpenedUserInfo}">
+				<views:UserInfoView />
+			</TabItem>
+		</TabControl>
+		<views:PlayerView Grid.Row="1" />
+
+		<Button Width="24" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10" Command="{Binding OpenSettingsCommand}">
+			<Image Source="/Assets/settings.png" />
+		</Button>
+		
+		<views:SettingsView Grid.RowSpan="2" />
+	</Grid>
+</UserControl>

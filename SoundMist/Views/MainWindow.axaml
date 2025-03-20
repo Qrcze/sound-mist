@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:SoundMist.Views"
+        xmlns:vm="using:SoundMist.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		Width="1100" Height="800"
+        x:Class="SoundMist.Views.MainWindow"
+		x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{Binding TrackTitle}">
+	<Grid>
+		<UserControl Content="{Binding CurrentControl}" />
+	</Grid>
+</Window>

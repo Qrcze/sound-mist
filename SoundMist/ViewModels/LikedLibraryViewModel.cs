@@ -1,0 +1,193 @@
+﻿using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SoundMist.Models;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using System.Timers;
+
+namespace SoundMist.ViewModels
+{
+    public partial class LikedLibraryViewModel : ViewModelBase
+    {
+        [ObservableProperty] private ObservableCollection<Track> _tracksList = [];
+
+        private readonly List<Track> _fullTracksList = [];
+
+        public IRelayCommand OpenTrackPageCommand { get; }
+        public IRelayCommand OpenUserPageCommand { get; }
+        public IRelayCommand PrependToQueueCommand { get; }
+        public IAsyncRelayCommand AppendToQueueCommand { get; }
+        public IAsyncRelayCommand PlayStationCommand { get; }
+        public IAsyncRelayCommand DownloadCommand { get; }
+
+        [ObservableProperty] private string _tracksFilter = string.Empty;
+        [ObservableProperty] private Track? _selectedTrack;
+
+        private volatile bool _loadingItems;
+
+        private readonly HttpClient _httpClient;
+        private readonly ProgramSettings _settings;
+        private readonly IMusicPlayer _musicPlayer;
+        private readonly ILogger _logger;
+        private string? _nextHref;
+        private readonly Timer _filterDelay;
+
+        public LikedLibraryViewModel(HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
+        {
+            _httpClient = httpClient;
+            _settings = settings;
+            _musicPlayer = musicPlayer;
+            _logger = logger;
+            musicPlayer.TrackChanged += (t) => SelectedTrack = t;
+
+            _filterDelay = new Timer(500) { AutoReset = false };
+            _filterDelay.Elapsed += UpdateTracksList;
+
+            OpenTrackPageCommand = new RelayCommand(OpenTrackPage);
+            OpenUserPageCommand = new RelayCommand(OpenUserPage);
+            PrependToQueueCommand = new RelayCommand(PrependToQueue);
+            AppendToQueueCommand = new AsyncRelayCommand(AppendToQueue);
+            PlayStationCommand = new AsyncRelayCommand(PlayStation);
+            DownloadCommand = new AsyncRelayCommand(Download);
+
+            _nextHref = $"users/{_settings.UserId}/track_likes?client_id={_settings.ClientId}&limit=24&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+        }
+
+        partial void OnTracksFilterChanged(string value)
+        {
+            _filterDelay.Stop();
+            _filterDelay.Start();
+        }
+
+        private void UpdateTracksList(object? sender, ElapsedEventArgs e)
+        {
+            Debug.Print("filter timer elapsed");
+            Dispatcher.UIThread.Post(() =>
+            {
+                Debug.Print("updating tracks list to match the filter");
+                TracksList.Clear();
+
+                foreach (var track in _fullTracksList.Where(x => x.FullLabel.Contains(TracksFilter, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    TracksList.Add(track);
+                }
+            });
+        }
+
+        public async Task DownloadTrackList()
+        {
+            if (_loadingItems)
+                return;
+
+            if (string.IsNullOrEmpty(_nextHref))
+                return;
+
+            _loadingItems = true;
+
+            Debug.Print("downloading liked tracks list");
+
+            LikedTracksCollection tracks;
+            var auth = _httpClient.DefaultRequestHeaders.Authorization;
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            try
+            {
+                using var response = await _httpClient.GetAsync(_nextHref);
+                response.EnsureSuccessStatusCode();
+
+                tracks = await response.Content.ReadFromJsonAsync<LikedTracksCollection>() ?? throw new Exception("lol");
+
+                //await File.WriteAllTextAsync("likedTracks.json", await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed retrieving liked tracks: {ex.Message}");
+                return;
+            }
+            finally
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = auth;
+            }
+
+            if (!string.IsNullOrEmpty(tracks.NextHref))
+                _nextHref = tracks.NextHref + $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+            else
+                _nextHref = null;
+
+            var newTracks = tracks.Collection.Select(x => x.Track);
+            _fullTracksList.AddRange(newTracks);
+            foreach (var track in newTracks.Where(x => x.FullLabel.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase)))
+                TracksList.Add(track);
+
+            Debug.Print($"track list contains {TracksList.Count} elements");
+
+            _loadingItems = false;
+        }
+
+        public async Task PlayQueue(IEnumerable<Track> tracks)
+        {
+            await _musicPlayer.PlayNewQueue(tracks, DownloadMoreLikedTracks);
+        }
+
+        private void PrependToQueue()
+        {
+            if (SelectedTrack == null)
+                return;
+
+            //_musicPlayer.PrependToQueue(SelectedTrack, false, DownloadMore);
+        }
+
+        private async Task AppendToQueue()
+        {
+            if (SelectedTrack == null)
+                return;
+
+            await _musicPlayer.AddToQueue(SelectedTrack, DownloadMoreLikedTracks);
+        }
+
+        private async Task PlayStation()
+        {
+            if (SelectedTrack == null)
+                return;
+
+            await _musicPlayer.PlayNewQueue([SelectedTrack]);
+        }
+
+        private async Task Download()
+        {
+            if (SelectedTrack == null)
+                return;
+
+            await _musicPlayer.SaveTrackLocally(SelectedTrack);
+        }
+
+        private async Task<IEnumerable<Track>> DownloadMoreLikedTracks()
+        {
+            var startIndex = TracksList.Count;
+            await DownloadTrackList();
+            return TracksList.Skip(startIndex);
+        }
+
+        public void OpenTrackPage()
+        {
+            if (SelectedTrack is null)
+                return;
+
+            Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, SelectedTrack);
+        }
+
+        public void OpenUserPage()
+        {
+            if (SelectedTrack is null)
+                return;
+
+            Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, SelectedTrack.User);
+        }
+    }
+}

@@ -1,0 +1,650 @@
+{
+  "collection": [
+    {
+      "artwork_url": "https://i1.sndcdn.com/artworks-bCZhyYczDHzjF6UC-nszBxw-large.jpg",
+      "caption": null,
+      "comment_count": 76,
+      "commentable": true,
+      "created_at": "2020-02-22T14:25:39Z",
+      "description": "Track #2 from 'Liminal States'.\nhttps://distrokid.com/hyperfollow/rhekluse/liminal-states\n\n@insight-music interview:\nhttps://insightmusic.co.uk/insight-interview-rhekluse/",
+      "display_date": "2020-02-22T14:25:39Z",
+      "download_count": 0,
+      "downloadable": false,
+      "duration": 218645,
+      "embeddable_by": "all",
+      "full_duration": 218645,
+      "genre": "Electronic",
+      "has_downloads_left": false,
+      "id": 764804143,
+      "kind": "track",
+      "label_name": "Rhekboi",
+      "last_modified": "2022-02-06T00:00:46Z",
+      "license": "all-rights-reserved",
+      "likes_count": 1296,
+      "media": {
+        "transcodings": [
+          {
+            "duration": 218645,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_1",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:764804143/ad016e0f-a7bf-4f6c-844d-bbceb8de005b/stream/hls"
+          },
+          {
+            "duration": 218645,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "progressive"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_1",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:764804143/ad016e0f-a7bf-4f6c-844d-bbceb8de005b/stream/progressive"
+          },
+          {
+            "duration": 218625,
+            "format": {
+              "mime_type": "audio/ogg; codecs=\"opus\"",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "opus_0_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:764804143/f7ac9441-f76d-491d-a0fe-c822b03d87f1/stream/hls"
+          }
+        ]
+      },
+      "monetization_model": "NOT_APPLICABLE",
+      "permalink": "floating-in-a-silk-kimono",
+      "permalink_url": "https://soundcloud.com/rhekluse/floating-in-a-silk-kimono",
+      "playback_count": 101010,
+      "policy": "ALLOW",
+      "public": true,
+      "publisher_metadata": {
+        "album_title": "Liminal States",
+        "artist": "Rhekluse",
+        "contains_music": true,
+        "explicit": false,
+        "id": 764804143,
+        "isrc": "QZF8N2045527",
+        "p_line": "2020 Rhekboi",
+        "p_line_for_display": "\u2117 2020 Rhekboi",
+        "publisher": "Distrokid",
+        "release_title": "Liminal States",
+        "urn": "soundcloud:tracks:764804143",
+        "writer_composer": "Rhekluse"
+      },
+      "purchase_title": null,
+      "purchase_url": "https://rhekluse.bandcamp.com/album/liminal-states",
+      "release_date": "2020-04-30T00:00:00Z",
+      "reposts_count": 120,
+      "secret_token": null,
+      "sharing": "public",
+      "state": "finished",
+      "station_permalink": "track-stations:764804143",
+      "station_urn": "soundcloud:system-playlists:track-stations:764804143",
+      "streamable": true,
+      "tag_list": "Electronic DnB Bass Uptempo \"Future Garage\" Garage \"Liminal States\" Canada Rhekboi Ambient GetMorePlays",
+      "title": "Floating In A Silk Kimono",
+      "track_authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnZW8iOiJQTCIsInN1YiI6IjU0NTQ3MjYwIiwicmlkIjoiZWJmZjU1OTMtNjAyMy00NDNhLTk0MDItMTI4OWIxODViMzYzIiwiaWF0IjoxNzM5NDg1ODkyfQ.mLagME8SVytDr63gLp_fd_fCS8Wk70gdwJx7LJOm008",
+      "uri": "https://api.soundcloud.com/tracks/764804143",
+      "urn": "soundcloud:tracks:764804143",
+      "user": {
+        "avatar_url": "https://i1.sndcdn.com/avatars-TVexyltbLa8SNIbb-oxZyjA-large.jpg",
+        "badges": {
+          "creator_mid_tier": false,
+          "pro": false,
+          "pro_unlimited": true,
+          "verified": true
+        },
+        "city": "ON",
+        "country_code": "CA",
+        "first_name": "Est. MMVII",
+        "followers_count": 2771,
+        "full_name": "Est. MMVII",
+        "id": 24667,
+        "kind": "user",
+        "last_modified": "2024-09-29T12:44:43Z",
+        "last_name": "",
+        "permalink": "rhekluse",
+        "permalink_url": "https://soundcloud.com/rhekluse",
+        "station_permalink": "artist-stations:24667",
+        "station_urn": "soundcloud:system-playlists:artist-stations:24667",
+        "uri": "https://api.soundcloud.com/users/24667",
+        "urn": "soundcloud:users:24667",
+        "username": "Rhekluse",
+        "verified": true
+      },
+      "user_id": 24667,
+      "visuals": null,
+      "waveform_url": "https://wave.sndcdn.com/f4GUt0zDOLFI_m.json"
+    },
+    {
+      "artwork_url": "https://i1.sndcdn.com/artworks-sHBsDDSrag52vmT0-uay0NQ-large.png",
+      "caption": null,
+      "comment_count": 5,
+      "commentable": true,
+      "created_at": "2025-02-13T16:41:52Z",
+      "description": "might delete later",
+      "display_date": "2025-02-13T16:41:52Z",
+      "download_count": 0,
+      "downloadable": false,
+      "duration": 292823,
+      "embeddable_by": "all",
+      "full_duration": 292833,
+      "genre": "Ambient",
+      "has_downloads_left": false,
+      "id": 2033614664,
+      "kind": "track",
+      "label_name": "",
+      "last_modified": "2025-02-13T17:07:39Z",
+      "license": "all-rights-reserved",
+      "likes_count": 12,
+      "media": {
+        "transcodings": [
+          {
+            "duration": 292823,
+            "format": {
+              "mime_type": "audio/mp4; codecs=\"mp4a.40.2\"",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": false,
+            "preset": "aac_160k",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:2033614664/60aef42d-7031-45de-b23c-12e9fdcb6360/stream/hls"
+          },
+          {
+            "duration": 292823,
+            "format": {
+              "mime_type": "audio/mpegurl",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": false,
+            "preset": "abr_sq",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:2033614664/02c858c4-82f5-4801-9571-714d2e87da10/stream/hls"
+          },
+          {
+            "duration": 292833,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_1_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:2033614664/216f4062-1897-45b7-9b7b-a89583b37836/stream/hls"
+          },
+          {
+            "duration": 292833,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "progressive"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_1_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:2033614664/216f4062-1897-45b7-9b7b-a89583b37836/stream/progressive"
+          },
+          {
+            "duration": 292807,
+            "format": {
+              "mime_type": "audio/ogg; codecs=\"opus\"",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "opus_0_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:2033614664/5369399b-24f3-4fb3-98ec-34f00992779e/stream/hls"
+          }
+        ]
+      },
+      "monetization_model": "NOT_APPLICABLE",
+      "permalink": "weisheit-el-nudo",
+      "permalink_url": "https://soundcloud.com/weisheit_dj/weisheit-el-nudo",
+      "playback_count": 81,
+      "policy": "ALLOW",
+      "public": true,
+      "publisher_metadata": {
+        "artist": "WEISHEIT",
+        "explicit": false,
+        "id": 2033614664,
+        "urn": "soundcloud:tracks:2033614664"
+      },
+      "purchase_title": null,
+      "purchase_url": null,
+      "release_date": "2025-02-13T00:00:00Z",
+      "reposts_count": 2,
+      "secret_token": null,
+      "sharing": "public",
+      "state": "finished",
+      "station_permalink": "track-stations:2033614664",
+      "station_urn": "soundcloud:system-playlists:track-stations:2033614664",
+      "streamable": true,
+      "tag_list": "",
+      "title": "El Nudo",
+      "track_authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnZW8iOiJQTCIsInN1YiI6IjU0NTQ3MjYwIiwicmlkIjoiODVkM2Q4MWUtZDY0YS00YTFlLTg1YjItMzhmNTc5ZTc3MjI0IiwiaWF0IjoxNzM5NDg1ODkyfQ.4toioE533D_UDRA3EpSIbFPJKQbet4R2--V7wpYhsik",
+      "uri": "https://api.soundcloud.com/tracks/2033614664",
+      "urn": "soundcloud:tracks:2033614664",
+      "user": {
+        "avatar_url": "https://i1.sndcdn.com/avatars-jzZV2YFDVmDc2TRc-w6sJPw-large.jpg",
+        "badges": {
+          "creator_mid_tier": false,
+          "pro": false,
+          "pro_unlimited": true,
+          "verified": false
+        },
+        "city": "A Coru\u00f1a",
+        "country_code": "ES",
+        "first_name": "Sofia",
+        "followers_count": 231,
+        "full_name": "Sofia Tom\u00e9",
+        "id": 572294589,
+        "kind": "user",
+        "last_modified": "2025-02-08T01:12:21Z",
+        "last_name": "Tom\u00e9",
+        "permalink": "weisheit_dj",
+        "permalink_url": "https://soundcloud.com/weisheit_dj",
+        "station_permalink": "artist-stations:572294589",
+        "station_urn": "soundcloud:system-playlists:artist-stations:572294589",
+        "uri": "https://api.soundcloud.com/users/572294589",
+        "urn": "soundcloud:users:572294589",
+        "username": "WEISHEIT",
+        "verified": false
+      },
+      "user_id": 572294589,
+      "visuals": null,
+      "waveform_url": "https://wave.sndcdn.com/w8xk80FO7fj8_m.json"
+    },
+    {
+      "artwork_url": "https://i1.sndcdn.com/artworks-000200796467-97csoq-large.jpg",
+      "caption": null,
+      "comment_count": 92,
+      "commentable": true,
+      "created_at": "2017-01-01T13:59:11Z",
+      "description": "\u266b Listen on Spotify:\nhttps://play.spotify.com/track/7vXedFVcRXxxEqHRV9ogUv?play=true&utm_source=open.spotify.com&utm_medium=open",
+      "display_date": "2017-01-01T14:07:16Z",
+      "download_count": 0,
+      "downloadable": false,
+      "duration": 200821,
+      "embeddable_by": "all",
+      "full_duration": 200821,
+      "genre": "Ambient",
+      "has_downloads_left": false,
+      "id": 300443204,
+      "kind": "track",
+      "label_name": null,
+      "last_modified": "2020-11-28T14:39:32Z",
+      "license": "all-rights-reserved",
+      "likes_count": 3213,
+      "media": {
+        "transcodings": [
+          {
+            "duration": 200821,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:300443204/eec3571e-7ce3-4f12-b4c0-e07814b25e2d/stream/hls"
+          },
+          {
+            "duration": 200821,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "progressive"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:300443204/eec3571e-7ce3-4f12-b4c0-e07814b25e2d/stream/progressive"
+          },
+          {
+            "duration": 200821,
+            "format": {
+              "mime_type": "audio/ogg; codecs=\"opus\"",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "opus_0_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:300443204/5c20ff57-d521-46db-9891-fbc97e4e0a84/stream/hls"
+          }
+        ]
+      },
+      "monetization_model": "NOT_APPLICABLE",
+      "permalink": "darlekone-x-vacant-despair",
+      "permalink_url": "https://soundcloud.com/darlekone/darlekone-x-vacant-despair",
+      "playback_count": 189425,
+      "policy": "ALLOW",
+      "public": true,
+      "publisher_metadata": {
+        "artist": "Darlekone, Vacant",
+        "contains_music": true,
+        "id": 300443204,
+        "isrc": "QM42K1700858",
+        "urn": "soundcloud:tracks:300443204",
+        "writer_composer": "Jake Mckinson"
+      },
+      "purchase_title": "Download",
+      "purchase_url": "https://darlekone.bandcamp.com/track/despair",
+      "release_date": "2017-01-01T00:00:00Z",
+      "reposts_count": 410,
+      "secret_token": null,
+      "sharing": "public",
+      "state": "finished",
+      "station_permalink": "track-stations:300443204",
+      "station_urn": "soundcloud:system-playlists:track-stations:300443204",
+      "streamable": true,
+      "tag_list": "",
+      "title": "Darlekone x Vacant - Despair",
+      "track_authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnZW8iOiJQTCIsInN1YiI6IjU0NTQ3MjYwIiwicmlkIjoiYmViNmRmNGItOTNhMS00YTU4LWI3NGItMWFiMGQ2NzUzZjhmIiwiaWF0IjoxNzM5NDg1ODkyfQ.PTq97BpO26C4mkq-E21ePpfVsBJrPO65LcmGlB03QWw",
+      "uri": "https://api.soundcloud.com/tracks/300443204",
+      "urn": "soundcloud:tracks:300443204",
+      "user": {
+        "avatar_url": "https://i1.sndcdn.com/avatars-000534034071-4s2io6-large.jpg",
+        "badges": {
+          "creator_mid_tier": false,
+          "pro": false,
+          "pro_unlimited": true,
+          "verified": false
+        },
+        "city": "London",
+        "country_code": null,
+        "first_name": "",
+        "followers_count": 1806,
+        "full_name": "",
+        "id": 1732977,
+        "kind": "user",
+        "last_modified": "2024-08-06T07:19:14Z",
+        "last_name": "",
+        "permalink": "darlekone",
+        "permalink_url": "https://soundcloud.com/darlekone",
+        "station_permalink": "artist-stations:1732977",
+        "station_urn": "soundcloud:system-playlists:artist-stations:1732977",
+        "uri": "https://api.soundcloud.com/users/1732977",
+        "urn": "soundcloud:users:1732977",
+        "username": "Darlekone",
+        "verified": false
+      },
+      "user_id": 1732977,
+      "visuals": null,
+      "waveform_url": "https://wave.sndcdn.com/H5Qea4vnOmCM_m.json"
+    },
+    {
+      "artwork_url": "https://i1.sndcdn.com/artworks-y6xjHr32G8i1T6vX-rcXWfA-large.jpg",
+      "caption": null,
+      "comment_count": 127,
+      "commentable": true,
+      "created_at": "2020-11-10T21:45:01Z",
+      "description": "",
+      "display_date": "2020-11-10T21:45:01Z",
+      "download_count": 0,
+      "downloadable": false,
+      "duration": 269505,
+      "embeddable_by": "all",
+      "full_duration": 269505,
+      "genre": "Electronic",
+      "has_downloads_left": false,
+      "id": 926944225,
+      "kind": "track",
+      "label_name": "Rusez1",
+      "last_modified": "2022-02-06T00:03:19Z",
+      "license": "all-rights-reserved",
+      "likes_count": 2011,
+      "media": {
+        "transcodings": [
+          {
+            "duration": 269505,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_1",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:926944225/b7fbb4f9-68e1-4ffb-b4bc-3398d789019d/stream/hls"
+          },
+          {
+            "duration": 269505,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "progressive"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_1",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:926944225/b7fbb4f9-68e1-4ffb-b4bc-3398d789019d/stream/progressive"
+          },
+          {
+            "duration": 269486,
+            "format": {
+              "mime_type": "audio/ogg; codecs=\"opus\"",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "opus_0_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:926944225/03e28da0-7e1c-46bf-b771-ad12d35ceb5d/stream/hls"
+          }
+        ]
+      },
+      "monetization_model": "NOT_APPLICABLE",
+      "permalink": "before",
+      "permalink_url": "https://soundcloud.com/rusez1music/before",
+      "playback_count": 154260,
+      "policy": "ALLOW",
+      "public": true,
+      "publisher_metadata": {
+        "artist": "Rusez1",
+        "contains_music": true,
+        "id": 926944225,
+        "isrc": "QZMHP2087026",
+        "urn": "soundcloud:tracks:926944225",
+        "writer_composer": "Alexander Apryanichev"
+      },
+      "purchase_title": null,
+      "purchase_url": "https://rusez1.bandcamp.com/track/before",
+      "release_date": "2020-11-11T00:00:00Z",
+      "reposts_count": 181,
+      "secret_token": null,
+      "sharing": "public",
+      "state": "finished",
+      "station_permalink": "track-stations:926944225",
+      "station_urn": "soundcloud:system-playlists:track-stations:926944225",
+      "streamable": true,
+      "tag_list": "Atmospheric \"Future Garage\" Ambient Vocal Sub",
+      "title": "Before",
+      "track_authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnZW8iOiJQTCIsInN1YiI6IjU0NTQ3MjYwIiwicmlkIjoiYjM0NzliYjgtYmNmNC00NDg2LThhN2MtYjIxZTg4MDZmNWUwIiwiaWF0IjoxNzM5NDg1ODkyfQ.UqsV0HEuTen0XQFHCO3uuADxcVCBFo67tQTOawyJ-nU",
+      "uri": "https://api.soundcloud.com/tracks/926944225",
+      "urn": "soundcloud:tracks:926944225",
+      "user": {
+        "avatar_url": "https://i1.sndcdn.com/avatars-YIDnle9CWw4q9ulK-P88xrQ-large.jpg",
+        "badges": {
+          "creator_mid_tier": false,
+          "pro": false,
+          "pro_unlimited": false,
+          "verified": true
+        },
+        "city": "atmospheric music",
+        "country_code": null,
+        "first_name": "",
+        "followers_count": 2639,
+        "full_name": "",
+        "id": 105785089,
+        "kind": "user",
+        "last_modified": "2024-11-11T08:38:59Z",
+        "last_name": "",
+        "permalink": "rusez1music",
+        "permalink_url": "https://soundcloud.com/rusez1music",
+        "station_permalink": "artist-stations:105785089",
+        "station_urn": "soundcloud:system-playlists:artist-stations:105785089",
+        "uri": "https://api.soundcloud.com/users/105785089",
+        "urn": "soundcloud:users:105785089",
+        "username": "Rusez1",
+        "verified": true
+      },
+      "user_id": 105785089,
+      "visuals": {
+        "enabled": true,
+        "tracking": null,
+        "urn": "soundcloud:tracks:926944225",
+        "visuals": [
+          {
+            "entry_time": 0,
+            "urn": "soundcloud:visuals:117358512",
+            "visual_url": "https://va.sndcdn.com/bg/soundcloud:tracks:926944225/811fcc50-9364-4d38-8ab0-b525f2d192e4.jpg"
+          }
+        ]
+      },
+      "waveform_url": "https://wave.sndcdn.com/qEAk2WqpOvW2_m.json"
+    },
+    {
+      "artwork_url": "https://i1.sndcdn.com/artworks-0srYaQQJKJ66jvKJ-46WSsQ-large.jpg",
+      "caption": null,
+      "comment_count": 56,
+      "commentable": true,
+      "created_at": "2019-12-21T00:19:16Z",
+      "description": "\u2665",
+      "display_date": "2019-12-21T00:19:41Z",
+      "download_count": 0,
+      "downloadable": false,
+      "duration": 316369,
+      "embeddable_by": "all",
+      "full_duration": 316369,
+      "genre": "Future Garage",
+      "has_downloads_left": false,
+      "id": 731672635,
+      "kind": "track",
+      "label_name": null,
+      "last_modified": "2024-01-13T22:37:37Z",
+      "license": "all-rights-reserved",
+      "likes_count": 1026,
+      "media": {
+        "transcodings": [
+          {
+            "duration": 316369,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_1",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:731672635/30188514-6687-4d8a-b3b6-fdf451ea749e/stream/hls"
+          },
+          {
+            "duration": 316369,
+            "format": {
+              "mime_type": "audio/mpeg",
+              "protocol": "progressive"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "mp3_0_1",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:731672635/30188514-6687-4d8a-b3b6-fdf451ea749e/stream/progressive"
+          },
+          {
+            "duration": 316324,
+            "format": {
+              "mime_type": "audio/ogg; codecs=\"opus\"",
+              "protocol": "hls"
+            },
+            "is_legacy_transcoding": true,
+            "preset": "opus_0_0",
+            "quality": "sq",
+            "snipped": false,
+            "url": "https://api-v2.soundcloud.com/media/soundcloud:tracks:731672635/05a833dd-c095-431f-838d-a05acc50e78f/stream/hls"
+          }
+        ]
+      },
+      "monetization_model": "NOT_APPLICABLE",
+      "permalink": "for-as-long-as-i-care",
+      "permalink_url": "https://soundcloud.com/deffyme/for-as-long-as-i-care",
+      "playback_count": 77591,
+      "policy": "ALLOW",
+      "public": true,
+      "publisher_metadata": {
+        "artist": "deffyme",
+        "contains_music": true,
+        "explicit": false,
+        "id": 731672635,
+        "isrc": "QM8DG2064154",
+        "p_line": "2019 deffyme",
+        "p_line_for_display": "\u2117 2019 deffyme",
+        "publisher": "deffyme",
+        "release_title": "For As Long As I Care",
+        "urn": "soundcloud:tracks:731672635",
+        "writer_composer": "Lucas Schacht"
+      },
+      "purchase_title": null,
+      "purchase_url": null,
+      "release_date": null,
+      "reposts_count": 86,
+      "secret_token": null,
+      "sharing": "public",
+      "state": "finished",
+      "station_permalink": "track-stations:731672635",
+      "station_urn": "soundcloud:system-playlists:track-stations:731672635",
+      "streamable": true,
+      "tag_list": "deep Dark Atmospheric Electro Experimental dubstep City chillout sad melodic Slow UKG \"UK Garage\" Ambient Chill Electronic Trap Wave \"witch house\"",
+      "title": "For As Long As I Care",
+      "track_authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJnZW8iOiJQTCIsInN1YiI6IjU0NTQ3MjYwIiwicmlkIjoiNTQ2ZTU2NjctNjRlNy00Y2MzLTkyMmItMWM1N2Y5NWI3MDlkIiwiaWF0IjoxNzM5NDg1ODkyfQ.HmUw8V97zORhxPuOGl-xvgkg2XQ6-AOGFQqj7U8EVKA",
+      "uri": "https://api.soundcloud.com/tracks/731672635",
+      "urn": "soundcloud:tracks:731672635",
+      "user": {
+        "avatar_url": "https://i1.sndcdn.com/avatars-OFzNFdceBHv9kxad-WuQUyQ-large.jpg",
+        "badges": {
+          "creator_mid_tier": false,
+          "pro": false,
+          "pro_unlimited": true,
+          "verified": false
+        },
+        "city": "",
+        "country_code": null,
+        "first_name": "Lucas",
+        "followers_count": 1624,
+        "full_name": "Lucas Schacht",
+        "id": 278871256,
+        "kind": "user",
+        "last_modified": "2024-11-26T06:35:52Z",
+        "last_name": "Schacht",
+        "permalink": "deffyme",
+        "permalink_url": "https://soundcloud.com/deffyme",
+        "station_permalink": "artist-stations:278871256",
+        "station_urn": "soundcloud:system-playlists:artist-stations:278871256",
+        "uri": "https://api.soundcloud.com/users/278871256",
+        "urn": "soundcloud:users:278871256",
+        "username": "deffyme",
+        "verified": false
+      },
+      "user_id": 278871256,
+      "visuals": null,
+      "waveform_url": "https://wave.sndcdn.com/nk2152DiM1Ep_m.json"
+    }
+  ],
+  "query_urn": "soundcloud:similarsounds:a92b8ab2fea44524886ff190b33f4d6d",
+  "variant": "stations"
+}

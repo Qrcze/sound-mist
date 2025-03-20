@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:vm="using:SoundMist.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:DataType="vm:LikedLibraryViewModel"
+             x:Class="SoundMist.Views.LikedLibraryView">
+	<Grid RowDefinitions="auto,*">
+		<Grid Grid.Row="0">
+			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5" />
+		</Grid>
+		<ListBox Grid.Row="1" AutoScrollToSelectedItem="True" x:Name="LikedList"
+				 ItemsSource="{Binding TracksList}" SelectedItem="{Binding SelectedTrack}"
+				 DoubleTapped="ListBox_DoubleTapped">
+			<ListBox.ItemsPanel>
+				<ItemsPanelTemplate>
+					<WrapPanel />
+				</ItemsPanelTemplate>
+			</ListBox.ItemsPanel>
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<Grid Height="120" ColumnDefinitions="120,200" RowDefinitions="auto,auto" >
+							<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" />
+							<TextBlock Margin="3" FontSize="15" TextWrapping="Wrap" Grid.Column="1" Grid.Row="0" Text="{Binding Title}" />
+							<TextBlock Margin="3" FontSize="13" Foreground="AliceBlue" TextWrapping="Wrap" Grid.Column="1" Grid.Row="1" Text="{Binding ArtistName}" />
+							<TextBlock Margin="3" FontSize="11" HorizontalAlignment="Right" Foreground="Gray" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="1" Text="{Binding DurationFormatted}" />
+						</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+			<ListBox.ContextMenu>
+				<ContextMenu>
+					<MenuItem Header="About Track" Command="{Binding OpenTrackPageCommand}" />
+					<MenuItem Header="About Uploader" Command="{Binding OpenUserPageCommand}" />
+					<Separator Height="1" />
+					<MenuItem Header="Play next (WIP)" Command="{Binding PrependToQueueCommand}" />
+					<MenuItem Header="Add to queue" Command="{Binding AppendToQueueCommand}" />
+					<Separator Height="1" />
+					<MenuItem Header="Play station" Command="{Binding PlayStationCommand}" />
+					<Separator Height="1" />
+					<MenuItem Header="Download" Command="{Binding DownloadCommand}" />
+				</ContextMenu>
+			</ListBox.ContextMenu>
+		</ListBox>
+	</Grid>
+</UserControl>

@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:SoundMist.ViewModels"
+			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SoundMist.Views.UserInfoView"
+			 x:DataType="vm:UserInfoViewModel">
+	<StackPanel>
+		<Grid>
+			<Image asyncImageLoader:ImageLoader.Source="{Binding User.BackgroundVisual}" VerticalAlignment="Top" />
+			<Grid Margin="10" ColumnDefinitions="100 *">
+				<Border VerticalAlignment="Top" Margin="5" Width="100" Height="100" CornerRadius="50" ClipToBounds="True">
+					<Image asyncImageLoader:ImageLoader.Source="{Binding User.AvatarUrl}" />
+				</Border>
+				<StackPanel Grid.Column="1">
+					<TextBlock Margin="5" Padding="8 5" HorizontalAlignment="Left" Background="Black" Foreground="White" FontSize="25" Text="{Binding User.Username}" />
+					<TextBlock Margin="5" Padding="8 5" HorizontalAlignment="Left" Background="Black" Foreground="LightGray" IsVisible="{Binding User.HasFullName}" Text="{Binding User.FullName}" />
+					<TextBlock Margin="5" Padding="8 5" HorizontalAlignment="Left" Background="Black" Foreground="LightGray" IsVisible="{Binding User.HasCityOrCountry}" Text="{Binding User.CityAndCountry}" />
+				</StackPanel>
+			</Grid>
+		</Grid>
+		<StackPanel Orientation="Horizontal" Margin="5">
+			<Button Content="Open In Browser" Margin="5" Command="{Binding OpenInBrowserCommand}" />
+		</StackPanel>
+	</StackPanel>
+</UserControl>

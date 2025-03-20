@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:SoundMist.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SoundMist.Views.SettingsView"
+			 x:DataType="vm:SettingsViewModel"
+			 IsVisible="{Binding IsVisible}"
+			 x:Name="SettingsControl">
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key='Light'>
+					<SolidColorBrush x:Key='BackgroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='BackgroundBrushInner'>#EEE</SolidColorBrush>
+				</ResourceDictionary>
+				<ResourceDictionary x:Key='Dark'>
+					<SolidColorBrush x:Key='BackgroundBrush'>#222</SolidColorBrush>
+					<SolidColorBrush x:Key='BackgroundBrushInner'>#121212</SolidColorBrush>
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
+		</ResourceDictionary>
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style Selector="Border.settings-border">
+			<Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+		</Style>
+		<Style Selector="Border.setting-tab">
+			<Setter Property="Background" Value="{DynamicResource BackgroundBrushInner}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<!--<Setter Property="BorderBrush" Value="LightGray" />-->
+			<Setter Property="Padding" Value="10" />
+			<Setter Property="Margin" Value="0 0 15 0" />
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="Margin" Value="0 0 0 0" />
+			<Setter Property="FontSize" Value="15" />
+		</Style>
+
+		<Style Selector="Border.blocked-item">
+			<Setter Property="Padding" Value="5" />
+			<Setter Property="Margin" Value="1" />
+		</Style>
+		<Style Selector="Border.blocked-item:pointerover">
+			<Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+		</Style>
+	</UserControl.Styles>
+
+	<Border Background="#5333">
+		<Border Classes="settings-border" Margin="80" CornerRadius="15">
+			<Grid>
+				<TabControl TabStripPlacement="Left" Padding="18 10" Margin="5">
+					<TabItem Header="General">
+						<Border Classes="setting-tab">
+							<StackPanel>
+								<Grid ColumnDefinitions="180,*">
+									<TextBlock Text="Default tab on launch:" VerticalAlignment="Center" />
+									<ComboBox Grid.Column="1" ItemsSource="{Binding TabsSelection}" SelectedItem="{Binding DefaultTabOnLaunch}" />
+								</Grid>
+							</StackPanel>
+						</Border>
+					</TabItem>
+					<TabItem Header="Blocked Tracks">
+						<Border Classes="setting-tab">
+							<ScrollViewer>
+								<ItemsControl ItemsSource="{Binding BlockedTracks}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Border Classes="blocked-item">
+												<StackPanel Orientation="Horizontal">
+													<Button VerticalAlignment="Center" Click="RemoveBlockedTrack" Width="22" Height="22" Padding="0">
+														<Image Source="/Assets/close.png" />
+													</Button>
+													<TextBlock VerticalAlignment="Center" Text="{Binding Title}" Margin="5 0" />
+													<TextBlock VerticalAlignment="Center" Text="(id:" />
+													<TextBlock VerticalAlignment="Center" Text="{Binding Id}" />
+													<TextBlock VerticalAlignment="Center" Text=")" />
+												</StackPanel>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+						</Border>
+					</TabItem>
+					<TabItem Header="Blocked Users">
+						<Border Classes="setting-tab">
+							<ScrollViewer>
+								<ItemsControl ItemsSource="{Binding BlockedUsers}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Border Classes="blocked-item">
+												<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+													<Button VerticalAlignment="Center" Click="RemoveBlockedUser" Width="22" Height="22" Padding="0">
+														<Image Source="/Assets/close.png" />
+													</Button>
+													<TextBlock VerticalAlignment="Center" Text="{Binding Title}" Margin="5 0" />
+													<TextBlock VerticalAlignment="Center" Text="(id:" />
+													<TextBlock VerticalAlignment="Center" Text="{Binding Id}" />
+													<TextBlock VerticalAlignment="Center" Text=")" />
+												</StackPanel>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+						</Border>
+					</TabItem>
+				</TabControl>
+
+				<Button HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding CloseCommand}" Padding="0" Margin="10 8" Width="22">
+					<Image Source="/Assets/close.png" />
+				</Button>
+			</Grid>
+		</Border>
+	</Border>
+</UserControl>

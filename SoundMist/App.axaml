@@ -1,0 +1,48 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SoundMist.App"
+             RequestedThemeVariant="Default">
+	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+	<Application.Styles>
+		<FluentTheme />
+
+		<Style Selector="Slider:horizontal">
+			<Style Selector="^ Track">
+				<Style Selector="^ Thumb">
+					<Setter Property="Height" Value="14" />
+					<Setter Property="Width" Value="14" />
+				</Style>
+			</Style>
+		</Style>
+
+		<Style Selector="Button.link-like">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Padding" Value="0" />
+		</Style>
+
+		<Style Selector=":is(Button).button-big">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Width" Value="43" />
+			<Setter Property="Height" Value="43" />
+		</Style>
+		<Style Selector=":is(Button).button-medium">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Width" Value="32" />
+			<Setter Property="Height" Value="32" />
+		</Style>
+		<Style Selector=":is(Button).button-small">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="Width" Value="25" />
+			<Setter Property="Height" Value="25" />
+		</Style>
+	</Application.Styles>
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceInclude Source="avares://LoadingIndicators.Avalonia/LoadingIndicators.axaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>
