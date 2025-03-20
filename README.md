@@ -1,4 +1,4 @@
-# aaaaaa
+# Sound Mist
 An unofficial desktop SoundCloud player for Windows, built from the ground-up.
 
 ## Working base features:
