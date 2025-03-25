@@ -1,12 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SoundMist.Helpers;
 using SoundMist.Models;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Text.Json;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace SoundMist.ViewModels;
@@ -22,12 +23,14 @@ internal partial class DownloadedViewModel : ViewModelBase
     public IAsyncRelayCommand PlayStationCommand { get; }
     public IRelayCommand PrependToQueueCommand { get; }
 
+    private readonly HttpClient _httpClient;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
     private readonly ProgramSettings _settings;
 
-    public DownloadedViewModel(IMusicPlayer musicPlayer, ILogger logger, ProgramSettings settings)
+    public DownloadedViewModel(HttpClient httpClient, IMusicPlayer musicPlayer, ILogger logger, ProgramSettings settings)
     {
+        _httpClient = httpClient;
         _musicPlayer = musicPlayer;
         _logger = logger;
         _settings = settings;
@@ -35,37 +38,58 @@ internal partial class DownloadedViewModel : ViewModelBase
         PlayStationCommand = new AsyncRelayCommand(PlayStation);
         PrependToQueueCommand = new RelayCommand(PrependToQueue);
 
-        LoadDowloadedTracks();
+        Task.Run(LoadDowloadedTracks);
     }
 
-    private void LoadDowloadedTracks()
+    private async Task LoadDowloadedTracks()
     {
         if (!Directory.Exists(Globals.LocalDownloadsPath))
             return;
 
-        foreach (var jsonPath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.json"))
+        string[] idFiles = Directory.GetFiles(Globals.LocalDownloadsPath, "*.id");
+        List<(int id, string label)> ids = new(idFiles.Length);
+
+        foreach (var idPath in idFiles)
         {
-            string trackLabel = Path.GetFileNameWithoutExtension(jsonPath);
+            string trackLabel = Path.GetFileNameWithoutExtension(idPath);
             string mp3Path = $"{Globals.LocalDownloadsPath}/{trackLabel}.mp3";
 
             //remove unused json files
             if (!File.Exists(mp3Path))
             {
-                File.Delete(jsonPath);
-                _logger.Info($"removed unused downloaded json file for track: {trackLabel}");
+                File.Delete(idPath);
+                _logger.Info($"removed unused downloaded id file for track: {trackLabel}");
                 continue;
             }
 
-            try
+            string idString = File.ReadAllText(idPath);
+            if (int.TryParse(idString, out int id))
+                ids.Add((id, trackLabel));
+            else
             {
-                var json = File.ReadAllText(jsonPath);
-                var track = JsonSerializer.Deserialize<Track>(json);
-                TracksList.Add(track);
+                _logger.Warn($"failed reading track id for the track {trackLabel}: \"{idString}\"");
+                File.Delete(idPath);
             }
-            catch (Exception ex)
+        }
+
+        var tracksData = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, ids.Select(x => x.id));
+
+        foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3"))
+        {
+            string trackLabel = Path.GetFileNameWithoutExtension(filePath);
+            (int trackId, _) = ids.FirstOrDefault(x => x.label == trackLabel);
+
+            var trackData = tracksData.FirstOrDefault(x => x.FullLabel == trackLabel);
+            if (trackData is not null)
             {
-                _logger.Error($"Failed reading json file for track: {trackLabel}; {ex.Message}");
-                TracksList.Add(Track.CreatePlaceholderTrack("[Failed loading track]", trackLabel));
+                TracksList.Add(trackData);
+            }
+            else
+            {
+                using var tags = TagLib.File.Create(filePath);
+                string artist = tags.Tag.FirstAlbumArtist;
+                string title = tags.Tag.Title;
+                TracksList.Add(Track.CreatePlaceholderTrack(artist, title));
             }
         }
     }
@@ -83,7 +107,7 @@ internal partial class DownloadedViewModel : ViewModelBase
         if (SelectedTrack == null)
             return;
 
-        await _musicPlayer.PlayNewQueue([SelectedTrack]);
+        await _musicPlayer.LoadNewQueue([SelectedTrack]);
     }
 
     private void PrependToQueue()
@@ -96,6 +120,6 @@ internal partial class DownloadedViewModel : ViewModelBase
 
     public async Task PlayQueue(IEnumerable<Track> tracks)
     {
-        await _musicPlayer.PlayNewQueue(tracks);
+        await _musicPlayer.LoadNewQueue(tracks);
     }
 }

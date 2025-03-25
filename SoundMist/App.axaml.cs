@@ -2,11 +2,10 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.DependencyInjection;
 using SoundMist.Models;
 using SoundMist.ViewModels;
 using SoundMist.Views;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Net.Http;
 
 namespace SoundMist;
@@ -35,16 +34,15 @@ public partial class App : Application
         collection.AddServices();
 
         services = collection.BuildServiceProvider();
-        //var vm = services.GetRequiredService<MainViewModel>();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();
+            NotificationManager.Toplevel = desktop.MainWindow;
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView();
-            //throw new PlatformNotSupportedException("desktop only lol");
         }
 
         base.OnFrameworkInitializationCompleted();

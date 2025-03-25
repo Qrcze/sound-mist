@@ -19,13 +19,13 @@ namespace SoundMist.Models
 
     public class Track
     {
-        public static Track CreatePlaceholderTrack(string author = "Empty", string title = "Track", string imagePath = "/Assets/placeholder.png")
+        public static Track CreatePlaceholderTrack(string author = "Empty", string title = "Track", string imageUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg")
         {
             return new Track()
             {
                 User = new() { Username = author },
                 Title = title,
-                ArtworkUrl = imagePath,
+                ArtworkUrl = imageUrl,
             };
         }
 

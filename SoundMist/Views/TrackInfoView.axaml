@@ -41,7 +41,7 @@
 
 					<!-- wave progress bar -->
 					<!--<TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="Temp progress bar" />-->
-					<controls:WaveSlider Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Maximum="{Binding Track.Duration}" Value="{Binding Position}" Samples="{Binding Samples}" IsEnabled="{Binding IsCurrentTrack}" />
+					<controls:WaveSlider Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Maximum="{Binding Track.FullDuration}" Value="{Binding Position}" Samples="{Binding Samples}" IsEnabled="{Binding IsCurrentTrack}" />
 				</Grid>
 			</Grid>
 

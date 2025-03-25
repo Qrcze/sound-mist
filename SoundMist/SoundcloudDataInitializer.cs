@@ -153,7 +153,7 @@ public partial class SoundcloudDataInitializer
         if (_settings.LastTrack != null)
         {
             var musicPlayer = App.GetService<IMusicPlayer>();
-            await musicPlayer.AddToQueue(_settings.LastTrack, null, true);
+            await musicPlayer.LoadNewQueue([_settings.LastTrack], null, _settings.StartPlayingOnLaunch);
         }
     }
 

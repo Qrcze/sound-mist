@@ -40,7 +40,7 @@ public partial class MainWindowViewModel : ViewModelBase
             TaskbarManager.SetProgressValue((int)ms, _musicPlayer.CurrentTrack!.FullDuration);
         };
 
-        _musicPlayer.PlayStateChanged += (s) =>
+        _musicPlayer.PlayStateUpdated += (s, m) =>
         {
             switch (s)
             {

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Controls.Notifications;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Models;
 using System;
@@ -13,7 +14,7 @@ public partial class PlayerViewModel : ViewModelBase
     [ObservableProperty] private bool _playing;
     [ObservableProperty] private bool _loading;
     [ObservableProperty] private bool _playEnabled;
-    [ObservableProperty] private string _loadingMessage = "Loading...";
+    [ObservableProperty] private string _loadingMessage;
     [ObservableProperty] private string _trackTimeFormatted = "00:00";
     [ObservableProperty] private string _trackLengthFormatted = "00:00";
     [ObservableProperty] private string _trackTitle = string.Empty;
@@ -37,7 +38,7 @@ public partial class PlayerViewModel : ViewModelBase
         set
         {
             _settings.Shuffle = value;
-            _musicPlayer.ShufflePlaylist(value);
+            _musicPlayer.TracksPlaylist.ChangeShuffle(value);
         }
     }
 
@@ -77,13 +78,12 @@ public partial class PlayerViewModel : ViewModelBase
         _logger = logger;
 
         _musicPlayer.TrackChanging += TrackChanging;
-        _musicPlayer.TrackChanged += TrackChanged;
         _musicPlayer.TrackTimeUpdated += UpdateTime;
-        _musicPlayer.PlayStateChanged += PlayStateChanged;
-        _musicPlayer.LoadingStatusChanged += m =>
+        _musicPlayer.PlayStateUpdated += PlayStateUpdated;
+        _musicPlayer.ErrorCallback += m =>
         {
-            Loading = !string.IsNullOrEmpty(m);
-            LoadingMessage = m;
+            NotificationManager.Show(new Notification("Player error", m, NotificationType.Error, TimeSpan.Zero));
+            _logger.Error(m);
         };
         _musicPlayer.TracksPlaylist.ListChanged += TracksPlaylist_ListChanged;
 
@@ -101,7 +101,7 @@ public partial class PlayerViewModel : ViewModelBase
         {
             TrackChanging(_musicPlayer.CurrentTrack);
             if (_musicPlayer.PlayerReady)
-                PlayStateChanged(PlayState.Loaded);
+                PlayStateUpdated(PlayState.Loaded, string.Empty);
         }
     }
 
@@ -127,28 +127,44 @@ public partial class PlayerViewModel : ViewModelBase
         TrackTimeFormatted = TimeSpan.FromMilliseconds(value).ToString(_showHoursOnTime ? @"hh\:mm\:ss" : @"mm\:ss");
     }
 
-    private void PlayStateChanged(PlayState state)
+    private void PlayStateUpdated(PlayState state, string message)
     {
         switch (state)
         {
-            case PlayState.Ended:
-            case PlayState.Error:
+            case PlayState.Playing:
+                Playing = true;
+                PlayEnabled = true;
                 Loading = false;
-                PlayEnabled = false;
-                Playing = false;
                 break;
 
-            case PlayState.Playing:
-                Loading = false;
+            case PlayState.Paused:
+                Playing = false;
                 PlayEnabled = true;
-                Playing = true;
+                Loading = false;
+                break;
+
+            case PlayState.Loading:
+                Playing = false;
+                PlayEnabled = false;
+                Loading = true;
+                LoadingMessage = message;
                 break;
 
             case PlayState.Loaded:
-            case PlayState.Paused:
-                Loading = false;
-                PlayEnabled = true;
                 Playing = false;
+                PlayEnabled = true;
+                Loading = false;
+                break;
+
+            case PlayState.Error:
+                Playing = false;
+                PlayEnabled = false;
+                Loading = true;
+                LoadingMessage = message;
+                _logger.Error(message);
+                break;
+
+            default:
                 break;
         }
     }
@@ -182,14 +198,10 @@ public partial class PlayerViewModel : ViewModelBase
 
         TrackTime = 0;
         TrackLength = track.FullDuration;
-        TrackAuthor = track.PublisherMetadata?.Artist ?? track.User.Username;
+        TrackAuthor = track.ArtistName;
         TrackTitle = track.Title;
 
         CurrentTrack = track;
-    }
-
-    private void TrackChanged(Track track)
-    {
     }
 
     private void TracksPlaylist_ListChanged(TracksPlaylist.Changetype change, System.Collections.Generic.IEnumerable<Track> tracks)

@@ -19,20 +19,21 @@ namespace SoundMist.Models
     {
         Playing,
         Paused,
-        Ended,
+        [Obsolete] Ended,
+        Loading,
         Loaded,
-        Error
+        Error,
     }
 
     //TODO decouple the logic of music player class from the downloaders
-    public class MusicPlayer : IMusicPlayer
+    public class MusicPlayer// : IMusicPlayer
     {
         public Track? CurrentTrack { get => _settings.LastTrack; private set => _settings.LastTrack = value; }
         public TracksPlaylist TracksPlaylist { get; } = new();
 
         public float DesiredVolume
         {
-            get => _settings.Volume;
+            get => 0;
             set
             {
                 _settings.Volume = value;

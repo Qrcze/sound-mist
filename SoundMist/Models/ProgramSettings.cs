@@ -19,6 +19,7 @@ namespace SoundMist.Models
         private bool _shuffle;
         private Track? _lastTrack;
         private MainViewTab _startingTabIndex = MainViewTab.LikedTracks;
+        private bool _startPlayingOnLaunch;
 
         public static ProgramSettings Load()
         {
@@ -67,6 +68,7 @@ namespace SoundMist.Models
         public bool Shuffle { get => _shuffle; set => SetPropertyAndSave(ref _shuffle, value); }
         public Track? LastTrack { get => _lastTrack; set => SetPropertyAndSave(ref _lastTrack, value); }
         public MainViewTab StartingTabIndex { get => _startingTabIndex; set => SetPropertyAndSave(ref _startingTabIndex, value); }
+        public bool StartPlayingOnLaunch { get => _startPlayingOnLaunch; set => SetPropertyAndSave(ref _startPlayingOnLaunch, value); }
 
         /// <summary>
         /// Do not modify directly; use <see cref="AddBlockedUser(User)"/> instead

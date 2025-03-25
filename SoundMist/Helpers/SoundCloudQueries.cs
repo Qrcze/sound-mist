@@ -13,7 +13,7 @@ namespace SoundMist.Helpers
     {
         private const int TracksQueryLimit = 50;
 
-        public static async Task<List<Track>> DownloadTracksDataById(HttpClient httpClient, ProgramSettings settings, params IEnumerable<int> tracksIds)
+        public static async Task<List<Track>> DownloadTracksDataById(HttpClient httpClient, string clientId, int appVersion, IEnumerable<int> tracksIds)
         {
             int skip = 0;
             var fullTracks = new List<Track>();
@@ -25,7 +25,7 @@ namespace SoundMist.Helpers
 
                 skip += 50;
 
-                string url = $"https://api-v2.soundcloud.com/tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={settings.ClientId}&app_version={settings.AppVersion}&app_locale=en";
+                string url = $"https://api-v2.soundcloud.com/tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={clientId}&app_version={appVersion}&app_locale=en";
                 var response = await httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 

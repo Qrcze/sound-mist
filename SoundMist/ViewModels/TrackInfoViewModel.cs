@@ -49,10 +49,10 @@ public partial class TrackInfoViewModel : ViewModelBase
         PlayPauseCommand = new AsyncRelayCommand(PlayPause);
 
         _musicPlayer.TrackChanged += TrackChanged;
-        _musicPlayer.PlayStateChanged += TrackStateChanged;
+        _musicPlayer.PlayStateUpdated += TrackStateUpdated;
     }
 
-    private void TrackStateChanged(PlayState state)
+    private void TrackStateUpdated(PlayState state, string message)
     {
         if (Track is null || Track.Id != _musicPlayer.CurrentTrack?.Id)
             return;
@@ -109,7 +109,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         if (Track.Id == _musicPlayer.CurrentTrack?.Id)
             await _musicPlayer.PlayPause(token);
         else
-            await _musicPlayer.PlayNewQueue([Track]);
+            await _musicPlayer.LoadNewQueue([Track]);
     }
 
     private void OpenTrack(object? obj)

@@ -1,6 +1,8 @@
-﻿using Avalonia.Threading;
+﻿using Avalonia.Controls.Notifications;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SoundMist.Helpers;
 using SoundMist.Models;
 using System;
 using System.Collections.Generic;
@@ -132,7 +134,7 @@ namespace SoundMist.ViewModels
 
         public async Task PlayQueue(IEnumerable<Track> tracks)
         {
-            await _musicPlayer.PlayNewQueue(tracks, DownloadMoreLikedTracks);
+            await _musicPlayer.LoadNewQueue(tracks, DownloadMoreLikedTracks);
         }
 
         private void PrependToQueue()
@@ -156,7 +158,7 @@ namespace SoundMist.ViewModels
             if (SelectedTrack == null)
                 return;
 
-            await _musicPlayer.PlayNewQueue([SelectedTrack]);
+            await _musicPlayer.LoadNewQueue([SelectedTrack]);
         }
 
         private async Task Download()
@@ -164,7 +166,27 @@ namespace SoundMist.ViewModels
             if (SelectedTrack == null)
                 return;
 
-            await _musicPlayer.SaveTrackLocally(SelectedTrack);
+            var notif = new Notification($"Downloading {SelectedTrack.FullLabel}", "Downloading started...", NotificationType.Information, TimeSpan.Zero);
+            NotificationManager.Show(notif);
+
+            (bool success, string errorMessage) = await SoundCloudDownloader.SaveTrackLocally(_httpClient, SelectedTrack, _settings.ClientId, (message) =>
+            {
+                notif.Message = message;
+            });
+
+            if (success)
+            {
+                notif.Type = NotificationType.Success;
+                notif.Expiration = TimeSpan.FromSeconds(5);
+                notif.Message = "Downloaded!";
+            }
+            else
+            {
+                notif.Type = NotificationType.Error;
+                notif.Expiration = TimeSpan.Zero;
+                notif.Title = $"Failed downloading {SelectedTrack.FullLabel}";
+                notif.Message = errorMessage;
+            }
         }
 
         private async Task<IEnumerable<Track>> DownloadMoreLikedTracks()

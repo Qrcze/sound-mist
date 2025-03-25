@@ -13,24 +13,22 @@ namespace SoundMist.Models
         bool Playing { get; }
         TracksPlaylist TracksPlaylist { get; }
 
-        event Action<string>? LoadingStatusChanged;
-        event Action<PlayState>? PlayStateChanged;
-        event Action<Track>? TrackChanged;
+        event Action<string>? ErrorCallback;
+        event Action<PlayState, string>? PlayStateUpdated;
         event Action<Track>? TrackChanging;
+        event Action<Track>? TrackChanged;
         event Action<double>? TrackTimeUpdated;
 
-        Task AddToQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null, bool preloadTrack = false);
-        Task AddToQueue(Track track, Func<Task<IEnumerable<Track>>>? downloadMore = null, bool preloadTrack = false);
+        void SetPosition(double value);
+        Task AddToQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null);
+        Task AddToQueue(Track track, Func<Task<IEnumerable<Track>>>? downloadMore = null);
         void ClearQueue();
         void ContinueWithAutoplay();
-        Task SaveTrackLocally(Track track);
-        Task PlayPause(CancellationToken token);
-        Task PlayNewQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null);
+        Task LoadNewQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null, bool startPlaying = true);
         Task PlayNext();
+        Task PlayPause(CancellationToken token);
         Task PlayPrev();
-        void SetPosition(double value);
-        void ShufflePlaylist(bool value);
-        Task SkipTrack(int id);
         Task SkipUser(int id);
+        Task SkipTrack(int id);
     }
 }

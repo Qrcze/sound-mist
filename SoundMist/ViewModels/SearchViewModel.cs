@@ -212,7 +212,7 @@ public partial class SearchViewModel : ViewModelBase
         if (SelectedItem is User user)
             Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, user);
         else if (SelectedItem is Track track)
-            await _musicPlayer.PlayNewQueue([track]);
+            await _musicPlayer.LoadNewQueue([track]);
         else if (SelectedItem is Playlist playlist)
             await PlayFromPlaylist(playlist, 0);
     }
@@ -225,7 +225,7 @@ public partial class SearchViewModel : ViewModelBase
             try
             {
                 var trackIds = playlist.Tracks.Except(tracks).Select(x => x.Id);
-                var restOfTracks = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings, trackIds);
+                var restOfTracks = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, trackIds);
                 if (restOfTracks != null && restOfTracks.Count != 0)
                     tracks = tracks.Concat(restOfTracks);
             }
@@ -236,7 +236,7 @@ public partial class SearchViewModel : ViewModelBase
         }
 
         if (tracks.Any())
-            await _musicPlayer.PlayNewQueue(tracks.Skip(selectedIndex));
+            await _musicPlayer.LoadNewQueue(tracks.Skip(selectedIndex));
     }
 
     public class ScObjectConverter : JsonConverter<object>
