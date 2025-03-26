@@ -43,10 +43,4 @@
 	    <DependentUpon>SearchView.axaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
-
-  <ItemGroup>
-    <None Update="example_related.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

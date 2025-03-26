@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCPlayerTests", "SCPlayerTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundMist", "SoundMist\SoundMist.csproj", "{08A7ADB5-00D0-024E-913C-09DC8110FB47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundMist.Desktop", "SoundMist.Desktop\SoundMist.Desktop.csproj", "{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundMist.Windows", "SoundMist.Windows\SoundMist.Windows.csproj", "{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundMist.Linux", "SoundMist.Linux\SoundMist.Linux.csproj", "{B3896476-4CB6-4B63-862D-237DB23ABB28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,85 +4,59 @@ namespace SCPlayerTests
 {
     internal class MockMusicPlayer : IMusicPlayer
     {
-        public Track? CurrentTrack { get; set; }
-
-        public float DesiredVolume { get; set; } = 1;
-
-        public bool PlayerReady { get; set; }
-        public bool Playing => throw new NotImplementedException();
-
-        public TracksPlaylist TracksPlaylist { get; } = new();
-
-        public event Action<string>? LoadingStatusChanged;
-
-        public event Action<PlayState>? PlayStateChanged;
-
-        public event Action<Track>? TrackChanged;
-
+        public Track? CurrentTrack { get; }
+        public float DesiredVolume { get; set; }
+        public bool PlayerReady { get; }
+        public bool Playing { get; }
+        public TracksPlaylist TracksPlaylist { get; }
+        public event Action<string>? ErrorCallback;
+        public event Action<PlayState, string>? PlayStateUpdated;
         public event Action<Track>? TrackChanging;
-
+        public event Action<Track>? TrackChanged;
         public event Action<double>? TrackTimeUpdated;
 
-        public Task AddToQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null, bool preloadTrack = false)
+        public void SetPosition(double value)
         {
-            TracksPlaylist.AddRange(tracks);
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
-        public Task AddToQueue(Track track, Func<Task<IEnumerable<Track>>>? downloadMore = null, bool preloadTrack = false)
+        public Task AddToQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null)
         {
-            return Task.CompletedTask;
+            throw new NotImplementedException();
+        }
+
+        public Task AddToQueue(Track track, Func<Task<IEnumerable<Track>>>? downloadMore = null)
+        {
+            throw new NotImplementedException();
         }
 
         public void ClearQueue()
         {
-            TracksPlaylist.Clear();
+            throw new NotImplementedException();
         }
 
         public void ContinueWithAutoplay()
         {
+            throw new NotImplementedException();
         }
 
-        public Task SaveTrackLocally(Track track)
+        public Task LoadNewQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null,
+            bool startPlaying = true)
         {
-            return Task.CompletedTask;
-        }
-
-        public Task PlayPause(CancellationToken token)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task PlayNewQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null)
-        {
-            TracksPlaylist.Clear();
-            TracksPlaylist.AddRange(tracks);
-
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
         public Task PlayNext()
         {
-            TracksPlaylist.TryMoveForward(out var _);
-            return Task.CompletedTask;
+            throw new NotImplementedException();
+        }
+
+        public Task PlayPause(CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
 
         public Task PlayPrev()
-        {
-            TracksPlaylist.TryMoveBack(out var _);
-            return Task.CompletedTask;
-        }
-
-        public void SetPosition(double value)
-        {
-        }
-
-        public void ShufflePlaylist(bool value)
-        {
-            TracksPlaylist.ChangeShuffle(value);
-        }
-
-        public Task SkipTrack(int id)
         {
             throw new NotImplementedException();
         }
@@ -92,5 +66,9 @@ namespace SCPlayerTests
             throw new NotImplementedException();
         }
 
+        public Task SkipTrack(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

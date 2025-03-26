@@ -96,7 +96,7 @@ namespace SCPlayerTests
         public async Task Get_TracksById()
         {
             //tracks with id 2 and 17 are the oldest available tracks i could find, rather unlikely they'll get deleted lol
-            var tracks = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings, [2, 17]);
+            var tracks = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, [2, 17]);
 
             Assert.True(tracks.Count == 2, $"Failed downloading all of the tracks; got: {tracks.Count}");
 
@@ -107,7 +107,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Get_Waveform()
         {
-            var tracks = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings, [2]);
+            var tracks = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, [2]);
             Assert.True(tracks.Count == 1, "Tracks download malfunction");
 
             var wave = await SoundCloudQueries.GetTrackWaveform(_httpClient, tracks[0].WaveformUrl!);

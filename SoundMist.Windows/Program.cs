@@ -2,7 +2,7 @@
 using Avalonia;
 using SoundMist.Models;
 
-namespace SoundMist.Desktop;
+namespace SoundMist.Windows;
 
 internal class Program
 {
@@ -21,7 +21,10 @@ internal class Program
         {
             FileLogger.Instance.Fatal($"Program crashed unexpectedly: {ex.Message}");
         }
-        InterceptKeys.End();
+        finally
+        {
+            InterceptKeys.End();
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
