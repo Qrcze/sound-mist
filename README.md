@@ -1,5 +1,5 @@
 # Sound Mist
-An unofficial desktop SoundCloud player for Windows, built from the ground-up.
+An unofficial desktop SoundCloud player for Windows and Linux, built from the ground-up.
 
 ## Working base features:
 - Logging in with the auth token cookie (instructions in the program).
@@ -18,7 +18,6 @@ An unofficial desktop SoundCloud player for Windows, built from the ground-up.
 
 ## Planed features:
 - Playing the music while it still downloads.
-- Linux version.
 - Private bookmarks/likes list stored on the local machine.
 - More integration with the system (notifications, lock-screen info/controls).
 
