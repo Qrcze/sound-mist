@@ -10,6 +10,8 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private bool _isVisible;
 
     public MainViewTab DefaultTabOnLaunch { get => _settings.StartingTabIndex; set => _settings.StartingTabIndex = value; }
+    public bool StartPlayingOnLaunch { get => _settings.StartPlayingOnLaunch; set => _settings.StartPlayingOnLaunch = value; }
+
     public MainViewTab[] TabsSelection { get; } = { MainViewTab.Search, MainViewTab.LikedTracks, MainViewTab.Downloaded };
     public ObservableCollection<BlockedEntry> BlockedUsers { get; } = [];
     public ObservableCollection<BlockedEntry> BlockedTracks { get; } = [];

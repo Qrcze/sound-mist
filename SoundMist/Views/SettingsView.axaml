@@ -59,6 +59,10 @@
 									<TextBlock Text="Default tab on launch:" VerticalAlignment="Center" />
 									<ComboBox Grid.Column="1" ItemsSource="{Binding TabsSelection}" SelectedItem="{Binding DefaultTabOnLaunch}" />
 								</Grid>
+								<Grid ColumnDefinitions="180,*">
+									<TextBlock Text="Start playing on launch:" VerticalAlignment="Center" />
+									<CheckBox Grid.Column="1" IsChecked="{Binding StartPlayingOnLaunch}" />
+								</Grid>
 							</StackPanel>
 						</Border>
 					</TabItem>
