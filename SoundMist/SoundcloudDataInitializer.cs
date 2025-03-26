@@ -58,7 +58,7 @@ public partial class SoundcloudDataInitializer
 
     public async Task<int> GetAppVersion()
     {
-        var response = await _httpClient.GetAsync("https://soundcloud.com/versions.json");
+        using var response = await _httpClient.GetAsync("https://soundcloud.com/versions.json");
         response.EnsureSuccessStatusCode();
         var version = await response.Content.ReadFromJsonAsync<VersionResponse>();
 
@@ -75,7 +75,7 @@ public partial class SoundcloudDataInitializer
         //{
         //}
 
-        var response = await _httpClient.GetAsync("https://soundcloud.com");
+        using var response = await _httpClient.GetAsync("https://soundcloud.com");
         response.EnsureSuccessStatusCode();
 
         string? clientId = null;
@@ -85,7 +85,7 @@ public partial class SoundcloudDataInitializer
         {
             string link = match.Groups[1].Value;
 
-            var script = await _httpClient.GetAsync(link);
+            using var script = await _httpClient.GetAsync(link);
             if (!script.IsSuccessStatusCode)
                 continue;
 
@@ -132,7 +132,7 @@ public partial class SoundcloudDataInitializer
             //check if token is still valid
             _httpClient.DefaultRequestHeaders.Authorization = new("OAuth", _settings.AuthToken);
 
-            var response = await _httpClient.GetAsync("me");
+            using var response = await _httpClient.GetAsync("me");
             if (response.IsSuccessStatusCode)
             {
                 var user = await response.Content.ReadFromJsonAsync<User>();

@@ -44,7 +44,7 @@ internal partial class LoginViewModel : ViewModelBase
         AuthToken = AuthToken.Trim();
         _authorizedHttpClient.Authorization = new("OAuth", AuthToken);
 
-        var response = await _authorizedHttpClient.GetAsync("me");
+        using var response = await _authorizedHttpClient.GetAsync("me");
         if (!response.IsSuccessStatusCode)
         {
             _logger.Info("Provided authorization token was not valid");

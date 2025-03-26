@@ -82,7 +82,7 @@ public partial class SearchViewModel : ViewModelBase
         SearchQueryCollection? q;
         try
         {
-            var response = await _httpClient.GetAsync(url);
+            using var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             q = await response.Content.ReadFromJsonAsync<SearchQueryCollection>();
@@ -180,7 +180,7 @@ public partial class SearchViewModel : ViewModelBase
 
         url += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
-        var response = await _httpClient.GetAsync(url);
+        using var response = await _httpClient.GetAsync(url);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<SearchCollection>(_convertJsonScObjects);

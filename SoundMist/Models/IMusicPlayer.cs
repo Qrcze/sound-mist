@@ -5,6 +5,15 @@ using System.Threading.Tasks;
 
 namespace SoundMist.Models
 {
+    public enum PlayState
+    {
+        Playing,
+        Paused,
+        Loading,
+        Loaded,
+        Error,
+    }
+
     public interface IMusicPlayer
     {
         Track? CurrentTrack { get; }

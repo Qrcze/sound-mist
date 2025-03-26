@@ -26,7 +26,7 @@ namespace SoundMist.Helpers
                 skip += 50;
 
                 string url = $"https://api-v2.soundcloud.com/tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={clientId}&app_version={appVersion}&app_locale=en";
-                var response = await httpClient.GetAsync(url);
+                using var response = await httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var list = await response.Content.ReadFromJsonAsync<List<Track>>();
@@ -38,7 +38,7 @@ namespace SoundMist.Helpers
 
         public static async Task<WaveformData?> GetTrackWaveform(HttpClient httpClient, string waveformUrl)
         {
-            var response = await httpClient.GetAsync(waveformUrl);
+            using var response = await httpClient.GetAsync(waveformUrl);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<WaveformData>();
@@ -46,7 +46,7 @@ namespace SoundMist.Helpers
 
         internal static async Task<User?> GetUserInfo(HttpClient httpClient, ProgramSettings settings, int userId, CancellationToken token)
         {
-            var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/users/{userId}?client_id={settings.ClientId}&app_version={settings.AppVersion}&app_locale=en", token);
+            using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/users/{userId}?client_id={settings.ClientId}&app_version={settings.AppVersion}&app_locale=en", token);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<User>(token);
