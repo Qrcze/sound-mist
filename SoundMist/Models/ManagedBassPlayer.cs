@@ -301,7 +301,7 @@ namespace SoundMist.Models
 
             PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
             TrackChanged?.Invoke(track);
-            _settings.LastTrack = track;
+            _settings.LastTrackId = track.Id;
             return true;
         }
 

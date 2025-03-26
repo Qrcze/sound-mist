@@ -1,7 +1,9 @@
-﻿using SoundMist.Models;
+﻿using SoundMist.Helpers;
+using SoundMist.Models;
 using SoundMist.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
@@ -150,10 +152,12 @@ public partial class SoundcloudDataInitializer
 
     private async Task LoadLastTrack()
     {
-        if (_settings.LastTrack != null)
+        if (_settings.LastTrackId.HasValue)
         {
             var musicPlayer = App.GetService<IMusicPlayer>();
-            await musicPlayer.LoadNewQueue([_settings.LastTrack], null, _settings.StartPlayingOnLaunch);
+            var lastTrack = (await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, [_settings.LastTrackId.Value]))
+                .Single();
+            await musicPlayer.LoadNewQueue([lastTrack], null, _settings.StartPlayingOnLaunch);
         }
     }
 
