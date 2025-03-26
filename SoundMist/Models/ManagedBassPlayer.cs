@@ -1,4 +1,5 @@
-﻿using ManagedBass;
+﻿using Avalonia.Controls.Notifications;
+using ManagedBass;
 using SoundMist.Helpers;
 using System;
 using System.Collections.Generic;
@@ -71,7 +72,6 @@ namespace SoundMist.Models
         private CancellationTokenSource? _loadTrackTokenSource;
         private CancellationTokenSource? _playPauseTokenSource;
         private readonly System.Timers.Timer _timeUpdateTimer;
-        private readonly System.Timers.Timer _trackObserver;
         private double _positionInSeconds;
 
         public ManagedBassPlayer(HttpClient httpClient, ProgramSettings settings, ILogger logger)
@@ -82,11 +82,11 @@ namespace SoundMist.Models
             _timeUpdateTimer = new(250);
             _timeUpdateTimer.Elapsed += _timeUpdateTimer_Elapsed;
 
-            _trackObserver = new(100);
-            _trackObserver.Elapsed += async (s, e) => await _trackObserver_Elapsed();
-            _trackObserver.Start();
-
-            ErrorCallback += m => logger.Error(m);
+            ErrorCallback += m =>
+            {
+                NotificationManager.Show(new Notification("Player error", m, NotificationType.Error, TimeSpan.Zero));
+                logger.Error(m);
+            };
 
             InterceptKeys.PlayPausedTriggered += PlayPauseTriggered;
             InterceptKeys.PrevTrackTriggered += () => Task.Run(async () => await PlayPrev());
@@ -99,15 +99,6 @@ namespace SoundMist.Models
         {
             if (_musicChannel != 0)
                 Bass.ChannelSetAttribute(_musicChannel, ChannelAttribute.Volume, Math.Clamp(value, 0, 1));
-        }
-
-        private async Task _trackObserver_Elapsed()
-        {
-            if (_musicChannel == 0 || !_playing)
-                return;
-
-            if (Bass.ChannelIsActive(_musicChannel) == PlaybackState.Stopped)
-                await PlayNext();
         }
 
         public void SetPosition(double value)
@@ -298,11 +289,18 @@ namespace SoundMist.Models
                 PlayStateUpdated?.Invoke(PlayState.Error, $"Sound library failed loading track: {Bass.LastError}");
                 return false;
             }
+            Bass.ChannelSetSync(_musicChannel, SyncFlags.End, 0, TrackEnded);
 
             PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
             TrackChanged?.Invoke(track);
             _settings.LastTrackId = track.Id;
             return true;
+        }
+
+        void TrackEnded(int handle, int channel, int data, nint user)
+        {
+            Bass.StreamFree(channel);
+            Task.Run(PlayNext);
         }
 
         private async Task<byte[]?> FullyDownloadTrack(Track track, CancellationToken token)

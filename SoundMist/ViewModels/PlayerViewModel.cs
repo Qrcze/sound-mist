@@ -80,11 +80,6 @@ public partial class PlayerViewModel : ViewModelBase
         _musicPlayer.TrackChanging += TrackChanging;
         _musicPlayer.TrackTimeUpdated += UpdateTime;
         _musicPlayer.PlayStateUpdated += PlayStateUpdated;
-        _musicPlayer.ErrorCallback += m =>
-        {
-            NotificationManager.Show(new Notification("Player error", m, NotificationType.Error, TimeSpan.Zero));
-            _logger.Error(m);
-        };
         _musicPlayer.TracksPlaylist.ListChanged += TracksPlaylist_ListChanged;
 
         PlayPauseCommand = new AsyncRelayCommand(PlayPause);
@@ -100,6 +95,7 @@ public partial class PlayerViewModel : ViewModelBase
         if (_musicPlayer.CurrentTrack != null)
         {
             TrackChanging(_musicPlayer.CurrentTrack);
+            TracksQueue.Add(_musicPlayer.CurrentTrack);
             if (_musicPlayer.PlayerReady)
                 PlayStateUpdated(PlayState.Loaded, string.Empty);
         }
