@@ -28,7 +28,10 @@ namespace SoundMist.ViewModels
         public IAsyncRelayCommand AppendToQueueCommand { get; }
         public IAsyncRelayCommand PlayStationCommand { get; }
         public IAsyncRelayCommand DownloadCommand { get; }
+        public IAsyncRelayCommand RefreshListCommand { get; }
+        public IRelayCommand ClearFilterCommand { get; }
 
+        private readonly string _baseHref;
         [ObservableProperty] private string _tracksFilter = string.Empty;
         [ObservableProperty] private Track? _selectedTrack;
 
@@ -58,12 +61,28 @@ namespace SoundMist.ViewModels
             AppendToQueueCommand = new AsyncRelayCommand(AppendToQueue);
             PlayStationCommand = new AsyncRelayCommand(PlayStation);
             DownloadCommand = new AsyncRelayCommand(Download);
+            RefreshListCommand = new AsyncRelayCommand(RefreshList);
+            ClearFilterCommand = new RelayCommand(ClearFilter);
 
-            _nextHref = $"users/{_settings.UserId}/track_likes?client_id={_settings.ClientId}&limit=24&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            _baseHref = $"users/{_settings.UserId}/track_likes?client_id={_settings.ClientId}&limit=24&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            _nextHref = _baseHref;
+        }
+
+        private void ClearFilter()
+        {
+            TracksFilter = string.Empty;
         }
 
         partial void OnTracksFilterChanged(string value)
         {
+            if (string.IsNullOrEmpty(value))
+            {
+                TracksList.Clear();
+                foreach (var track in _fullTracksList)
+                    TracksList.Add(track);
+                return;
+            }
+
             _filterDelay.Stop();
             _filterDelay.Start();
         }
@@ -159,6 +178,13 @@ namespace SoundMist.ViewModels
                 return;
 
             await _musicPlayer.LoadNewQueue([SelectedTrack]);
+        }
+
+        private async Task RefreshList()
+        {
+            TracksList.Clear();
+            _nextHref = _baseHref;
+            await DownloadTrackList();
         }
 
         private async Task Download()

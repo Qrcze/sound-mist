@@ -145,7 +145,13 @@
 
 	<Grid RowDefinitions="auto,auto,*" ColumnDefinitions="*,auto">
 		<TextBox x:Name="SearchBox" Text="{Binding SearchFilter}" Watermark="Search..." Margin="5"
-				 KeyDown="TextBox_KeyDown" />
+				 KeyDown="TextBox_KeyDown" >
+			<TextBox.InnerRightContent>
+				<Button IsVisible="{Binding SearchFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Command="{Binding ClearFilterCommand}" Classes="textbox-clear">
+					<Image Source="/Assets/close.png" />
+				</Button>
+			</TextBox.InnerRightContent>
+		</TextBox>
 		<ComboBox Grid.Column="1" Margin="5" SelectedValue="{Binding SelectedFilter}" ItemsSource="{Binding Filters}">
 		</ComboBox>
 

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using System;
@@ -22,7 +23,7 @@ public partial class SearchViewModel : ViewModelBase
     [ObservableProperty] private string _selectedFilter = "All";
     [ObservableProperty] private bool _showQueryResults;
     [ObservableProperty] private object? _selectedItem;
-    [ObservableProperty] private string _resultsMessage;
+    [ObservableProperty] private string _resultsMessage = string.Empty;
 
     private string? _nextHref;
 
@@ -41,6 +42,8 @@ public partial class SearchViewModel : ViewModelBase
     private readonly ILogger _logger;
     private readonly JsonSerializerOptions _convertJsonScObjects = new() { Converters = { new ScObjectConverter() } };
 
+    public IRelayCommand ClearFilterCommand { get; }
+
     public SearchViewModel(HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
     {
         _querySearchDelay = new(800) { AutoReset = false };
@@ -50,7 +53,17 @@ public partial class SearchViewModel : ViewModelBase
         _settings = settings;
         _musicPlayer = musicPlayer;
         _logger = logger;
+
+        ClearFilterCommand = new RelayCommand(ClearFilter);
     }
+
+    private void ClearFilter()
+    {
+        SearchFilter = string.Empty;
+        _querySearchDelay.Stop();
+        ShowQueryResults = false;
+    }
+
 
     partial void OnSelectedFilterChanged(string? oldValue, string newValue)
     {

@@ -8,9 +8,18 @@
 			 x:DataType="vm:LikedLibraryViewModel"
              x:Class="SoundMist.Views.LikedLibraryView">
 	<Grid RowDefinitions="auto,*">
-		<Grid Grid.Row="0">
-			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5" />
-		</Grid>
+		<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
+			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5" >
+				<TextBox.InnerRightContent>
+					<Button IsVisible="{Binding TracksFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Command="{Binding ClearFilterCommand}" Classes="textbox-clear">
+						<Image Source="/Assets/close.png" />
+					</Button>
+				</TextBox.InnerRightContent>
+			</TextBox>
+			<Button ToolTip.Tip="Refresh List" Command="{Binding RefreshListCommand}" Padding="0" Margin="0 0 5 0" Width="30" >
+				<Image Source="/Assets/refresh.png" />
+			</Button>
+		</StackPanel>
 		<ListBox Grid.Row="1" AutoScrollToSelectedItem="True" x:Name="LikedList"
 				 ItemsSource="{Binding TracksList}" SelectedItem="{Binding SelectedTrack}"
 				 DoubleTapped="ListBox_DoubleTapped">
