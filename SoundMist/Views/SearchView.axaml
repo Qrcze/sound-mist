@@ -157,7 +157,7 @@
 
 		<Popup IsLightDismissEnabled="True" x:Name="SearchPopup" PlacementTarget="{Binding #SearchBox}" PlacementAnchor="Bottom" IsOpen="{Binding ShowQueryResults}">
 			<Border BorderThickness="1" BorderBrush="Gray" Background="DimGray" CornerRadius="5" Padding="8 5">
-				<ListBox x:Name="QueriesFlyout" Grid.Row="1" ItemsSource="{Binding QueryResults}" Background="DimGray">
+				<ListBox x:Name="QueriesFlyout" Grid.Row="1" ItemsSource="{Binding QueryResults}" Background="DimGray" Tapped="UseQueryResult">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding Output}" Background="Transparent" Foreground="White" />

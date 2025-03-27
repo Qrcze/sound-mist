@@ -4,6 +4,7 @@ using Avalonia.VisualTree;
 using SoundMist.Models;
 using SoundMist.ViewModels;
 using System;
+using static SoundMist.ViewModels.SearchViewModel;
 
 namespace SoundMist.Views;
 
@@ -84,5 +85,15 @@ public partial class SearchView : UserControl
         var item = c.FindLogicalAncestorOfType<ListBoxItem>();
         if (item?.DataContext is Playlist playlist)
             _vm.OpenAboutPage(playlist.User);
+    }
+
+    private async void UseQueryResult(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (QueriesFlyout.SelectedItem is not SearchQuery query)
+            return;
+
+        _vm.SearchFilter = query.Output;
+        SearchBox.CaretIndex = SearchBox.Text?.Length ?? 0;
+        await _vm.RunSearch();
     }
 }
