@@ -5,57 +5,67 @@
              xmlns:vm="clr-namespace:SoundMist.ViewModels"
              xmlns:controls="clr-namespace:SoundMist.Controls"
 			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+			 xmlns:li="using:LoadingIndicators.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SoundMist.Views.TrackInfoView"
 			 x:DataType="vm:TrackInfoViewModel">
-	<ScrollViewer Padding="10">
-		<StackPanel>
-			<Grid>
-				<Image asyncImageLoader:ImageLoader.Source="{Binding Track.BackgroundVisualUrl}" Grid.ColumnSpan="3" Grid.RowSpan="2" />
+	<Grid>
+		<ScrollViewer Padding="10">
+			<StackPanel>
+				<Grid>
+					<Image asyncImageLoader:ImageLoader.Source="{Binding Track.BackgroundVisualUrl}" Grid.ColumnSpan="3" Grid.RowSpan="2" />
 
-				<Grid ColumnDefinitions="100 * auto auto" RowDefinitions="auto,auto" Margin="5">
+					<Grid ColumnDefinitions="100 * auto auto" RowDefinitions="auto,auto" Margin="5">
 
-					<Button Width="100" Height="100" CornerRadius="100" Grid.RowSpan="2" VerticalAlignment="Top" Command="{Binding PlayPauseCommand}">
-						<Grid>
-							<Image Source="/Assets/play.png" IsVisible="{Binding !IsPlaying}" />
-							<Image Source="/Assets/pause.png" IsVisible="{Binding IsPlaying}" />
-						</Grid>
-					</Button>
+						<Button Width="100" Height="100" CornerRadius="100" Grid.RowSpan="2" VerticalAlignment="Top" Command="{Binding PlayPauseCommand}">
+							<Grid>
+								<Image Source="/Assets/play.png" IsVisible="{Binding !IsPlaying}" />
+								<Image Source="/Assets/pause.png" IsVisible="{Binding IsPlaying}" />
+							</Grid>
+						</Button>
 
-					<StackPanel Grid.Column="1" Margin="5">
-						<TextBlock Text="{Binding Track.Title}" TextWrapping="Wrap" FontSize="25" Background="Black" HorizontalAlignment="Left" Foreground="White" Margin="2" Padding="5" />
-						<TextBlock Text="{Binding Track.ArtistName}" TextWrapping="Wrap" FontSize="15" Background="Black" HorizontalAlignment="Left" Foreground="GhostWhite" Margin="2" Padding="5" />
-					</StackPanel>
+						<StackPanel Grid.Column="1" Margin="5">
+							<TextBlock Text="{Binding Track.Title}" TextWrapping="Wrap" FontSize="25" Background="Black" HorizontalAlignment="Left" Foreground="White" Margin="2" Padding="5" />
+							<TextBlock Text="{Binding Track.ArtistName}" TextWrapping="Wrap" FontSize="15" Background="Black" HorizontalAlignment="Left" Foreground="GhostWhite" Margin="2" Padding="5" />
+						</StackPanel>
 
-					<StackPanel Grid.Column="2" Margin="5">
-						<TextBlock Margin="3" Text="{Binding Track.CreatedAgo}" HorizontalAlignment="Right" />
-						<Border HorizontalAlignment="Right" Padding="5 3" Margin="3" IsVisible="{Binding Track.HasGenre}" Background="Gray" CornerRadius="10">
-							<StackPanel Orientation="Horizontal">
-								<TextBlock Text="#" Foreground="White" />
-								<TextBlock Text="{Binding Track.Genre}" Foreground="White" />
-							</StackPanel>
-						</Border>
-					</StackPanel>
+						<StackPanel Grid.Column="2" Margin="5">
+							<TextBlock Margin="3" Text="{Binding Track.CreatedAgo}" HorizontalAlignment="Right" />
+							<Border HorizontalAlignment="Right" Padding="5 3" Margin="3" IsVisible="{Binding Track.HasGenre}" Background="Gray" CornerRadius="10">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="#" Foreground="White" />
+									<TextBlock Text="{Binding Track.Genre}" Foreground="White" />
+								</StackPanel>
+							</Border>
+						</StackPanel>
 
-					<Image Grid.RowSpan="2" Grid.Column="3" IsVisible="{Binding !Track.HasBackgroundVisuals}" asyncImageLoader:ImageLoader.Source="{Binding Track.ArtworkUrlOriginal}" Width="350" Height="350" />
+						<Image Grid.RowSpan="2" Grid.Column="3" IsVisible="{Binding !Track.HasBackgroundVisuals}" asyncImageLoader:ImageLoader.Source="{Binding Track.ArtworkUrlOriginal}" Width="350" Height="350" />
 
-					<!-- wave progress bar -->
-					<!--<TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="Temp progress bar" />-->
-					<controls:WaveSlider Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Maximum="{Binding Track.FullDuration}" Value="{Binding Position}" Samples="{Binding Samples}" IsEnabled="{Binding IsCurrentTrack}" />
+						<!-- wave progress bar -->
+						<!--<TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="Temp progress bar" />-->
+						<controls:WaveSlider Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Bottom" Maximum="{Binding Track.FullDuration}" Value="{Binding Position}" Samples="{Binding Samples}" IsEnabled="{Binding IsCurrentTrack}" />
+					</Grid>
 				</Grid>
-			</Grid>
 
-			<StackPanel Orientation="Horizontal">
-				<Button Padding="0" Margin="5" Command="{Binding LikeTrackCommand}">
-					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/favorite.png" Width="24" />
-						<TextBlock Text="Like" VerticalAlignment="Center" Margin="5" />
-					</StackPanel>
-				</Button>
-				<Button Content="Open in browser" Command="{Binding OpenUrlInBrowserCommand}" />
+				<StackPanel Orientation="Horizontal">
+					<ToggleButton Padding="0" Margin="5" Command="{Binding LikeTrackCommand}" IsChecked="{Binding TrackLiked}">
+						<Grid>
+							<StackPanel Orientation="Horizontal" >
+								<Image IsVisible="{Binding TrackLiked}" Source="/Assets/favorite-filled.png" Width="24" />
+								<Image IsVisible="{Binding !TrackLiked}" Source="/Assets/favorite.png" Width="24" />
+								<TextBlock IsVisible="{Binding TrackLiked}" Text="Liked" VerticalAlignment="Center" Margin="5" />
+								<TextBlock IsVisible="{Binding !TrackLiked}" Text="Like" VerticalAlignment="Center" Margin="5" />
+							</StackPanel>
+						</Grid>
+					</ToggleButton>
+					<Button Content="Open in browser" Command="{Binding OpenUrlInBrowserCommand}" />
+				</StackPanel>
+
+				<TextBox Margin="5" IsReadOnly="True" Text="{Binding Track.Description}" TextWrapping="Wrap" />
 			</StackPanel>
-
-			<TextBox Margin="5" IsReadOnly="True" Text="{Binding Track.Description}" TextWrapping="Wrap" />
-		</StackPanel>
-	</ScrollViewer>
+		</ScrollViewer>
+		<Panel Background="#6333" IsVisible="{Binding LoadingView}" >
+			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />
+		</Panel>
+	</Grid>
 </UserControl>

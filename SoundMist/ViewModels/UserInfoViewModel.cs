@@ -44,18 +44,18 @@ public partial class UserInfoViewModel : ViewModelBase
     {
         User = null;
 
-        var userBasic = obj as User;
-        if (userBasic is null)
+        if (obj is not User userWithIdOnly)
             return;
 
         _tokenSource?.Cancel();
         _tokenSource = new();
+        var token = _tokenSource.Token;
 
         Task.Run(async () =>
         {
             try
             {
-                User = await SoundCloudQueries.GetUserInfo(_httpClient, _settings, userBasic.Id, _tokenSource.Token);
+                User = await SoundCloudQueries.GetUserInfo(_httpClient, _settings, userWithIdOnly.Id, token);
             }
             catch (TaskCanceledException)
             {
@@ -71,6 +71,6 @@ public partial class UserInfoViewModel : ViewModelBase
                 _logger.Error($"Exception getting full info for the user: {ex.Message}");
                 return;
             }
-        }, _tokenSource.Token);
+        }, token);
     }
 }

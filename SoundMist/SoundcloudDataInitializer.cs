@@ -15,13 +15,15 @@ namespace SoundMist;
 public partial class SoundcloudDataInitializer
 {
     private readonly ProgramSettings _settings;
+    private readonly AuthorizedHttpClient _authorizedHttpClient;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly MainWindowViewModel _mainWindowViewModel;
 
-    public SoundcloudDataInitializer(ProgramSettings settings, HttpClient httpClient, ILogger logger, MainWindowViewModel mainWindowViewModel)
+    public SoundcloudDataInitializer(ProgramSettings settings, AuthorizedHttpClient authorizedHttpClient, HttpClient httpClient, ILogger logger, MainWindowViewModel mainWindowViewModel)
     {
         _settings = settings;
+        _authorizedHttpClient = authorizedHttpClient;
         _httpClient = httpClient;
         _logger = logger;
         _mainWindowViewModel = mainWindowViewModel;
@@ -53,8 +55,27 @@ public partial class SoundcloudDataInitializer
                 return;
             }
 
-            await LoadView();
-            await LoadLastTrack();
+            try
+            {
+                await LoadView();
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal($"Failed loading the view: {ex.Message}");
+                _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
+                return;
+            }
+
+            try
+            {
+                await LoadLastTrack();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed loading last track with id {_settings.LastTrackId}: {ex.Message}");
+                NotificationManager.Show(new("Initialization failure", $"Couldn't load last track with id: {_settings.LastTrackId}."));
+                return;
+            }
         });
     }
 
@@ -72,11 +93,6 @@ public partial class SoundcloudDataInitializer
 
     public async Task<(string clientId, string? userId)> GetClientAndAnonymousUserIds()
     {
-        //todo try validating the client id somehow? possibly with http send OPTION to somewhere?
-        //if (!string.IsNullOrEmpty(_settings.ClientId))
-        //{
-        //}
-
         using var response = await _httpClient.GetAsync("https://soundcloud.com");
         response.EnsureSuccessStatusCode();
 
@@ -132,9 +148,9 @@ public partial class SoundcloudDataInitializer
         else
         {
             //check if token is still valid
-            _httpClient.DefaultRequestHeaders.Authorization = new("OAuth", _settings.AuthToken);
+            _authorizedHttpClient.DefaultRequestHeaders.Authorization = new("OAuth", _settings.AuthToken);
 
-            using var response = await _httpClient.GetAsync("me");
+            using var response = await _authorizedHttpClient.GetAsync("me");
             if (response.IsSuccessStatusCode)
             {
                 var user = await response.Content.ReadFromJsonAsync<User>();
@@ -145,7 +161,7 @@ public partial class SoundcloudDataInitializer
             }
         }
 
-        _httpClient.DefaultRequestHeaders.Authorization = null;
+        _authorizedHttpClient.DefaultRequestHeaders.Authorization = null;
         _logger.Info("The previously given authorization token expired");
         _mainWindowViewModel.OpenLoginView();
     }

@@ -44,7 +44,7 @@ namespace SoundMist.Models
 
         [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
 
-        [JsonIgnore] public string ArtworkOrFirstTrackArtwork => ArtworkUrl ?? Tracks[0].ArtworkOrAvatarUrl;
+        [JsonIgnore] public string? ArtworkOrFirstTrackArtwork => ArtworkUrl ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }

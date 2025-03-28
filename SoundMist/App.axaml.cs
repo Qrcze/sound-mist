@@ -49,6 +49,7 @@ public partial class App : Application
 
         var initializer = new SoundcloudDataInitializer(
             services.GetRequiredService<ProgramSettings>(),
+            services.GetRequiredService<AuthorizedHttpClient>(),
             services.GetRequiredService<HttpClient>(),
             services.GetRequiredService<ILogger>(),
             services.GetRequiredService<MainWindowViewModel>()

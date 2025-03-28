@@ -36,12 +36,12 @@ namespace SoundMist.Helpers
             return fullTracks;
         }
 
-        public static async Task<WaveformData?> GetTrackWaveform(HttpClient httpClient, string waveformUrl)
+        public static async Task<WaveformData?> GetTrackWaveform(HttpClient httpClient, string waveformUrl, CancellationToken token)
         {
-            using var response = await httpClient.GetAsync(waveformUrl);
+            using var response = await httpClient.GetAsync(waveformUrl, token);
             response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadFromJsonAsync<WaveformData>();
+            return await response.Content.ReadFromJsonAsync<WaveformData>(token);
         }
 
         internal static async Task<User?> GetUserInfo(HttpClient httpClient, ProgramSettings settings, int userId, CancellationToken token)
@@ -50,6 +50,26 @@ namespace SoundMist.Helpers
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<User>(token);
+        }
+
+        public static async Task<(IEnumerable<int>? ids, string message)> GetUsersLikedTracksIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
+        {
+            if (!httpClient.IsAuthorized)
+                return (null, "User not logged-in");
+
+            try
+            {
+                using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/me/track_likes/ids?limit=200&client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+                response.EnsureSuccessStatusCode();
+
+                var c = await response.Content.ReadFromJsonAsync<TracksIdsCollection>(token);
+
+                return (c!.Collection, "OK");
+            }
+            catch (HttpRequestException ex)
+            {
+                return (null, $"Failed tracks ids get request: {ex.Message}");
+            }
         }
     }
 }

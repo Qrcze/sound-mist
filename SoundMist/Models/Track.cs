@@ -17,6 +17,18 @@ namespace SoundMist.Models
         public string? QueryUrn { get; set; }
     }
 
+    public class TracksIdsCollection
+    {
+        [JsonPropertyName("collection")]
+        public List<int> Collection { get; set; } = [];
+
+        [JsonPropertyName("next_href")]
+        public string? NextHref { get; set; }
+
+        [JsonPropertyName("query_urn")]
+        public string? QueryUrn { get; set; }
+    }
+
     public class Track
     {
         public static Track CreatePlaceholderTrack(string author = "Empty", string title = "Track", string imageUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg")

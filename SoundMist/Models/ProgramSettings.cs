@@ -53,7 +53,7 @@ namespace SoundMist.Models
             return settings;
         }
 
-        [JsonIgnore] public string? ClientId { get; set; }
+        [JsonIgnore] public string ClientId { get; set; } = string.Empty;
 
         /// <summary> Used in some http requests, as a way to identify the anonymous user; different from actual UserId, which is stored in SoundCloud database </summary>
         [JsonIgnore] public string? AnonymousUserId { get; set; }
