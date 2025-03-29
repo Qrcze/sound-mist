@@ -21,9 +21,6 @@ An unofficial desktop SoundCloud player for Windows and Linux, built from the gr
 - Private bookmarks/likes list stored on the local machine.
 - More integration with the system (notifications, lock-screen info/controls).
 
-## Known issues:
-- Audio stops working, when the used audio device disconnects from the PC.
-
 ---
 ![](/images/1.png)
 ![](/images/2.png)
