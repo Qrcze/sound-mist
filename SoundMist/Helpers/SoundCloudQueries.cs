@@ -13,12 +13,25 @@ namespace SoundMist.Helpers
     {
         private const int TracksQueryLimit = 50;
 
-        public static async Task<List<Track>> DownloadTracksDataById(HttpClient httpClient, string clientId, int appVersion, IEnumerable<int> tracksIds)
+        /// <inheritdoc cref="GetTracksById(HttpClient, string, int, IEnumerable{int}, CancellationToken)"/>
+        public static async Task<List<Track>> GetTracksById(HttpClient httpClient, string clientId, int appVersion, IEnumerable<int> tracksIds)
+            => await GetTracksById(httpClient, clientId, appVersion, tracksIds, CancellationToken.None);
+
+
+        /// <summary>
+        /// Will return a list of tracks with their full info. It divides each query into chunks of 50 tracks per request, so SC doesn't complain.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException" />
+        /// <exception cref="TaskCanceledException" />
+        public static async Task<List<Track>> GetTracksById(HttpClient httpClient, string clientId, int appVersion, IEnumerable<int> tracksIds, CancellationToken token)
         {
             int skip = 0;
             var fullTracks = new List<Track>();
             while (true)
             {
+                token.ThrowIfCancellationRequested();
+
                 string Ids = string.Join(',', tracksIds.Skip(skip).Take(TracksQueryLimit));
                 if (string.IsNullOrEmpty(Ids))
                     break;
@@ -26,10 +39,10 @@ namespace SoundMist.Helpers
                 skip += 50;
 
                 string url = $"https://api-v2.soundcloud.com/tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={clientId}&app_version={appVersion}&app_locale=en";
-                using var response = await httpClient.GetAsync(url);
+                using var response = await httpClient.GetAsync(url, token);
                 response.EnsureSuccessStatusCode();
 
-                var list = await response.Content.ReadFromJsonAsync<List<Track>>();
+                var list = await response.Content.ReadFromJsonAsync<List<Track>>(token);
                 fullTracks.AddRange(list!);
             }
 
@@ -52,7 +65,7 @@ namespace SoundMist.Helpers
             return await response.Content.ReadFromJsonAsync<User>(token);
         }
 
-        public static async Task<(IEnumerable<int>? ids, string message)> GetUsersLikedTracksIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
+        public static async Task<(List<int>? ids, string message)> GetUsersLikedTracksIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
         {
             if (!httpClient.IsAuthorized)
                 return (null, "User not logged-in");
@@ -68,8 +81,49 @@ namespace SoundMist.Helpers
             }
             catch (HttpRequestException ex)
             {
-                return (null, $"Failed tracks ids get request: {ex.Message}");
+                return (null, $"Failed get request: {ex.Message}");
             }
         }
+
+        public static async Task<(List<int>? ids, string message)> GetUsersLikedUsersIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
+        {
+            if (!httpClient.IsAuthorized)
+                return (null, "User not logged-in");
+
+            try
+            {
+                using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/me/user_likes/ids?limit=5000&client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+                response.EnsureSuccessStatusCode();
+
+                var c = await response.Content.ReadFromJsonAsync<TracksIdsCollection>(token);
+
+                return (c!.Collection, "OK");
+            }
+            catch (HttpRequestException ex)
+            {
+                return (null, $"Failed get request: {ex.Message}");
+            }
+        }
+        
+        public static async Task<(List<int>? ids, string message)> GetUsersLikedPlaylistsIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
+        {
+            if (!httpClient.IsAuthorized)
+                return (null, "User not logged-in");
+
+            try
+            {
+                using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/me/playlist_likes/ids?limit=5000&client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+                response.EnsureSuccessStatusCode();
+
+                var c = await response.Content.ReadFromJsonAsync<TracksIdsCollection>(token);
+
+                return (c!.Collection, "OK");
+            }
+            catch (HttpRequestException ex)
+            {
+                return (null, $"Failed get request: {ex.Message}");
+            }
+        }
+
     }
 }

@@ -27,5 +27,6 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<TrackInfoViewModel>();
         collection.AddTransient<SettingsViewModel>();
         collection.AddTransient<UserInfoViewModel>();
+        collection.AddTransient<PlaylistInfoViewModel>();
     }
 }

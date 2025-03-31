@@ -171,7 +171,7 @@ public partial class SoundcloudDataInitializer
         if (_settings.LastTrackId.HasValue)
         {
             var musicPlayer = App.GetService<IMusicPlayer>();
-            var lastTrack = (await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, [_settings.LastTrackId.Value]))
+            var lastTrack = (await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, [_settings.LastTrackId.Value]))
                 .Single();
             await musicPlayer.LoadNewQueue([lastTrack], null, _settings.StartPlayingOnLaunch);
         }

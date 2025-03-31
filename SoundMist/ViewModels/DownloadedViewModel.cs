@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SoundMist.ViewModels;
@@ -72,7 +73,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             }
         }
 
-        var tracksData = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, ids.Select(x => x.id));
+        var tracksData = await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, ids.Select(x => x.id));
 
         foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3"))
         {

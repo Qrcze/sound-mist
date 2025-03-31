@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:SoundMist.ViewModels"
+			 xmlns:li="using:LoadingIndicators.Avalonia"
+			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SoundMist.Views.PlaylistInfoView"
+			 x:DataType="vm:PlaylistInfoViewModel">
+	<Grid>
+		<Grid ColumnDefinitions="*,auto" RowDefinitions="auto,*">
+			<!-- playlist info -->
+			<Grid Margin="10" ColumnDefinitions="*,*" RowDefinitions="*,*">
+				<Grid HorizontalAlignment="Center" Width="110" Height="110">
+					<Ellipse Fill="DimGray" />
+					<StackPanel VerticalAlignment="Center">
+						<TextBlock Text="{Binding Playlist.TrackCount}" HorizontalAlignment="Center" FontSize="28" Foreground="White" />
+						<TextBlock Text="Tracks" HorizontalAlignment="Center" FontSize="12" Foreground="White" />
+						<TextBlock Text="{Binding Playlist.DurationFormatted}" HorizontalAlignment="Center" FontSize="13" Opacity="0.75" />
+					</StackPanel>
+				</Grid>
+
+				<Image Width="150" Grid.RowSpan="2" Grid.Column="1" asyncImageLoader:ImageLoader.Source="{Binding Playlist.ArtworkOrFirstTrackArtworkOriginal}" />
+
+				<StackPanel Grid.Row="1" Orientation="Horizontal">
+					<Button Content="like" />
+					<Button Content="Open In Browser" Command="{Binding OpenPlaylistInBrowserCommand}" Margin="5 0" />
+				</StackPanel>
+			</Grid>
+
+			<!-- playlist tracks -->
+			<ListBox Grid.Row="1" ItemsSource="{Binding Tracks}" SelectedItem="{Binding SelectedTrack}" DoubleTapped="ListBox_DoubleTapped">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Grid ColumnDefinitions="*,auto">
+							<StackPanel Orientation="Horizontal">
+								<Image asyncImageLoader:ImageLoader.Source="{Binding ArtworkUrlSmall}" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding ArtistName}" Foreground="Gray" Margin="5 0 0 0" />
+								<TextBlock VerticalAlignment="Center" Text="-" Foreground="Gray" Margin="5 0" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding Title}" />
+							</StackPanel>
+
+							<StackPanel Grid.Column="1" Orientation="Horizontal">
+								<Image Source="/Assets/play.png" Width="24" Height="24" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding PlaybacksFormatted}" />
+							</StackPanel>
+						</Grid>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+
+			<!-- selected track details -->
+			<StackPanel Width="350" Grid.Column="1" IsVisible="{Binding SelectedTrack, Converter={x:Static ObjectConverters.IsNotNull}}">
+				<Grid ColumnDefinitions="*,auto">
+					<StackPanel>
+						<TextBlock Text="{Binding SelectedTrack.Title}" TextWrapping="Wrap" FontSize="18"/>
+						<TextBlock Text="{Binding SelectedTrack.ArtistName}" TextWrapping="Wrap" FontSize="15" Opacity="0.6"/>
+					</StackPanel>
+					<Image Grid.Column="1" asyncImageLoader:ImageLoader.Source="{Binding SelectedTrack.ArtworkOrAvatarUrl}" MaxWidth="100" />
+				</Grid>
+				<StackPanel Orientation="Horizontal">
+					<Button Padding="0">
+						<StackPanel Orientation="Horizontal">
+							<Image Source="/Assets/favorite.png" Width="24" />
+							<TextBlock Text="Like" VerticalAlignment="Center" Margin="5" />
+						</StackPanel>
+					</Button>
+					<Button Content="Open In Browser" Command="{Binding OpenTrackInBrowserCommand}" Margin="5 0" />
+				</StackPanel>
+				
+				<Separator BorderThickness="1" />
+				
+				<Button Content="About Track" Command="{Binding OpenTrackInfoCommand}" />
+				<Button Content="About User" Command="{Binding OpenUserInfoCommand}" />
+			</StackPanel>
+		</Grid>
+		<Panel Background="#9333" IsVisible="{Binding LoadingView}">
+			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />
+		</Panel>
+	</Grid>
+</UserControl>

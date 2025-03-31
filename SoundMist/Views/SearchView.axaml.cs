@@ -96,4 +96,12 @@ public partial class SearchView : UserControl
         SearchBox.CaretIndex = SearchBox.Text?.Length ?? 0;
         await _vm.RunSearch();
     }
+
+    private void Playlist_ViewMore(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var c = sender as Control;
+        var item = c.FindLogicalAncestorOfType<ListBoxItem>()?.DataContext as Playlist ?? throw new InvalidCastException($"expected a {nameof(Playlist)} in the ListBoxItem's DataContext");
+
+        Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, item);
+    }
 }

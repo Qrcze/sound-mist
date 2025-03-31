@@ -95,7 +95,7 @@ namespace SCPlayerTests
             var logger = new DummyLogger();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null, musicPlayer, logger);
+            var tv = new TrackInfoViewModel(null, null, settings, musicPlayer, logger);
 
             var track = new Track() { Id = 5 };
 
@@ -184,16 +184,16 @@ namespace SCPlayerTests
             ProgramSettings settings = new();
             var logger = new DummyLogger();
 
-            MusicPlayer mp = new(client, settings, logger);
-            mp.PlayStateChanged += (s) =>
+            ManagedBassPlayer mp = new(client, settings, logger);
+            mp.ErrorCallback += (s) =>
             {
-                Assert.False(s == PlayState.Error, $"Player triggered an error. Last message: {logger.LastMessage}");
+                Assert.Fail($"Player triggered an error. Last message: {logger.LastMessage}");
             };
 
             await mp.AddToQueue(mockTrack1);
             Assert.True(mp.CurrentTrack == null, "Queue shouldn't have changed the track from simply adding to it");
 
-            await mp.AddToQueue(mockTrack2, null, true);
+            await mp.AddToQueue(mockTrack2, null);
             Assert.True(mp.CurrentTrack == mockTrack1, "Player didn't change changed track after appending to the queue with preload on");
             await mp.AddToQueue(mockTrack3);
 

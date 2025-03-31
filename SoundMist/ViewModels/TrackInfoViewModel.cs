@@ -121,6 +121,8 @@ public partial class TrackInfoViewModel : ViewModelBase
         }
         else
         {
+            TrackLiked = !TrackLiked; //undo toggle
+
             string title = TrackLiked ? "Like Failure" : "Dislike Failure";
             string notifMessage = TrackLiked ? $"Failed liking the track {Track.Title}:\n{message}"
                 : $"Failed removing the track from likes {Track.Title}:\n{message}";

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoundMist.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -42,9 +43,12 @@ namespace SoundMist.Models
             }
         }
 
+        [JsonIgnore] public string DurationFormatted => Duration.HasValue ? StringHelpers.DurationFormatted(Duration.Value) : string.Empty;
+
         [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
 
         [JsonIgnore] public string? ArtworkOrFirstTrackArtwork => ArtworkUrl ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
+        [JsonIgnore] public string? ArtworkOrFirstTrackArtworkOriginal => ArtworkUrl?.Replace("large", "original") ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }
@@ -68,7 +72,7 @@ namespace SoundMist.Models
         public string? Genre { get; set; }
 
         [JsonPropertyName("id")]
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         [JsonPropertyName("is_album")]
         public bool IsAlbum { get; set; }

@@ -7,5 +7,6 @@
         Downloaded,
         TrackInfo,
         UserInfo,
+        PlaylistInfo,
     }
 }

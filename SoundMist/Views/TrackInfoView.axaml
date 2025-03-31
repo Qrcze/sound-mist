@@ -26,7 +26,7 @@
 
 						<StackPanel Grid.Column="1" Margin="5">
 							<TextBlock Text="{Binding Track.Title}" TextWrapping="Wrap" FontSize="25" Background="Black" HorizontalAlignment="Left" Foreground="White" Margin="2" Padding="5" />
-							<TextBlock Text="{Binding Track.ArtistName}" TextWrapping="Wrap" FontSize="15" Background="Black" HorizontalAlignment="Left" Foreground="GhostWhite" Margin="2" Padding="5" />
+							<TextBlock Text="{Binding Track.ArtistName}" TextWrapping="Wrap" FontSize="15" Background="Black" HorizontalAlignment="Left" Foreground="LightGray" Margin="2" Padding="5" />
 						</StackPanel>
 
 						<StackPanel Grid.Column="2" Margin="5">
@@ -64,7 +64,7 @@
 				<TextBox Margin="5" IsReadOnly="True" Text="{Binding Track.Description}" TextWrapping="Wrap" />
 			</StackPanel>
 		</ScrollViewer>
-		<Panel Background="#6333" IsVisible="{Binding LoadingView}" >
+		<Panel Background="#9333" IsVisible="{Binding LoadingView}" >
 			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />
 		</Panel>
 	</Grid>

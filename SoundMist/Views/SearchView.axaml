@@ -115,7 +115,7 @@
 							</DataTemplate>
 						</ListBox.ItemTemplate>
 					</ListBox>
-					<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsVisible="{Binding HasMoreTracks}">
+					<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsVisible="{Binding HasMoreTracks}" Click="Playlist_ViewMore">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="View " />
 							<TextBlock Text="{Binding TrackCount}" />

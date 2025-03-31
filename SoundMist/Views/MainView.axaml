@@ -26,6 +26,9 @@
 			<TabItem Header="User Info" IsVisible="{Binding HasOpenedUserInfo}">
 				<views:UserInfoView />
 			</TabItem>
+			<TabItem Header="Playlist Info" IsVisible="{Binding HasOpenedPlaylistInfo}">
+				<views:PlaylistInfoView />
+			</TabItem>
 		</TabControl>
 		<views:PlayerView Grid.Row="1" />
 

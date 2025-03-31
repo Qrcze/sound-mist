@@ -64,7 +64,6 @@ public partial class SearchViewModel : ViewModelBase
         ShowQueryResults = false;
     }
 
-
     partial void OnSelectedFilterChanged(string? oldValue, string newValue)
     {
         _nextHref = null;
@@ -227,7 +226,8 @@ public partial class SearchViewModel : ViewModelBase
         else if (SelectedItem is Track track)
             await _musicPlayer.LoadNewQueue([track]);
         else if (SelectedItem is Playlist playlist)
-            await PlayFromPlaylist(playlist, 0);
+            Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, playlist);
+        //await PlayFromPlaylist(playlist, 0);
     }
 
     internal async Task PlayFromPlaylist(Playlist playlist, int selectedIndex)
@@ -237,8 +237,8 @@ public partial class SearchViewModel : ViewModelBase
         {
             try
             {
-                var trackIds = playlist.Tracks.Except(tracks).Select(x => x.Id);
-                var restOfTracks = await SoundCloudQueries.DownloadTracksDataById(_httpClient, _settings.ClientId, _settings.AppVersion, trackIds);
+                var trackIds = playlist.Tracks.Except(tracks).Where(x => x.User is null).Select(x => x.Id);
+                var restOfTracks = await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, trackIds);
                 if (restOfTracks != null && restOfTracks.Count != 0)
                     tracks = tracks.Concat(restOfTracks);
             }

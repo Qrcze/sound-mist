@@ -12,7 +12,7 @@ using System.Timers;
 
 namespace SoundMist.Models
 {
-    internal class ManagedBassPlayer : IMusicPlayer
+    public class ManagedBassPlayer : IMusicPlayer
     {
         public TracksPlaylist TracksPlaylist { get; } = new();
 

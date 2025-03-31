@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoundMist.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -47,55 +48,22 @@ namespace SoundMist.Models
         [JsonIgnore] public string ArtistName => PublisherMetadata?.Artist ?? User.Username;
         [JsonIgnore] public string LocalFilePath => $"{Globals.LocalDownloadsPath}/{FullLabel}.mp3"; //todo check for invalid characters in label
 
-        [JsonIgnore]
-        public string DurationFormatted
-        {
-            get
-            {
-                var time = TimeSpan.FromMilliseconds(FullDuration);
-                if (time.Hours > 0)
-                    return time.ToString(@"hh\:mm\:ss");
-                return time.ToString(@"mm\:ss");
-            }
-        }
+        [JsonIgnore] public string DurationFormatted => StringHelpers.DurationFormatted(FullDuration);
 
         [JsonIgnore] public string? ArtworkOrAvatarUrl => ArtworkUrl ?? User?.AvatarUrl;
+        [JsonIgnore] public string? ArtworkOrAvatarUrlOriginal => ArtworkUrl?.Replace("large", "original") ?? User?.AvatarUrl?.Replace("large", "original");
 
         [JsonIgnore] public string? ArtworkUrlSmall => ArtworkOrAvatarUrl?.Replace("large", "small");
-        [JsonIgnore] public string? ArtworkUrlOriginal => ArtworkOrAvatarUrl?.Replace("large", "original");
         [JsonIgnore] public string? ArtworkUrlLarge => ArtworkOrAvatarUrl;
+        [JsonIgnore] public string? ArtworkUrlOriginal => ArtworkOrAvatarUrl?.Replace("large", "original");
 
         [JsonIgnore]
-        public string CreatedAgo
-        {
-            get
-            {
-                DateTime diff = new(DateTime.Now.Ticks - CreatedLocalTime.Ticks);
-                if (diff.Year - 1 > 0)
-                    return $"{diff.Year - 1} years ago";
-                if (diff.Month - 1 > 0)
-                    return $"{diff.Month - 1} months ago";
-                if (diff.Day - 1 > 0)
-                    return $"{diff.Day - 1} days ago";
-                if (diff.Hour - 1 > 0)
-                    return $"{diff.Hour - 1} hours ago";
-                return $"{diff.Minute - 1} minutes ago";
-            }
-        }
+        public string CreatedAgo => StringHelpers.CreatedAgo(CreatedAt);
 
         [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
 
-        [JsonIgnore] public string LikesFormatted => LikesCount.HasValue ? ShortenedNumber(LikesCount.Value) : string.Empty;
-        [JsonIgnore] public string PlaybacksFormatted => PlaybackCount.HasValue ? ShortenedNumber(PlaybackCount.Value) : string.Empty;
-
-        string ShortenedNumber(int num)
-        {
-            if (num > 1_000_000)
-                return $"{(float)num / 1_000_000:0.##}M";
-            if (num > 10_000)
-                return $"{(float)num / 1_000:0.##}K";
-            return num.ToString();
-        }
+        [JsonIgnore] public string LikesFormatted => LikesCount.HasValue ? StringHelpers.ShortenedNumber(LikesCount.Value) : string.Empty;
+        [JsonIgnore] public string PlaybacksFormatted => PlaybackCount.HasValue ? StringHelpers.ShortenedNumber(PlaybackCount.Value) : string.Empty;
 
         [JsonIgnore] public bool HasGenre => !string.IsNullOrEmpty(Genre);
 

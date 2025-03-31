@@ -10,6 +10,7 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty] private MainViewTab _openedTabIndex;
     [ObservableProperty] private bool _hasOpenedTrackInfo;
     [ObservableProperty] private bool _hasOpenedUserInfo;
+    [ObservableProperty] private bool _hasOpenedPlaylistInfo;
 
     private readonly ProgramSettings _programSettings;
 
@@ -19,6 +20,7 @@ public partial class MainViewModel : ViewModelBase
     {
         Mediator.Default.Register(MediatorEvent.OpenTrackInfo, OpenTrackInfoTab);
         Mediator.Default.Register(MediatorEvent.OpenUserInfo, OpenUserInfoTab);
+        Mediator.Default.Register(MediatorEvent.OpenPlaylistInfo, OpenPlaylistInfoTab);
 
         _programSettings = programSettings;
 
@@ -37,6 +39,12 @@ public partial class MainViewModel : ViewModelBase
     {
         HasOpenedUserInfo = true;
         OpenedTabIndex = MainViewTab.UserInfo;
+    }
+    
+    private void OpenPlaylistInfoTab(object? o)
+    {
+        HasOpenedPlaylistInfo = true;
+        OpenedTabIndex = MainViewTab.PlaylistInfo;
     }
 
     public void OpenSettings()
