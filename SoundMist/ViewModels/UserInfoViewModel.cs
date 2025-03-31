@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Controls.Notifications;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Helpers;
 using SoundMist.Models;
@@ -12,10 +13,12 @@ namespace SoundMist.ViewModels;
 
 public partial class UserInfoViewModel : ViewModelBase
 {
+    [ObservableProperty] private User? _user;
+    [ObservableProperty] private bool _loadingView;
+
     private readonly HttpClient _httpClient;
     private readonly ProgramSettings _settings;
     private readonly ILogger _logger;
-    [ObservableProperty] private User? _user;
 
     private CancellationTokenSource? _tokenSource;
 
@@ -42,6 +45,7 @@ public partial class UserInfoViewModel : ViewModelBase
 
     private void OpenUser(object? obj)
     {
+        LoadingView = true;
         User = null;
 
         if (obj is not User userWithIdOnly)
@@ -64,13 +68,18 @@ public partial class UserInfoViewModel : ViewModelBase
             catch (HttpRequestException ex)
             {
                 _logger.Error($"Failed retrieving full info for the user: {ex.Message}");
-                return;
+                NotificationManager.Show(new("Failed retrieving user info",
+                    $"SC responded with {(ex.StatusCode.HasValue ? (int)ex.StatusCode.Value : "unknown code")} {ex.StatusCode}",
+                    NotificationType.Error,
+                    TimeSpan.Zero));
             }
             catch (Exception ex)
             {
                 _logger.Error($"Exception getting full info for the user: {ex.Message}");
-                return;
+                NotificationManager.Show(new("Failed retrieving user info", "Unhandled exception, please check logs.", NotificationType.Error, TimeSpan.Zero));
             }
+
+            LoadingView = false;
         }, token);
     }
 }
