@@ -33,9 +33,11 @@ public partial class SearchView : UserControl
         if (_pauseLoadingMore)
             return;
 
+        _pauseLoadingMore = true;
         var sv = (ScrollViewer)sender!;
         if (sv.Offset.Y + sv.Viewport.Height >= sv.Extent.Height - 100)
             await _vm.RunSearch(false);
+        _pauseLoadingMore = false;
     }
 
     private async void TextBox_KeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
