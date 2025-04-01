@@ -332,6 +332,7 @@ namespace SoundMist.Models
             _playing = true;
             _timeUpdateTimer.Start();
             Bass.ChannelPlay(_musicChannel);
+            BassVolume = DesiredVolume;
             PlayStateUpdated?.Invoke(PlayState.Playing, string.Empty);
         }
 
