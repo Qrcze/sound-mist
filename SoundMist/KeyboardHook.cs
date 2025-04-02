@@ -27,17 +27,17 @@ namespace SoundMist
             switch (e.Data.KeyCode)
             {
                 case KeyCode.VcMediaPlay:
-                    Debug.Print("Play/Pause key pressed");
+                    e.SuppressEvent = true;
                     PlayPausedTriggered?.Invoke();
                     break;
 
                 case KeyCode.VcMediaPrevious:
-                    Debug.Print("Previous track key pressed");
+                    e.SuppressEvent = true;
                     PrevTrackTriggered?.Invoke();
                     break;
 
                 case KeyCode.VcMediaNext:
-                    Debug.Print("Next track key pressed");
+                    e.SuppressEvent = true;
                     NextTrackTriggered?.Invoke();
                     break;
             }
