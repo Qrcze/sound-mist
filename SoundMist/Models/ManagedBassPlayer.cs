@@ -112,7 +112,7 @@ namespace SoundMist.Models
 
         private void _timeUpdateTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            if (_musicChannel == 0 || TrackTimeUpdated is null)
+            if (TrackTimeUpdated is null || !_playing)
                 return;
 
             long pos = Bass.ChannelGetPosition(_musicChannel);
@@ -368,7 +368,6 @@ namespace SoundMist.Models
             return tracks;
         }
 
-
         private void PlayPauseTriggered()
         {
             _playPauseTokenSource?.Cancel();
@@ -432,26 +431,16 @@ namespace SoundMist.Models
             }
         }
 
-        public async Task SkipUser(int id)
+        public async Task ReloadCurrentTrack()
         {
-            if (TracksPlaylist.Count == 0)
+            var track = CurrentTrack;
+            if (track is null)
                 return;
 
-            TracksPlaylist.RemoveAll(x => x.UserId == id);
+            _loadTrackTokenSource?.Cancel();
+            _loadTrackTokenSource = new();
 
-            if (CurrentTrack!.UserId == id)
-                await PlayNext();
-        }
-
-        public async Task SkipTrack(int id)
-        {
-            if (TracksPlaylist.Count == 0)
-                return;
-
-            TracksPlaylist.RemoveAll(x => x.Id == id);
-
-            if (CurrentTrack!.Id == id)
-                await PlayNext();
+            await LoadTrack(track, _loadTrackTokenSource.Token);
         }
     }
 }

@@ -46,12 +46,12 @@ public partial class SettingsViewModel : ViewModelBase
     public void RemoveBlockedTrack(BlockedEntry entry)
     {
         BlockedTracks.Remove(entry);
-        _settings.BlockedTracks.Remove(entry);
+        _settings.RemoveBlockedTrack(entry);
     }
 
     public void RemoveBlockedUser(BlockedEntry entry)
     {
         BlockedUsers.Remove(entry);
-        _settings.BlockedUsers.Remove(entry);
+        _settings.RemoveBlockedUser(entry);
     }
 }

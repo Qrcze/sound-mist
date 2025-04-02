@@ -118,9 +118,9 @@ namespace SoundMist.Models
 
         public void ChangeShuffle(bool shuffle)
         {
-            if (shuffle)
+            lock (listLock)
             {
-                lock (listLock)
+                if (shuffle)
                 {
                     for (int i = _position + 1; i < _items.Count; i++)
                     {
@@ -129,25 +129,24 @@ namespace SoundMist.Models
                             (_items[i], _items[newIndex]) = (_items[newIndex], _items[i]);
                     }
                 }
-            }
-            else
-            {
-                lock (listLock)
+                else
                 {
                     var currTrack = _items[_position];
                     _items.Clear();
                     _items.AddRange(_originalQueue);
                     _position = _items.IndexOf(currTrack);
                 }
-            }
 
-            ListChanged?.Invoke(Changetype.Shuffled, _items);
+                ListChanged?.Invoke(Changetype.Shuffled, _items);
+            }
         }
 
         public void RemoveAll(Predicate<Track> match)
         {
             lock (listLock)
             {
+                var itemsRemoved = _items.Where(x => match(x)).ToArray();
+
                 var nextValidTrack = _items.Skip(_position).FirstOrDefault(x => !match(x));
 
                 _items.RemoveAll(match);
@@ -157,8 +156,9 @@ namespace SoundMist.Models
                     _position = 0;
                 else
                     _position = _items.IndexOf(nextValidTrack);
+
+                ListChanged?.Invoke(Changetype.Removed, itemsRemoved);
             }
-            ListChanged?.Invoke(Changetype.Removed, _items.Where(x => match(x)));
         }
     }
 }

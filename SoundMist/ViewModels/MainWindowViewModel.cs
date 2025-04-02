@@ -37,7 +37,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
         _musicPlayer.TrackTimeUpdated += (ms) =>
         {
-            TaskbarManager.SetProgressValue((int)ms, _musicPlayer.CurrentTrack!.FullDuration);
+            var track = _musicPlayer.CurrentTrack;
+            if (track is null)
+                return;
+            TaskbarManager.SetProgressValue((int)ms, track.FullDuration);
         };
 
         _musicPlayer.PlayStateUpdated += (s, m) =>

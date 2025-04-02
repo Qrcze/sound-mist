@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls.Notifications;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Models;
 using System;
@@ -231,25 +230,57 @@ public partial class PlayerViewModel : ViewModelBase
 
     private async Task BlockUser()
     {
-        if (_musicPlayer.CurrentTrack == null)
+        var track = _musicPlayer.CurrentTrack;
+
+        if (track is null)
             return;
 
-        if (_musicPlayer.CurrentTrack.User is null)
+        if (!track.UserId.HasValue || track.User is null)
         {
-            _logger.Warn($"Track with id {_musicPlayer.CurrentTrack.Id} does not contain user, failed blocking them.");
+            _logger.Warn($"Track with id {track.Id} does not contain user id, failed blocking them.");
             return;
         }
 
-        _settings.AddBlockedUser(_musicPlayer.CurrentTrack.User);
-        await _musicPlayer.SkipUser(_musicPlayer.CurrentTrack.User.Id);
+        _logger.Info($"Blocking user: {track.UserId}");
+
+        _settings.AddBlockedUser(track.User);
+        _musicPlayer.TracksPlaylist.RemoveAll(x => x.UserId == track.UserId);
+
+        //if there are no tracks available, add the last track temporarily to generate the autoplay out of
+        if (_musicPlayer.TracksPlaylist.Count == 0)
+        {
+            _musicPlayer.TracksPlaylist.Add(track);
+            await _musicPlayer.PlayNext();
+            _musicPlayer.TracksPlaylist.RemoveAll(x => x.Id == track.Id);
+        }
+        else
+        {
+            await _musicPlayer.ReloadCurrentTrack();
+        }
     }
 
     private async Task BlockTrack()
     {
-        if (_musicPlayer.CurrentTrack == null)
+        var track = _musicPlayer.CurrentTrack;
+
+        if (track == null)
             return;
 
-        _settings.AddBlockedTrack(_musicPlayer.CurrentTrack);
-        await _musicPlayer.SkipTrack(_musicPlayer.CurrentTrack.Id);
+        _logger.Info($"Blocking track: {track.Id}");
+
+        _settings.AddBlockedTrack(track);
+        _musicPlayer.TracksPlaylist.RemoveAll(x => x.Id == track.Id);
+
+        //if there are no tracks available, add the last track temporarily to generate the autoplay out of
+        if (_musicPlayer.TracksPlaylist.Count == 0)
+        {
+            _musicPlayer.TracksPlaylist.Add(track);
+            await _musicPlayer.PlayNext();
+            _musicPlayer.TracksPlaylist.RemoveAll(x => x.Id == track.Id);
+        }
+        else
+        {
+            await _musicPlayer.ReloadCurrentTrack();
+        }
     }
 }

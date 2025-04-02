@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,7 +10,7 @@ namespace SoundMist.Models
     {
         private const string SettingsFilePath = "settings.json";
 
-        private bool _loaded; // a guard, otherwise json uses property to SetPropertyAndSave and it can break stuff
+        private bool _settingsInitialized; // a guard, otherwise json uses property to SetPropertyAndSave and it can break stuff
 
         private string? _authToken;
         private float _volume = 1;
@@ -48,7 +47,7 @@ namespace SoundMist.Models
                 File.WriteAllText(SettingsFilePath, json);
             }
 
-            settings._loaded = true;
+            settings._settingsInitialized = true;
 
             return settings;
         }
@@ -85,24 +84,39 @@ namespace SoundMist.Models
         public void AddBlockedUser(User user)
         {
             if (BlockedUsers.Add(new(user.Id, user.Username)))
-            {
-                var json = JsonSerializer.Serialize(this);
-                File.WriteAllText(SettingsFilePath, json);
-            }
+                SaveSettingsFile();
         }
 
+        public bool IsBlockedUser(Track track)
+        {
+            if (track.User is null || !track.UserId.HasValue)
+                return false;
+
+            return BlockedUsers.Contains(new(track.UserId.Value, track.User.Username));
+        }
+
+        public void RemoveBlockedUser(BlockedEntry entry)
+        {
+            if (BlockedUsers.Remove(entry))
+                SaveSettingsFile();
+        }
         public void AddBlockedTrack(Track track)
         {
             if (BlockedTracks.Add(new(track.Id, track.FullLabel)))
-            {
-                var json = JsonSerializer.Serialize(this);
-                File.WriteAllText(SettingsFilePath, json);
-            }
+                SaveSettingsFile();
         }
 
-        public bool IsBlockedUser(Track track) => BlockedUsers.Any(x => x.Id == track.UserId);
+        public bool IsBlockedTrack(Track track)
+        {
+            return BlockedTracks.Contains(new(track.Id, track.FullLabel));
+        }
 
-        public bool IsBlockedTrack(Track track) => BlockedUsers.Any(x => x.Id == track.Id);
+        public void RemoveBlockedTrack(BlockedEntry entry)
+        {
+            if (BlockedTracks.Remove(entry))
+                SaveSettingsFile();
+        }
+
 
         private void SetPropertyAndSave<T>(ref T field, T value)
         {
@@ -111,11 +125,14 @@ namespace SoundMist.Models
 
             field = value;
 
-            if (_loaded)
-            {
-                var json = JsonSerializer.Serialize(this);
-                File.WriteAllText(SettingsFilePath, json);
-            }
+            if (_settingsInitialized)
+                SaveSettingsFile();
+        }
+
+        void SaveSettingsFile()
+        {
+            var json = JsonSerializer.Serialize(this);
+            File.WriteAllText(SettingsFilePath, json);
         }
     }
 }
