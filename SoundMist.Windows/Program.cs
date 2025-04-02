@@ -12,7 +12,6 @@ internal class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        InterceptKeys.Start();
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
@@ -20,10 +19,6 @@ internal class Program
         catch (Exception ex)
         {
             FileLogger.Instance.Fatal($"Program crashed unexpectedly: {ex.Message}");
-        }
-        finally
-        {
-            InterceptKeys.End();
         }
     }
 

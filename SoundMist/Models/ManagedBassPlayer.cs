@@ -88,9 +88,9 @@ namespace SoundMist.Models
                 logger.Error(m);
             };
 
-            InterceptKeys.PlayPausedTriggered += PlayPauseTriggered;
-            InterceptKeys.PrevTrackTriggered += () => Task.Run(async () => await PlayPrev());
-            InterceptKeys.NextTrackTriggered += () => Task.Run(async () => await PlayNext());
+            KeyboardHook.PlayPausedTriggered += PlayPauseTriggered;
+            KeyboardHook.PrevTrackTriggered += () => Task.Run(async () => await PlayPrev());
+            KeyboardHook.NextTrackTriggered += () => Task.Run(async () => await PlayNext());
 
             Bass.Init();
         }
