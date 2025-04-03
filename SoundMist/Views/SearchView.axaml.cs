@@ -11,7 +11,6 @@ namespace SoundMist.Views;
 public partial class SearchView : UserControl
 {
     private readonly SearchViewModel _vm;
-    private volatile bool _pauseLoadingMore;
 
     public SearchView()
     {
@@ -30,14 +29,9 @@ public partial class SearchView : UserControl
 
     private async void OnScrollChangedAsync(object? sender, ScrollChangedEventArgs e)
     {
-        if (_pauseLoadingMore)
-            return;
-
-        _pauseLoadingMore = true;
         var sv = (ScrollViewer)sender!;
         if (sv.Offset.Y + sv.Viewport.Height >= sv.Extent.Height - 100)
             await _vm.RunSearch(false);
-        _pauseLoadingMore = false;
     }
 
     private async void TextBox_KeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
@@ -45,9 +39,7 @@ public partial class SearchView : UserControl
         if (e.Key == Avalonia.Input.Key.Return || e.Key == Avalonia.Input.Key.Enter)
         {
             e.Handled = true;
-            _pauseLoadingMore = true;
             await _vm.RunSearch();
-            _pauseLoadingMore = false;
         }
     }
 

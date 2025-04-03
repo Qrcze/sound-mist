@@ -2,11 +2,11 @@
 An unofficial desktop SoundCloud player for Windows and Linux, built from the ground-up.
 
 ## Working base features:
-- Logging in with the auth token cookie (instructions in the program).
+- Logging in with the auth token cookie.
 - Getting your liked tracks list.
 - Searching for tracks, artists and albums.
 - Autoplay/stations.
-- Info page about tracks and users (WIP).
+- Basic info page about tracks, users and albums.
 
 ## Extra features:
 - Blocking selected tracks/uploaders.

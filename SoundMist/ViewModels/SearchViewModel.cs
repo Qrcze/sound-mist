@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Controls.Notifications;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Helpers;
 using SoundMist.Models;
@@ -22,10 +23,12 @@ public partial class SearchViewModel : ViewModelBase
     [ObservableProperty] private string _searchFilter = string.Empty;
     [ObservableProperty] private string _selectedFilter = "All";
     [ObservableProperty] private bool _showQueryResults;
+    [ObservableProperty] private bool _loadingView;
     [ObservableProperty] private object? _selectedItem;
     [ObservableProperty] private string _resultsMessage = string.Empty;
 
     private string? _nextHref;
+    private volatile bool _runningSearch;
 
     public string[] Filters { get; } = ["All", "Tracks", "People", "Albums"];
 
@@ -43,6 +46,7 @@ public partial class SearchViewModel : ViewModelBase
     private readonly JsonSerializerOptions _convertJsonScObjects = new() { Converters = { new ScObjectConverter() } };
 
     public IRelayCommand ClearFilterCommand { get; }
+    public IAsyncRelayCommand RunSearchCommand { get; }
 
     public SearchViewModel(HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
     {
@@ -55,6 +59,7 @@ public partial class SearchViewModel : ViewModelBase
         _logger = logger;
 
         ClearFilterCommand = new RelayCommand(ClearFilter);
+        RunSearchCommand = new AsyncRelayCommand(async () => await RunSearch());
     }
 
     private void ClearFilter()
@@ -123,13 +128,16 @@ public partial class SearchViewModel : ViewModelBase
 
     internal async Task RunSearch(bool newSearch = true)
     {
+        if (_runningSearch || (newSearch && string.IsNullOrEmpty(SearchFilter)))
+            return;
+
+        _runningSearch = true;
         _querySearchDelay.Stop();
         ShowQueryResults = false;
-        if (string.IsNullOrEmpty(SearchFilter))
-            return;
 
         if (newSearch)
         {
+            LoadingView = true;
             ResultsMessage = string.Empty;
             SearchResults.Clear();
         }
@@ -141,16 +149,12 @@ public partial class SearchViewModel : ViewModelBase
         }
         catch (HttpRequestException ex)
         {
-            string message = $"Failed getting the response for search query: {ex.Message}";
-            SearchResults.Add(message);
-            _logger.Error(message);
+            NotifyAboutErrorOnSearch($"Failed getting the response for search query: {ex.Message}");
             return;
         }
         catch (Exception ex)
         {
-            string message = $"Unhandled exception while getting search query: {ex.Message}";
-            SearchResults.Add(message);
-            _logger.Error(message);
+            NotifyAboutErrorOnSearch($"Unhandled exception while getting search query: {ex.Message}");
             return;
         }
 
@@ -164,6 +168,18 @@ public partial class SearchViewModel : ViewModelBase
         {
             ResultsMessage = "0 results found.";
         }
+
+        LoadingView = false;
+        _runningSearch = false;
+    }
+
+    void NotifyAboutErrorOnSearch(string message)
+    {
+        SearchResults.Add(message);
+        _logger.Error(message);
+        NotificationManager.Show(new("Failed getting response", "Please check the logs.", NotificationType.Error, TimeSpan.Zero));
+        LoadingView = false;
+        _runningSearch = false;
     }
 
     public async Task<SearchCollection?> GetSearchResults(bool newSearch = true)
@@ -227,6 +243,7 @@ public partial class SearchViewModel : ViewModelBase
             await _musicPlayer.LoadNewQueue([track]);
         else if (SelectedItem is Playlist playlist)
             Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, playlist);
+
         //await PlayFromPlaylist(playlist, 0);
     }
 

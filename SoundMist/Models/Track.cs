@@ -77,7 +77,9 @@ namespace SoundMist.Models
             }
         }
 
-        public bool HasBackgroundVisuals => !string.IsNullOrEmpty(BackgroundVisualUrl);
+        [JsonIgnore] public bool HasBackgroundVisuals => !string.IsNullOrEmpty(BackgroundVisualUrl);
+
+        [JsonIgnore] public bool RegionBlocked => Policy != "ALLOW";
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }
