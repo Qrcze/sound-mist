@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Avalonia;
+using Avalonia.Styling;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -6,6 +8,13 @@ using System.Text.Json.Serialization;
 
 namespace SoundMist.Models
 {
+    public enum AppColorTheme
+    {
+        System,
+        Light,
+        Dark
+    }
+
     public class ProgramSettings
     {
         private const string SettingsFilePath = "settings.json";
@@ -19,6 +28,7 @@ namespace SoundMist.Models
         private int? _lastTrackId;
         private MainViewTab _startingTabIndex = MainViewTab.LikedTracks;
         private bool _startPlayingOnLaunch;
+        private AppColorTheme _appColorTheme;
 
         public static ProgramSettings Load()
         {
@@ -69,6 +79,39 @@ namespace SoundMist.Models
         public MainViewTab StartingTabIndex { get => _startingTabIndex; set => SetPropertyAndSave(ref _startingTabIndex, value); }
         public bool StartPlayingOnLaunch { get => _startPlayingOnLaunch; set => SetPropertyAndSave(ref _startPlayingOnLaunch, value); }
 
+        public AppColorTheme AppColorTheme
+        {
+            get => _appColorTheme;
+            set
+            {
+                if (_appColorTheme == value)
+                    return;
+
+                _appColorTheme = value;
+
+                switch (value)
+                {
+                    case AppColorTheme.System:
+                        Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
+                        break;
+
+                    case AppColorTheme.Light:
+                        Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
+                        break;
+
+                    case AppColorTheme.Dark:
+                        Application.Current!.RequestedThemeVariant = ThemeVariant.Dark;
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (_settingsInitialized)
+                    SaveSettingsFile();
+            }
+        }
+
         /// <summary>
         /// Do not modify directly; use <see cref="AddBlockedUser(User)"/> instead
         /// </summary>
@@ -100,6 +143,7 @@ namespace SoundMist.Models
             if (BlockedUsers.Remove(entry))
                 SaveSettingsFile();
         }
+
         public void AddBlockedTrack(Track track)
         {
             if (BlockedTracks.Add(new(track.Id, track.FullLabel)))
@@ -116,7 +160,6 @@ namespace SoundMist.Models
             if (BlockedTracks.Remove(entry))
                 SaveSettingsFile();
         }
-
 
         private void SetPropertyAndSave<T>(ref T field, T value)
         {

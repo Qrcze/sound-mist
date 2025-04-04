@@ -63,6 +63,10 @@
 									<TextBlock Text="Start playing on launch:" VerticalAlignment="Center" />
 									<CheckBox Grid.Column="1" IsChecked="{Binding StartPlayingOnLaunch}" />
 								</Grid>
+								<Grid ColumnDefinitions="180,*">
+									<TextBlock Text="Theme:" VerticalAlignment="Center" />
+									<ComboBox Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
+								</Grid>
 							</StackPanel>
 						</Border>
 					</TabItem>

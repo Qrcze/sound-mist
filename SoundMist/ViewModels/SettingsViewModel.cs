@@ -1,18 +1,23 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Models;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace SoundMist.ViewModels;
 
 public partial class SettingsViewModel : ViewModelBase
 {
     [ObservableProperty] private bool _isVisible;
+    [ObservableProperty] private AppColorTheme _selectedTheme;
 
     public MainViewTab DefaultTabOnLaunch { get => _settings.StartingTabIndex; set => _settings.StartingTabIndex = value; }
     public bool StartPlayingOnLaunch { get => _settings.StartPlayingOnLaunch; set => _settings.StartPlayingOnLaunch = value; }
 
     public MainViewTab[] TabsSelection { get; } = { MainViewTab.Search, MainViewTab.LikedTracks, MainViewTab.Downloaded };
+    public AppColorTheme[] Themes { get; } = Enum.GetValues<AppColorTheme>().ToArray();
+
     public ObservableCollection<BlockedEntry> BlockedUsers { get; } = [];
     public ObservableCollection<BlockedEntry> BlockedTracks { get; } = [];
 
@@ -23,6 +28,7 @@ public partial class SettingsViewModel : ViewModelBase
     public SettingsViewModel(ProgramSettings settings)
     {
         _settings = settings;
+        SelectedTheme = _settings.AppColorTheme;
 
         Mediator.Default.Register(MediatorEvent.OpenSettings, _ => IsVisible = true);
 
@@ -41,6 +47,11 @@ public partial class SettingsViewModel : ViewModelBase
             BlockedTracks.Add(item);
         foreach (var item in _settings.BlockedUsers)
             BlockedUsers.Add(item);
+    }
+
+    partial void OnSelectedThemeChanged(AppColorTheme value)
+    {
+        _settings.AppColorTheme = value;
     }
 
     public void RemoveBlockedTrack(BlockedEntry entry)
