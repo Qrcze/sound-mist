@@ -11,18 +11,18 @@
 	         x:DataType="vm:PlayerViewModel">
 
 	<Grid RowDefinitions="*,*">
-		<Grid ColumnDefinitions="auto,auto,200" HorizontalAlignment="Center">
+		<Grid ColumnDefinitions="auto,auto,250" HorizontalAlignment="Center">
 			<!-- play controls -->
 			<StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
 				<Button Classes="button-medium" Margin="5 0 0 0" IsEnabled="{Binding PlayEnabled}" Command="{Binding PlayPrevTrackCommand}">
 					<Image Source="/Assets/previous.png" />
 				</Button>
 				<Grid>
-					<Button Classes="button-big" Margin="5 0 0 0" IsVisible="{Binding Playing}" Command="{Binding PlayPauseCommand}">
-						<Image Source="/Assets/pause.png" />
-					</Button>
-					<Button Classes="button-big" Margin="5 0 0 0" IsVisible="{Binding !Playing}" IsEnabled="{Binding PlayEnabled}" Command="{Binding PlayPauseCommand}">
-						<Image Source="/Assets/play.png" />
+					<Button Classes="button-big" Margin="5 0 0 0" Command="{Binding PlayPauseCommand}">
+						<Panel>
+							<Image Source="/Assets/pause.png" IsVisible="{Binding Playing}" />
+							<Image Source="/Assets/play.png" IsVisible="{Binding !Playing}" />
+						</Panel>
 					</Button>
 					<!--<li:LoadingIndicator IsActive="{Binding Loading}" Mode="Wave" SpeedRatio="1.2" MinWidth="34" MinHeight="34" Width="34" Height="34" />-->
 				</Grid>

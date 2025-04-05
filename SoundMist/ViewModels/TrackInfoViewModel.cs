@@ -149,7 +149,7 @@ public partial class TrackInfoViewModel : ViewModelBase
             return;
 
         if (Track.Id == _musicPlayer.CurrentTrack?.Id)
-            await _musicPlayer.PlayPause(token);
+            _musicPlayer.PlayPause();
         else
             await _musicPlayer.LoadNewQueue([Track]);
     }

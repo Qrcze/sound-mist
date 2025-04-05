@@ -234,7 +234,7 @@ namespace SoundMist.Controls
 
             var before = Brushes.OrangeRed;
             var between = Brushes.Orange;
-            var after = Brushes.White;
+            var after = Brushes.LightGray;
 
             double percent = Value * 100 / Maximum;
             int currentSample = (int)(_sampleBars.Length * percent / 100);

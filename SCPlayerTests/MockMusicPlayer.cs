@@ -51,7 +51,7 @@ namespace SCPlayerTests
             throw new NotImplementedException();
         }
 
-        public Task PlayPause(CancellationToken token)
+        public void PlayPause()
         {
             throw new NotImplementedException();
         }
@@ -67,6 +67,11 @@ namespace SCPlayerTests
         }
 
         public Task SkipTrack(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ReloadCurrentTrack()
         {
             throw new NotImplementedException();
         }

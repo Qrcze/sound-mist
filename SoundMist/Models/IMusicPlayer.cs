@@ -34,7 +34,7 @@ namespace SoundMist.Models
         void ClearQueue();
         void ContinueWithAutoplay();
         Task LoadNewQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null, bool startPlaying = true);
-        Task PlayPause(CancellationToken token);
+        void PlayPause();
         Task PlayNext();
         Task PlayPrev();
         Task ReloadCurrentTrack();

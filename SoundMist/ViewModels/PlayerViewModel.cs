@@ -13,7 +13,7 @@ public partial class PlayerViewModel : ViewModelBase
     [ObservableProperty] private bool _playing;
     [ObservableProperty] private bool _loading;
     [ObservableProperty] private bool _playEnabled;
-    [ObservableProperty] private string _loadingMessage;
+    [ObservableProperty] private string _loadingMessage = string.Empty;
     [ObservableProperty] private string _trackTimeFormatted = "00:00";
     [ObservableProperty] private string _trackLengthFormatted = "00:00";
     [ObservableProperty] private string _trackTitle = string.Empty;
@@ -61,7 +61,7 @@ public partial class PlayerViewModel : ViewModelBase
         }
     }
 
-    public IAsyncRelayCommand PlayPauseCommand { get; }
+    public IRelayCommand PlayPauseCommand { get; }
     public IAsyncRelayCommand PlayNextTrackCommand { get; }
     public IAsyncRelayCommand PlayPrevTrackCommand { get; }
     public IRelayCommand ClearPlaylistCommand { get; }
@@ -81,10 +81,10 @@ public partial class PlayerViewModel : ViewModelBase
         _musicPlayer.PlayStateUpdated += PlayStateUpdated;
         _musicPlayer.TracksPlaylist.ListChanged += TracksPlaylist_ListChanged;
 
-        PlayPauseCommand = new AsyncRelayCommand(PlayPause);
-        PlayNextTrackCommand = new AsyncRelayCommand(PlayNextTrack);
-        PlayPrevTrackCommand = new AsyncRelayCommand(PlayPrevTrack);
-        ClearPlaylistCommand = new RelayCommand(ClearPlaylist);
+        PlayPauseCommand = new RelayCommand(_musicPlayer.PlayPause);
+        PlayNextTrackCommand = new AsyncRelayCommand(_musicPlayer.PlayNext);
+        PlayPrevTrackCommand = new AsyncRelayCommand(_musicPlayer.PlayPrev);
+        ClearPlaylistCommand = new RelayCommand(_musicPlayer.ClearQueue);
         BlockUserCommand = new AsyncRelayCommand(BlockUser);
         BlockTrackCommand = new AsyncRelayCommand(BlockTrack);
         OpenUserInfoCommand = new RelayCommand(OpenUserInfo);
@@ -162,26 +162,6 @@ public partial class PlayerViewModel : ViewModelBase
             default:
                 break;
         }
-    }
-
-    private async Task PlayPause(CancellationToken token)
-    {
-        await _musicPlayer.PlayPause(token);
-    }
-
-    private async Task PlayNextTrack()
-    {
-        await _musicPlayer.PlayNext();
-    }
-
-    private async Task PlayPrevTrack()
-    {
-        await _musicPlayer.PlayPrev();
-    }
-
-    private void ClearPlaylist()
-    {
-        _musicPlayer.ClearQueue();
     }
 
     private void TrackChanging(Track track)

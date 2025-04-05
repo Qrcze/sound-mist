@@ -36,7 +36,7 @@ namespace SoundMist.Models
             }
         }
 
-        public double BassVolume
+        double BassVolume
         {
             get
             {
@@ -88,7 +88,7 @@ namespace SoundMist.Models
                 logger.Error(m);
             };
 
-            KeyboardHook.PlayPausedTriggered += PlayPauseTriggered;
+            KeyboardHook.PlayPausedTriggered += PlayPause;
             KeyboardHook.PrevTrackTriggered += () => Task.Run(async () => await PlayPrev());
             KeyboardHook.NextTrackTriggered += () => Task.Run(async () => await PlayNext());
 
@@ -291,6 +291,7 @@ namespace SoundMist.Models
             }
             Bass.ChannelSetSync(_musicChannel, SyncFlags.End, 0, TrackEnded);
 
+            BassVolume = DesiredVolume;
             PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
             TrackChanged?.Invoke(track);
             _settings.LastTrackId = track.Id;
@@ -332,7 +333,6 @@ namespace SoundMist.Models
             _playing = true;
             _timeUpdateTimer.Start();
             Bass.ChannelPlay(_musicChannel);
-            BassVolume = DesiredVolume;
             PlayStateUpdated?.Invoke(PlayState.Playing, string.Empty);
         }
 
@@ -368,32 +368,32 @@ namespace SoundMist.Models
             return tracks;
         }
 
-        private void PlayPauseTriggered()
+        public void PlayPause()
         {
             _playPauseTokenSource?.Cancel();
             _playPauseTokenSource = new();
-            Task.Run(() => PlayPause(_playPauseTokenSource.Token), _playPauseTokenSource.Token);
+            Task.Run(() => HandlePlayPause(_playPauseTokenSource.Token), _playPauseTokenSource.Token);
         }
 
-        public async Task PlayPause(CancellationToken token)
+        public async Task HandlePlayPause(CancellationToken token)
         {
             if (_musicChannel == 0)
                 return;
 
             if (_playing)
             {
+                _playing = false;
                 PlayStateUpdated?.Invoke(PlayState.Paused, string.Empty);
                 await FadeOut(token);
                 _timeUpdateTimer.Stop();
             }
             else
             {
+                _playing = true;
                 PlayStateUpdated?.Invoke(PlayState.Playing, string.Empty);
                 await FadeIn(token);
                 _timeUpdateTimer.Start();
             }
-
-            _playing = !_playing;
         }
 
         private async Task FadeOut(CancellationToken token)
