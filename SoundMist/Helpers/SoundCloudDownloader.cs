@@ -1,12 +1,12 @@
-﻿using ManagedBass;
-using SoundMist.Models;
+﻿using SoundMist.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +16,95 @@ namespace SoundMist.Helpers
 {
     internal static class SoundCloudDownloader
     {
+        private static HttpClient? _proxyClientInstance;
+        private static Task<(HttpClient? proxyClient, string errorMessage)>? _proxySearchTask;
+
+        public static async Task<(HttpClient? proxyClient, string errorMessage)> GetProxyHttpClient(HttpClient defaultClient, string clientId, int appVersion)
+        {
+            //TODO: have settings if the user wants to customize the proxy themselves
+
+            if (_proxyClientInstance is not null)
+                return (_proxyClientInstance, string.Empty);
+
+            _proxySearchTask ??= ProxySearch(defaultClient, clientId, appVersion);
+
+            return await _proxySearchTask;
+        }
+
+        static async Task<(HttpClient? proxyClient, string errorMessage)> ProxySearch(HttpClient defaultClient, string clientId, int appVersion)
+        {
+            string addressesString;
+            try
+            {
+                using var proxyRequest = await defaultClient.GetAsync("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&country=us&protocol=http&proxy_format=protocolipport&format=text&timeout=5000");
+                proxyRequest.EnsureSuccessStatusCode();
+                addressesString = await proxyRequest.Content.ReadAsStringAsync();
+            }
+            catch (HttpRequestException ex)
+            {
+                return (null, $"Request to get proxies failed: {ex.Message}");
+            }
+
+            string[] addresses = addressesString.Split("\r\n");
+            if (addresses.Length == 0)
+                return (null, "No valid proxies available");
+
+            string? address = await FindWorkingProxy(addresses, clientId, appVersion);
+
+            if (address == null)
+                return (null, "No valid proxy found.");
+
+            var proxy = new WebProxy() { Address = new Uri(address) };
+            var handler = new HttpClientHandler() { Proxy = proxy, AutomaticDecompression = DecompressionMethods.All };
+            _proxyClientInstance = new HttpClient(handler) { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) };
+            return (_proxyClientInstance, string.Empty);
+        }
+
+        static async Task<string?> FindWorkingProxy(string[] addresses, string clientId, int appVersion)
+        {
+            var proxyCheckTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            string? workingAddress = null;
+
+            var options = new ParallelOptions() { CancellationToken = proxyCheckTokenSource.Token };
+
+            try
+            {
+                await Parallel.ForEachAsync(addresses, options, async (address, token) =>
+                {
+                    try
+                    {
+                        var proxy = new WebProxy(address);
+                        var handler = new HttpClientHandler() { Proxy = proxy };
+                        using var client = new HttpClient(handler);
+
+                        var track = (await SoundCloudQueries.GetTracksById(client, clientId, appVersion, [2], token)).Single();
+                        if (track is null)
+                            return;
+
+                        (var links, _) = await GetTrackLinks(client, track, clientId, token);
+                        if (links is null)
+                            return;
+
+                        using var request = await client.GetAsync(links[0], token);
+                        request.EnsureSuccessStatusCode();
+
+                        proxyCheckTokenSource.Cancel();
+
+                        Debug.Print($"found working proxy: {address}");
+                        workingAddress = address;
+                    }
+                    catch (HttpRequestException e)
+                    {
+                        Debug.Print($"pinging {address} threw exception: {e.Message}");
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            { }
+
+            return workingAddress;
+        }
+
         public static async Task<(List<string>? links, string errorMessage)> GetTrackLinks(HttpClient httpClient, Track track, string clientId, CancellationToken token)
         {
             string? url = track.Media.Transcodings.FirstOrDefault(x => x.Format.MimeType == "audio/mpeg" && x.Format.Protocol == "hls")?.Url;

@@ -57,8 +57,7 @@ namespace SoundMist.Models
         [JsonIgnore] public string? ArtworkUrlLarge => ArtworkOrAvatarUrl;
         [JsonIgnore] public string? ArtworkUrlOriginal => ArtworkOrAvatarUrl?.Replace("large", "original");
 
-        [JsonIgnore]
-        public string CreatedAgo => StringHelpers.CreatedAgo(CreatedAt);
+        [JsonIgnore] public string CreatedAgo => StringHelpers.CreatedAgo(CreatedAt);
 
         [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
 
@@ -79,7 +78,8 @@ namespace SoundMist.Models
 
         [JsonIgnore] public bool HasBackgroundVisuals => !string.IsNullOrEmpty(BackgroundVisualUrl);
 
-        [JsonIgnore] public bool RegionBlocked => Policy != "ALLOW";
+        [JsonIgnore] public bool RegionBlocked => Policy == "BLOCK";
+        [JsonIgnore] public bool Snipped => Policy == "SNIP";
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }

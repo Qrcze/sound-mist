@@ -244,6 +244,12 @@ namespace SoundMist.Models
             }
         }
 
+        /// <summary>
+        /// Stops and clears current music, then downloads and loads next music channel with given track. Does not start playback.
+        /// </summary>
+        /// <param name="track"></param>
+        /// <returns> true if loaded successfully, false if fail </returns>
+        /// <exception cref="TaskCanceledException" />
         private async Task<bool> LoadTrack(Track track, CancellationToken token)
         {
             _playing = false;
@@ -264,15 +270,29 @@ namespace SoundMist.Models
                 PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked, no workaround implemented yet.");
                 return false;
             }
+            else if (track.Policy == "SNIP")
+            {
+                PlayStateUpdated?.Invoke(PlayState.Loading, "Searching for proxy...");
+                (var proxyClient, string errorMessage) = await SoundCloudDownloader.GetProxyHttpClient(_httpClient, _settings.ClientId, _settings.AppVersion);
+                if (proxyClient is null)
+                {
+                    ErrorCallback?.Invoke(errorMessage);
+                    PlayStateUpdated?.Invoke(PlayState.Error, "Proxy request failed.");
+                    return false;
+                }
 
-            //else if (track.Policy == "SNIP")
-            //{
-            //    var links = await ScDownloader.GetTrackLinks(_httpClient, track, _settings.ClientId!, token);
+                token.ThrowIfCancellationRequested();
 
-            //}
+                PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
+                byte[]? data = await FullyDownloadTrack(proxyClient, track, token);
+                if (data is null)
+                    return false;
+
+                _musicChannel = Bass.CreateStream(data, 0, data.Length, BassFlags.Default);
+            }
             else if (track.Policy == "ALLOW")
             {
-                byte[]? data = await FullyDownloadTrack(track, token);
+                byte[]? data = await FullyDownloadTrack(_httpClient, track, token);
                 if (data is null)
                     return false;
 
@@ -304,9 +324,9 @@ namespace SoundMist.Models
             Task.Run(PlayNext);
         }
 
-        private async Task<byte[]?> FullyDownloadTrack(Track track, CancellationToken token)
+        private async Task<byte[]?> FullyDownloadTrack(HttpClient httpClient, Track track, CancellationToken token)
         {
-            (var links, string error) = await SoundCloudDownloader.GetTrackLinks(_httpClient, track, _settings.ClientId!, token);
+            (var links, string error) = await SoundCloudDownloader.GetTrackLinks(httpClient, track, _settings.ClientId!, token);
             if (links is null)
             {
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
@@ -315,7 +335,7 @@ namespace SoundMist.Models
 
             void statusCallback(string message) => PlayStateUpdated?.Invoke(PlayState.Loading, message);
 
-            (byte[]? data, error) = await SoundCloudDownloader.DownloadTrackData(_httpClient, links, statusCallback, token);
+            (byte[]? data, error) = await SoundCloudDownloader.DownloadTrackData(httpClient, links, statusCallback, token);
             if (data is null)
             {
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
