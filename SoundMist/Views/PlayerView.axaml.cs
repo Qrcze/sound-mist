@@ -1,31 +1,33 @@
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
+using Avalonia.VisualTree;
+using SoundMist.Models;
 using SoundMist.ViewModels;
+using System;
 
 namespace SoundMist.Views;
 
 public partial class PlayerView : UserControl
 {
+    private readonly PlayerViewModel _vm;
+
     public PlayerView()
     {
         InitializeComponent();
-        DataContext = App.GetService<PlayerViewModel>();
+        DataContext = _vm = App.GetService<PlayerViewModel>();
     }
 
-    private void ShowPlaylist(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    private async void RemoveTrackFromQueue(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (sender is not Control c)
-            return;
+        var c = (Control)sender!;
 
-        FlyoutBase.ShowAttachedFlyout(c);
+        var item = c.FindAncestorOfType<ListBoxItem>() ?? throw new Exception($"{nameof(RemoveTrackFromQueue)} method is expected to be called from a button inside a ListBoxItem");
+        if (item.DataContext is not Track t)
+            throw new ArgumentException("queue is supposed to hold Tracks in the list");
+        await _vm.RemoveTrackFromQueue(t);
     }
 
-    private void ClosePlaylist(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    private async void ChangeToSelectedFromQueue(object? sender, Avalonia.Input.TappedEventArgs e)
     {
-        if (sender is not Control c)
-            return;
-
-        var f = FlyoutBase.GetAttachedFlyout(c);
-        f?.Hide();
+        await _vm.LoadTrackSelectedInPlaylistQueue();
     }
 }

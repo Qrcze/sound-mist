@@ -160,5 +160,18 @@ namespace SoundMist.Models
                 ListChanged?.Invoke(Changetype.Removed, itemsRemoved);
             }
         }
+
+        public bool TryMovePositionToTrack(Track track)
+        {
+            lock (listLock)
+            {
+                var index = _items.IndexOf(track);
+                if (index == -1)
+                    return false;
+
+                _position = index;
+                return true;
+            }
+        }
     }
 }

@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using SoundMist.Models;
 using System;
 using System.Collections.ObjectModel;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SoundMist.ViewModels;
@@ -13,12 +12,14 @@ public partial class PlayerViewModel : ViewModelBase
     [ObservableProperty] private bool _playing;
     [ObservableProperty] private bool _loading;
     [ObservableProperty] private bool _playEnabled;
+    [ObservableProperty] private bool _showingPlaylist;
     [ObservableProperty] private string _loadingMessage = string.Empty;
     [ObservableProperty] private string _trackTimeFormatted = "00:00";
     [ObservableProperty] private string _trackLengthFormatted = "00:00";
     [ObservableProperty] private string _trackTitle = string.Empty;
     [ObservableProperty] private string _trackAuthor = string.Empty;
-    [ObservableProperty] private Track? _currentTrack;
+    [ObservableProperty] private string? _trackThumbnail = string.Empty;
+    [ObservableProperty] private Track? _trackSelectedInQueue;
 
     private readonly IMusicPlayer _musicPlayer;
     private readonly ProgramSettings _settings;
@@ -69,6 +70,7 @@ public partial class PlayerViewModel : ViewModelBase
     public IAsyncRelayCommand BlockTrackCommand { get; }
     public IRelayCommand OpenUserInfoCommand { get; }
     public IRelayCommand OpenTrackInfoCommand { get; }
+    public IRelayCommand TogglePlaylistCommand { get; }
 
     public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, ILogger logger)
     {
@@ -89,6 +91,7 @@ public partial class PlayerViewModel : ViewModelBase
         BlockTrackCommand = new AsyncRelayCommand(BlockTrack);
         OpenUserInfoCommand = new RelayCommand(OpenUserInfo);
         OpenTrackInfoCommand = new RelayCommand(OpenTrackInfo);
+        TogglePlaylistCommand = new RelayCommand(() => ShowingPlaylist = !ShowingPlaylist);
 
         //when the music player got initialized before this view
         if (_musicPlayer.CurrentTrack != null)
@@ -102,18 +105,18 @@ public partial class PlayerViewModel : ViewModelBase
 
     private void OpenUserInfo()
     {
-        if (CurrentTrack is null)
+        if (_musicPlayer.CurrentTrack is null)
             return;
 
-        Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, CurrentTrack.User);
+        Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, _musicPlayer.CurrentTrack.User);
     }
 
     private void OpenTrackInfo()
     {
-        if (CurrentTrack is null)
+        if (_musicPlayer.CurrentTrack is null)
             return;
 
-        Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, CurrentTrack);
+        Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, _musicPlayer.CurrentTrack);
     }
 
     private void UpdateTime(double value)
@@ -174,8 +177,9 @@ public partial class PlayerViewModel : ViewModelBase
         TrackLength = track.FullDuration;
         TrackAuthor = track.ArtistName;
         TrackTitle = track.Title;
+        TrackThumbnail = track.ArtworkUrlSmall;
 
-        CurrentTrack = track;
+        TrackSelectedInQueue = track;
     }
 
     private void TracksPlaylist_ListChanged(TracksPlaylist.Changetype change, System.Collections.Generic.IEnumerable<Track> tracks)
@@ -261,5 +265,24 @@ public partial class PlayerViewModel : ViewModelBase
         {
             await _musicPlayer.ReloadCurrentTrack();
         }
+    }
+
+    internal async Task LoadTrackSelectedInPlaylistQueue()
+    {
+        if (TrackSelectedInQueue is null)
+            return;
+
+        _musicPlayer.TracksPlaylist.TryMovePositionToTrack(TrackSelectedInQueue);
+
+        await _musicPlayer.ReloadCurrentTrack();
+    }
+
+    internal async Task RemoveTrackFromQueue(Track t)
+    {
+        _musicPlayer.TracksPlaylist.RemoveAll(x => x.Id == t.Id);
+        TracksQueue.Remove(t);
+
+        if (_musicPlayer.CurrentTrack?.Id == t.Id)
+            await _musicPlayer.ReloadCurrentTrack();
     }
 }

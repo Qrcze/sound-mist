@@ -462,7 +462,13 @@ namespace SoundMist.Models
             _loadTrackTokenSource?.Cancel();
             _loadTrackTokenSource = new();
 
-            await LoadTrack(track, _loadTrackTokenSource.Token);
+            try
+            {
+                if (await LoadTrack(track, _loadTrackTokenSource.Token))
+                    StartPlaying();
+            }
+            catch (TaskCanceledException)
+            { }
         }
     }
 }
