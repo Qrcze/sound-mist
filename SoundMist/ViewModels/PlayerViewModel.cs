@@ -156,7 +156,6 @@ public partial class PlayerViewModel : ViewModelBase
                 PlayEnabled = false;
                 Loading = true;
                 LoadingMessage = message;
-                _logger.Error(message);
                 break;
 
             default:

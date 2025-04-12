@@ -329,6 +329,7 @@ namespace SoundMist.Models
             (var links, string error) = await SoundCloudDownloader.GetTrackLinks(httpClient, track, _settings.ClientId!, token);
             if (links is null)
             {
+                ErrorCallback?.Invoke(error);
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
                 return null;
             }
@@ -338,6 +339,7 @@ namespace SoundMist.Models
             (byte[]? data, error) = await SoundCloudDownloader.DownloadTrackData(httpClient, links, statusCallback, token);
             if (data is null)
             {
+                ErrorCallback?.Invoke(error);
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
                 return null;
             }
