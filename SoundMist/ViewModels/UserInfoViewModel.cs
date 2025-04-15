@@ -5,6 +5,7 @@ using SoundMist.Helpers;
 using SoundMist.Models;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,22 +17,21 @@ public partial class UserInfoViewModel : ViewModelBase
     [ObservableProperty] private User? _user;
     [ObservableProperty] private bool _loadingView;
 
-    private readonly HttpClient _httpClient;
-    private readonly ProgramSettings _settings;
+    private readonly IDatabase _database;
     private readonly ILogger _logger;
+    private readonly History _history;
 
     private CancellationTokenSource? _tokenSource;
 
     public IRelayCommand OpenInBrowserCommand { get; }
 
-    public UserInfoViewModel(HttpClient httpClient, ProgramSettings settings, ILogger logger)
+    public UserInfoViewModel(IDatabase database, ILogger logger, History history)
     {
         Mediator.Default.Register(MediatorEvent.OpenUserInfo, OpenUser);
 
-        _httpClient = httpClient;
-        _settings = settings;
+        _database = database;
         _logger = logger;
-
+        _history = history;
         OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
     }
 
@@ -51,6 +51,11 @@ public partial class UserInfoViewModel : ViewModelBase
         if (obj is not User userWithIdOnly)
             return;
 
+        if (userWithIdOnly.Id == User?.Id)
+            return;
+
+        _history.AddUserInfoHistory(userWithIdOnly);
+
         _tokenSource?.Cancel();
         _tokenSource = new();
         var token = _tokenSource.Token;
@@ -59,7 +64,7 @@ public partial class UserInfoViewModel : ViewModelBase
         {
             try
             {
-                User = await SoundCloudQueries.GetUserInfo(_httpClient, _settings, userWithIdOnly.Id, token);
+                User = (await _database.GetUserById(userWithIdOnly.Id, token));
             }
             catch (TaskCanceledException)
             {

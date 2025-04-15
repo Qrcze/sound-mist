@@ -22,9 +22,11 @@ namespace SoundMist.ViewModels
         private CancellationTokenSource? _tokenSource;
         private readonly HttpClient _httpClient;
         private readonly AuthorizedHttpClient _authorizedHttpClient;
+        private readonly IDatabase _database;
         private readonly ProgramSettings _settings;
         private readonly ILogger _logger;
         private readonly IMusicPlayer _musicPlayer;
+        private readonly History _history;
 
         public ObservableCollection<Track> Tracks { get; } = [];
 
@@ -33,13 +35,15 @@ namespace SoundMist.ViewModels
         public IRelayCommand OpenTrackInfoCommand { get; }
         public IRelayCommand OpenUserInfoCommand { get; }
 
-        public PlaylistInfoViewModel(HttpClient httpClient, AuthorizedHttpClient authorizedHttpClient, ProgramSettings settings, ILogger logger, IMusicPlayer musicPlayer)
+        public PlaylistInfoViewModel(HttpClient httpClient, AuthorizedHttpClient authorizedHttpClient, IDatabase database, ProgramSettings settings, ILogger logger, IMusicPlayer musicPlayer, History history)
         {
             _httpClient = httpClient;
             _authorizedHttpClient = authorizedHttpClient;
+            _database = database;
             _settings = settings;
             _logger = logger;
             _musicPlayer = musicPlayer;
+            _history = history;
             Mediator.Default.Register(MediatorEvent.OpenPlaylistInfo, Open);
 
             OpenPlaylistInBrowserCommand = new RelayCommand(OpenPlaylistInBrowser);
@@ -89,9 +93,14 @@ namespace SoundMist.ViewModels
             if (obj is not Playlist playlist)
                 throw new ArgumentException($"{MediatorEvent.OpenPlaylistInfo} mediator event is expected to provide a {nameof(Playlist)} object as parameter");
 
+            if (playlist == Playlist)
+                return;
+
             LoadingView = true;
             Playlist = playlist;
             Tracks.Clear();
+
+            _history.AddPlaylistInfoHistory(playlist);
 
             Task.Run(async () =>
             {
@@ -112,8 +121,8 @@ namespace SoundMist.ViewModels
                         }
                     }
 
-                    var neededTracks = Playlist.Tracks.Where(x => x.User is null).Select(x => x.Id);
-                    var tracks = await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, neededTracks, token);
+                    var neededTracks = Playlist.Tracks.Except(Playlist.FirstFiveTracks).Select(x => x.Id);
+                    var tracks = await _database.GetTracksById(neededTracks, token);
 
                     if (token.IsCancellationRequested)
                         return;

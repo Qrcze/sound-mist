@@ -24,6 +24,7 @@ public partial class PlayerViewModel : ViewModelBase
     private readonly IMusicPlayer _musicPlayer;
     private readonly ProgramSettings _settings;
     private readonly ILogger _logger;
+    private readonly History _history;
     private double _trackTime;
     private double _trackLength;
     private bool _showHoursOnTime;
@@ -72,11 +73,12 @@ public partial class PlayerViewModel : ViewModelBase
     public IRelayCommand OpenTrackInfoCommand { get; }
     public IRelayCommand TogglePlaylistCommand { get; }
 
-    public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, ILogger logger)
+    public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, ILogger logger, History history)
     {
         _musicPlayer = musicPlayer;
         _settings = settings;
         _logger = logger;
+        _history = history;
 
         _musicPlayer.TrackChanging += TrackChanging;
         _musicPlayer.TrackTimeUpdated += UpdateTime;
@@ -152,6 +154,7 @@ public partial class PlayerViewModel : ViewModelBase
                 Playing = false;
                 PlayEnabled = true;
                 Loading = false;
+                _history.AddPlayedHistory(_musicPlayer.CurrentTrack!);
                 break;
 
             case PlayState.Error:

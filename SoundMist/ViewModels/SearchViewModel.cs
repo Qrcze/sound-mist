@@ -40,6 +40,7 @@ public partial class SearchViewModel : ViewModelBase
 
     private readonly Timer _querySearchDelay;
     private readonly HttpClient _httpClient;
+    private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
@@ -47,19 +48,22 @@ public partial class SearchViewModel : ViewModelBase
 
     public IRelayCommand ClearFilterCommand { get; }
     public IAsyncRelayCommand RunSearchCommand { get; }
+    public IRelayCommand OpenAboutPageCommand { get; }
 
-    public SearchViewModel(HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
+    public SearchViewModel(HttpClient httpClient, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
     {
         _querySearchDelay = new(800) { AutoReset = false };
         _querySearchDelay.Elapsed += GetSearchResults;
 
         _httpClient = httpClient;
+        _database = database;
         _settings = settings;
         _musicPlayer = musicPlayer;
         _logger = logger;
 
         ClearFilterCommand = new RelayCommand(ClearFilter);
         RunSearchCommand = new AsyncRelayCommand(async () => await RunSearch());
+        OpenAboutPageCommand = new RelayCommand(() => OpenAboutPage());
     }
 
     private void ClearFilter()
@@ -225,11 +229,20 @@ public partial class SearchViewModel : ViewModelBase
             return;
 
         if (item is User user)
+        {
+            _database.AddUser(user);
             Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, user);
+        }
         else if (item is Track track)
+        {
+            _database.AddTrack(track);
             Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, track);
+        }
         else if (item is Playlist playlist)
+        {
+            _database.AddPlaylist(playlist);
             Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, playlist);
+        }
     }
 
     internal async Task RunSelectedItem()
@@ -238,11 +251,20 @@ public partial class SearchViewModel : ViewModelBase
             return;
 
         if (SelectedItem is User user)
+        {
+            _database.AddUser(user);
             Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, user);
+        }
         else if (SelectedItem is Track track)
+        {
+            _database.AddTrack(track);
             await _musicPlayer.LoadNewQueue([track]);
+        }
         else if (SelectedItem is Playlist playlist)
+        {
+            _database.AddPlaylist(playlist);
             Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, playlist);
+        }
 
         //await PlayFromPlaylist(playlist, 0);
     }

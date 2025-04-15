@@ -95,7 +95,7 @@ namespace SCPlayerTests
             var logger = new DummyLogger();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null, null, settings, musicPlayer, logger);
+            var tv = new TrackInfoViewModel(null, null, settings, musicPlayer, logger, new());
 
             var track = new Track() { Id = 5 };
 

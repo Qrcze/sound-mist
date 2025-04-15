@@ -41,12 +41,13 @@ public partial class TrackInfoViewModel : ViewModelBase
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
+    private readonly History _history;
 
     public IRelayCommand OpenUrlInBrowserCommand { get; }
     public IAsyncRelayCommand LikeTrackCommand { get; }
     public IAsyncRelayCommand PlayPauseCommand { get; }
 
-    public TrackInfoViewModel(AuthorizedHttpClient authorizedHttpClient, HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
+    public TrackInfoViewModel(AuthorizedHttpClient authorizedHttpClient, HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
     {
         Mediator.Default.Register(MediatorEvent.OpenTrackInfo, OpenTrack);
         _authorizedHttpClient = authorizedHttpClient;
@@ -54,6 +55,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         _settings = settings;
         _musicPlayer = musicPlayer;
         _logger = logger;
+        _history = history;
         OpenUrlInBrowserCommand = new RelayCommand(OpenUrlInBrowser);
         LikeTrackCommand = new AsyncRelayCommand(LikeTrack);
         PlayPauseCommand = new AsyncRelayCommand(PlayPause);
@@ -160,11 +162,16 @@ public partial class TrackInfoViewModel : ViewModelBase
         _loadTrackCancellationToken = new CancellationTokenSource();
         var token = _loadTrackCancellationToken.Token;
 
+        if (obj is not Track track)
+            throw new ArgumentException($"{MediatorEvent.OpenTrackInfo} mediator event is expected to provide a {nameof(Track)} object as parameter");
+
+        if (track == Track)
+            return;
+
         LoadingView = true;
         Samples = [];
-        Track = obj as Track;
-        if (Track is null)
-            return;
+        Track = track;
+        _history.AddTrackInfoHistory(Track);
 
         if (_musicPlayer.CurrentTrack is not null)
             TrackChanged(_musicPlayer.CurrentTrack);

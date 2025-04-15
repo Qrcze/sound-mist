@@ -1,10 +1,8 @@
-﻿using SoundMist.Models;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SoundMist.Models;
 using SoundMist.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
-using Avalonia.Controls.Notifications;
-using SoundMist.Views;
 
 namespace SoundMist;
 
@@ -15,8 +13,10 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(new AuthorizedHttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
         collection.AddSingleton(new HttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
         collection.AddSingleton(ProgramSettings.Load());
+        collection.AddSingleton(History.Load());
         collection.AddSingleton<ILogger>(FileLogger.Instance);
         collection.AddSingleton<IMusicPlayer, ManagedBassPlayer>();
+        collection.AddSingleton<IDatabase, CacheDatabase>();
         collection.AddSingleton<MainWindowViewModel>();
         collection.AddTransient<MainViewModel>();
         collection.AddTransient<PlayerViewModel>();
@@ -28,5 +28,6 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<SettingsViewModel>();
         collection.AddTransient<UserInfoViewModel>();
         collection.AddTransient<PlaylistInfoViewModel>();
+        collection.AddTransient<HistoryViewModel>();
     }
 }

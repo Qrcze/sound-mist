@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:SoundMist.ViewModels"
+             xmlns:views="clr-namespace:SoundMist.Views"
+			 xmlns:li="using:LoadingIndicators.Avalonia"
+			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SoundMist.Views.HistoryView"
+	         x:DataType="vm:HistoryViewModel">
+	<Grid>
+		<TabControl SelectedIndex="{Binding OpenedTabIndex}">
+			<TabItem Header="Played">
+				<ListBox ItemsSource="{Binding Played}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid Height="120" ColumnDefinitions="120,200" RowDefinitions="auto,auto">
+								<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" />
+								<StackPanel Grid.Column="1" Grid.Row="0">
+									<TextBlock Margin="3" FontSize="15" TextWrapping="Wrap" Text="{Binding Title}" />
+									<TextBlock Margin="3" FontSize="13" Opacity="0.70" TextWrapping="Wrap" Text="{Binding ArtistName}" />
+								</StackPanel>
+								<TextBlock Margin="3" FontSize="11" HorizontalAlignment="Right" Foreground="Gray" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="1" Text="{Binding DurationFormatted}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</TabItem>
+			<TabItem Header="Tracks">
+				<ListBox ItemsSource="{Binding Tracks}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid Height="120" ColumnDefinitions="120,200" RowDefinitions="auto,auto">
+								<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" />
+								<StackPanel Grid.Column="1" Grid.Row="0">
+									<TextBlock Margin="3" FontSize="15" TextWrapping="Wrap" Text="{Binding Title}" />
+									<TextBlock Margin="3" FontSize="13" Opacity="0.70" TextWrapping="Wrap" Text="{Binding ArtistName}" />
+								</StackPanel>
+								<TextBlock Margin="3" FontSize="11" HorizontalAlignment="Right" Foreground="Gray" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="1" Text="{Binding DurationFormatted}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</TabItem>
+			<TabItem Header="Users">
+				<ListBox ItemsSource="{Binding Users}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid ColumnDefinitions="auto,*" Height="120">
+								<Border Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Transparent" />
+
+								<Border CornerRadius="50" ClipToBounds="True" Width="100" Height="100">
+									<Image asyncImageLoader:ImageLoader.Source="{Binding AvatarUrl}" />
+								</Border>
+
+								<StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="5 0">
+									<TextBlock Text="{Binding Username}" Margin="2" />
+									<StackPanel Orientation="Horizontal">
+										<Image Source="/Assets/followers.png" Width="15" Margin="2" />
+										<TextBlock Opacity="0.5" FontSize="12" Text="{Binding FollowersCount}" Margin="2" />
+										<TextBlock Opacity="0.5" FontSize="12" Text="followers" Margin="2" />
+									</StackPanel>
+									<Button Margin="2">
+										<StackPanel Orientation="Horizontal">
+											<Image Source="/Assets/follow.png" Width="20" />
+											<TextBlock Text=" Follow" />
+										</StackPanel>
+									</Button>
+								</StackPanel>
+								<Grid.ContextMenu>
+									<ContextMenu>
+										<MenuItem Header="About Uploader" Click="OpenAboutPage" />
+									</ContextMenu>
+								</Grid.ContextMenu>
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</TabItem>
+			<TabItem Header="Playlists">
+				<ListBox ItemsSource="{Binding Playlists}">
+				</ListBox>
+			</TabItem>
+		</TabControl>
+		<Panel Background="#9333" IsVisible="{Binding LoadingView}">
+			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />
+		</Panel>
+	</Grid>
+</UserControl>

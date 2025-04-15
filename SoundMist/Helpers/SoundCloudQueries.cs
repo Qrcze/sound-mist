@@ -1,4 +1,5 @@
 ﻿using SoundMist.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -16,7 +17,6 @@ namespace SoundMist.Helpers
         /// <inheritdoc cref="GetTracksById(HttpClient, string, int, IEnumerable{int}, CancellationToken)"/>
         public static async Task<List<Track>> GetTracksById(HttpClient httpClient, string clientId, int appVersion, IEnumerable<int> tracksIds)
             => await GetTracksById(httpClient, clientId, appVersion, tracksIds, CancellationToken.None);
-
 
         /// <summary>
         /// Will return a list of tracks with their full info. It divides each query into chunks of 50 tracks per request, so SC doesn't complain.
@@ -57,12 +57,20 @@ namespace SoundMist.Helpers
             return await response.Content.ReadFromJsonAsync<WaveformData>(token);
         }
 
-        internal static async Task<User?> GetUserInfo(HttpClient httpClient, ProgramSettings settings, int userId, CancellationToken token)
+        internal static async Task<User?> GetUserInfo(HttpClient httpClient, string clientId, int appVersion, int userId, CancellationToken token)
         {
-            using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/users/{userId}?client_id={settings.ClientId}&app_version={settings.AppVersion}&app_locale=en", token);
+            using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/users/{userId}?client_id={clientId}&app_version={appVersion}&app_locale=en", token);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<User>(token);
+        }
+
+        internal static async Task<Playlist?> GetPlaylistInfo(HttpClient httpClient, string clientId, int appVersion, int playlistId, CancellationToken token)
+        {
+            using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/playlists/{playlistId}?client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<Playlist>(token);
         }
 
         public static async Task<(List<int>? ids, string message)> GetUsersLikedTracksIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
@@ -104,7 +112,7 @@ namespace SoundMist.Helpers
                 return (null, $"Failed get request: {ex.Message}");
             }
         }
-        
+
         public static async Task<(List<int>? ids, string message)> GetUsersLikedPlaylistsIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
         {
             if (!httpClient.IsAuthorized)
@@ -124,6 +132,5 @@ namespace SoundMist.Helpers
                 return (null, $"Failed get request: {ex.Message}");
             }
         }
-
     }
 }

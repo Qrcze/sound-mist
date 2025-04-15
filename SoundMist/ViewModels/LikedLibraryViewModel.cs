@@ -39,15 +39,17 @@ namespace SoundMist.ViewModels
 
         private readonly HttpClient _httpClient;
         private readonly ProgramSettings _settings;
+        private readonly IDatabase _database;
         private readonly IMusicPlayer _musicPlayer;
         private readonly ILogger _logger;
         private string? _nextHref;
         private readonly Timer _filterDelay;
 
-        public LikedLibraryViewModel(HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
+        public LikedLibraryViewModel(HttpClient httpClient, ProgramSettings settings, IDatabase database, IMusicPlayer musicPlayer, ILogger logger)
         {
             _httpClient = httpClient;
             _settings = settings;
+            _database = database;
             _musicPlayer = musicPlayer;
             _logger = logger;
             musicPlayer.TrackChanged += (t) => SelectedTrack = t;
@@ -143,6 +145,10 @@ namespace SoundMist.ViewModels
 
             var newTracks = tracks.Collection.Select(x => x.Track);
             _fullTracksList.AddRange(newTracks);
+
+            foreach (var track in newTracks)
+                _database.AddTrack(track);
+
             foreach (var track in newTracks.Where(x => x.FullLabel.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase)))
                 TracksList.Add(track);
 
