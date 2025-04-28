@@ -7,12 +7,14 @@ An unofficial desktop SoundCloud player for Windows and Linux, built from the gr
 - Searching for tracks, artists and albums.
 - Autoplay/stations.
 - Basic info page about tracks, users and albums.
+- Play history list.
 
 ## Extra features:
 - Blocking selected tracks/uploaders.
 - Shuffling the queue works on stations/autoplay too.
 - Downloading tracks to store locally.
 - Status of the track shown on the taskbar.
+- Local browsing and playing history.
 - Light/Dark themes toggle with your system setting.
 - No ads.
 
