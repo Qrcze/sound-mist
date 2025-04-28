@@ -73,28 +73,29 @@ public partial class HistoryViewModel : ViewModelBase
             switch (OpenedTab)
             {
                 case History.List.PlayHistory:
-                    foreach (var item in await _database.GetTracksById(_history.PlayHistory.Except(Played.Select(x => x.Id)), token))
+                    Played.Clear();
+                    foreach (var item in await _database.GetTracksById(_history.PlayHistory, token))
                         Played.Add(item);
                     break;
 
                 case History.List.OnlinePlayHistory:
-
-                    //foreach (var item in await _database.GetTracksById(_history.PlayHistory.Except(Played.Select(x => x.Id)), token))
-                    //    Played.Add(item);
                     break;
 
                 case History.List.TracksHistory:
-                    foreach (var item in await _database.GetTracksById(_history.TracksHistory.Except(Tracks.Select(x => x.Id)), token))
+                    Tracks.Clear();
+                    foreach (var item in await _database.GetTracksById(_history.TracksHistory, token))
                         Tracks.Add(item);
                     break;
 
                 case History.List.UsersHistory:
-                    foreach (var item in await _database.GetUsersById(_history.UsersHistory.Except(Users.Select(x => x.Id)), token))
+                    Users.Clear();
+                    foreach (var item in await _database.GetUsersById(_history.UsersHistory, token))
                         Users.Add(item);
                     break;
 
                 case History.List.PlaylistsHistory:
-                    foreach (var item in await _database.GetPlaylistsById(_history.PlaylistsHistory.Except(Playlists.Select(x => x.Id)), token))
+                    Playlists.Clear();
+                    foreach (var item in await _database.GetPlaylistsById(_history.PlaylistsHistory, token))
                         Playlists.Add(item);
                     break;
 
