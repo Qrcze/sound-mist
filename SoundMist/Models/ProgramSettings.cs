@@ -29,6 +29,7 @@ namespace SoundMist.Models
         private MainViewTab _startingTabIndex = MainViewTab.LikedTracks;
         private bool _startPlayingOnLaunch;
         private AppColorTheme _appColorTheme;
+        private int _historyLimit = 50;
 
         public static ProgramSettings Load()
         {
@@ -78,6 +79,7 @@ namespace SoundMist.Models
         public int? LastTrackId { get => _lastTrackId; set => SetPropertyAndSave(ref _lastTrackId, value); }
         public MainViewTab StartingTabIndex { get => _startingTabIndex; set => SetPropertyAndSave(ref _startingTabIndex, value); }
         public bool StartPlayingOnLaunch { get => _startPlayingOnLaunch; set => SetPropertyAndSave(ref _startPlayingOnLaunch, value); }
+        public int HistoryLimit { get => _historyLimit; set => SetPropertyAndSave(ref _historyLimit, value); }
 
         public AppColorTheme AppColorTheme
         {

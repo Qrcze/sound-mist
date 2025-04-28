@@ -18,7 +18,7 @@
 			<Grid ColumnDefinitions="auto,*" Height="120">
 				<Border Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Transparent" />
 
-				<Border CornerRadius="50" ClipToBounds="True" Width="100" Height="100">
+				<Border CornerRadius="60" ClipToBounds="True" Width="120" Height="120">
 					<Image asyncImageLoader:ImageLoader.Source="{Binding AvatarUrl}" />
 				</Border>
 
@@ -49,16 +49,21 @@
 		<!-- =============================== -->
 		<DataTemplate DataType="{x:Type model:Track}">
 			<Grid ColumnDefinitions="auto,*,auto" RowDefinitions="*,auto" Height="120">
+				<!-- background if available -->
+				<Border Margin="5" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2" IsVisible="{Binding BackgroundVisualUrl, TargetNullValue=False}">
+					<Image asyncImageLoader:ImageLoader.Source="{Binding BackgroundVisualUrl}" Stretch="Fill" />
+				</Border>
+
 				<Border Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Transparent" />
 
-				<Image Grid.RowSpan="3" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" Width="100" Height="100" />
+				<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" Width="120" Height="120" />
 
 				<StackPanel Grid.Column="1" Margin="5">
-					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding ArtistName}" Margin="2" />
-					<TextBlock Text="{Binding Title}" Margin="2" />
-					<TextBlock Text="{Binding DurationFormatted}" Margin="15 2" IsVisible="{Binding !RegionBlocked}" />
-					<TextBlock Text="Not available in your country" IsVisible="{Binding RegionBlocked}" FontSize="18" Opacity="0.5" Margin="2" />
-					<TextBlock Text="Available via proxy" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="2" />
+					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding ArtistName}" Padding="5 2" HorizontalAlignment="Left" Background="Black" Foreground="White" Margin="5" />
+					<TextBlock Text="{Binding Title}" Padding="5 2" HorizontalAlignment="Left" Background="Black" Foreground="White" Margin="5" />
+					<TextBlock Text="{Binding DurationFormatted}" IsVisible="{Binding !RegionBlocked}" Margin="15 2" />
+					<TextBlock Text="Not available in your country" IsVisible="{Binding RegionBlocked}" FontSize="18" Opacity="0.5" Margin="5" />
+					<TextBlock Text="Available via proxy" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="5" />
 					<!-- soundcloud's track wave thingy; todo control -->
 				</StackPanel>
 				<StackPanel Grid.Column="1" Grid.Row="1" Margin="5">
@@ -72,7 +77,7 @@
 
 				<StackPanel Grid.Column="2" Margin="5">
 					<TextBlock Text="{Binding CreatedAgo}" HorizontalAlignment="Right" Opacity="0.5" ToolTip.Tip="{Binding CreatedLocalTime}" />
-					<Button CornerRadius="100" Margin="0 5" HorizontalAlignment="Right" IsVisible="{Binding HasGenre}">
+					<Button CornerRadius="100" Margin="0 5" Background="#111" HorizontalAlignment="Right" IsVisible="{Binding HasGenre}">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="#" Foreground="LightGray" />
 							<TextBlock Text="{Binding Genre}" Foreground="LightGray" />
@@ -95,7 +100,7 @@
 			<Grid ColumnDefinitions="auto,*,auto" RowDefinitions="*,auto">
 				<Border Grid.ColumnSpan="2" Grid.RowSpan="2" Background="Transparent" />
 
-				<Image VerticalAlignment="Top" Grid.RowSpan="3" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrFirstTrackArtwork}" Width="100" Height="100" />
+				<Image VerticalAlignment="Top" Grid.RowSpan="3" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrFirstTrackArtwork}" Width="120" Height="120" />
 
 				<StackPanel Grid.Column="1" Margin="5">
 					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding Author}" Margin="2" />

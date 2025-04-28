@@ -14,6 +14,7 @@ public partial class SettingsViewModel : ViewModelBase
 
     public MainViewTab DefaultTabOnLaunch { get => _settings.StartingTabIndex; set => _settings.StartingTabIndex = value; }
     public bool StartPlayingOnLaunch { get => _settings.StartPlayingOnLaunch; set => _settings.StartPlayingOnLaunch = value; }
+    public int HistoryLimit { get => _settings.HistoryLimit; set => _settings.HistoryLimit = value; }
 
     public MainViewTab[] TabsSelection { get; } = { MainViewTab.Search, MainViewTab.LikedTracks, MainViewTab.Downloaded };
     public AppColorTheme[] Themes { get; } = Enum.GetValues<AppColorTheme>().ToArray();
@@ -24,10 +25,12 @@ public partial class SettingsViewModel : ViewModelBase
     public IRelayCommand CloseCommand { get; }
 
     private readonly ProgramSettings _settings;
+    private readonly History _history;
 
-    public SettingsViewModel(ProgramSettings settings)
+    public SettingsViewModel(ProgramSettings settings, History history)
     {
         _settings = settings;
+        _history = history;
         SelectedTheme = _settings.AppColorTheme;
 
         Mediator.Default.Register(MediatorEvent.OpenSettings, _ => IsVisible = true);

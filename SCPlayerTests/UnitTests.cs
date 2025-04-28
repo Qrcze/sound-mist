@@ -14,8 +14,9 @@ namespace SCPlayerTests
         public void MainViewCanOpenSettings()
         {
             var settings = new ProgramSettings();
+            var history = new History(settings);
             var vm = new MainViewModel(settings);
-            var sv = new SettingsViewModel(settings);
+            var sv = new SettingsViewModel(settings, history);
 
             bool mediatorTriggered = false;
             Mediator.Default.Register(MediatorEvent.OpenSettings, _ => mediatorTriggered = true);
@@ -33,6 +34,7 @@ namespace SCPlayerTests
         {
             //setup
             var settings = new ProgramSettings();
+            var database = new DummyDatabase();
             settings.StartingTabIndex = MainViewTab.LikedTracks;
 
             var musicPlayer = new MockMusicPlayer();
@@ -40,7 +42,7 @@ namespace SCPlayerTests
 
             var mv = new MainViewModel(settings);
 
-            var lv = new LikedLibraryViewModel(null, settings, musicPlayer, logger);
+            var lv = new LikedLibraryViewModel(null, settings, database, musicPlayer, logger);
             lv.SelectedTrack = new Track() { Id = 5 };
 
             object? track = null;
@@ -62,6 +64,7 @@ namespace SCPlayerTests
         {
             //setup
             var settings = new ProgramSettings();
+            var database = new DummyDatabase();
             settings.StartingTabIndex = MainViewTab.LikedTracks;
 
             var musicPlayer = new MockMusicPlayer();
@@ -69,7 +72,7 @@ namespace SCPlayerTests
 
             var mv = new MainViewModel(settings);
 
-            var lv = new LikedLibraryViewModel(null, settings, musicPlayer, logger);
+            var lv = new LikedLibraryViewModel(null, settings, database, musicPlayer, logger);
             lv.SelectedTrack = new Track() { Id = 1, User = new User() { Id = 5 } };
 
             object? user = null;
@@ -91,11 +94,12 @@ namespace SCPlayerTests
         {
             //setup
             var settings = new ProgramSettings { StartingTabIndex = MainViewTab.LikedTracks };
+            var history = new History(settings);
             var musicPlayer = new MockMusicPlayer();
             var logger = new DummyLogger();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null, null, settings, musicPlayer, logger, new());
+            var tv = new TrackInfoViewModel(null, null, settings, musicPlayer, logger, history);
 
             var track = new Track() { Id = 5 };
 

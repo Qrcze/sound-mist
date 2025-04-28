@@ -108,15 +108,15 @@ namespace SoundMist.ViewModels
                 {
                     if (_authorizedHttpClient.IsAuthorized)
                     {
-                        var (ids, message) = await SoundCloudQueries.GetUsersLikedPlaylistsIds(_authorizedHttpClient, _settings.ClientId, _settings.AppVersion, token);
-                        if (ids is null)
+                        var (response, message) = await SoundCloudQueries.GetUsersLikedPlaylistsIds(_authorizedHttpClient, _settings.ClientId, _settings.AppVersion, token);
+                        if (response is null)
                         {
                             _logger.Error($"Failed getting liked playlists list: {message}");
                             NotificationManager.Show(new("Failed getting liked playlists", message, Avalonia.Controls.Notifications.NotificationType.Warning));
                         }
                         else
                         {
-                            if (ids.Contains(Playlist.Id))
+                            if (response.Collection.Contains(Playlist.Id))
                                 IsLiked = true;
                         }
                     }

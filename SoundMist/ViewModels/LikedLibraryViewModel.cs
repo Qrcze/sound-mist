@@ -116,7 +116,7 @@ namespace SoundMist.ViewModels
 
             Debug.Print("downloading liked tracks list");
 
-            LikedTracksCollection tracks;
+            QueryResponse<LikedTrack> tracks;
             var auth = _httpClient.DefaultRequestHeaders.Authorization;
             _httpClient.DefaultRequestHeaders.Authorization = null;
             try
@@ -124,7 +124,7 @@ namespace SoundMist.ViewModels
                 using var response = await _httpClient.GetAsync(_nextHref);
                 response.EnsureSuccessStatusCode();
 
-                tracks = await response.Content.ReadFromJsonAsync<LikedTracksCollection>() ?? throw new Exception("lol");
+                tracks = await response.Content.ReadFromJsonAsync<QueryResponse<LikedTrack>>() ?? throw new Exception("lol");
 
                 //await File.WriteAllTextAsync("likedTracks.json", await response.Content.ReadAsStringAsync());
             }

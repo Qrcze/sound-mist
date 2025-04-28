@@ -6,10 +6,10 @@ using System.Text.Json.Serialization;
 
 namespace SoundMist.Models
 {
-    public class LikedTracksCollection
+    public class QueryResponse<T>
     {
         [JsonPropertyName("collection")]
-        public List<LikedTrack> Collection { get; set; } = [];
+        public List<T> Collection { get; set; } = [];
 
         [JsonPropertyName("next_href")]
         public string? NextHref { get; set; }
@@ -18,16 +18,32 @@ namespace SoundMist.Models
         public string? QueryUrn { get; set; }
     }
 
-    public class TracksIdsCollection
+    public class LikedTrack
     {
-        [JsonPropertyName("collection")]
-        public List<int> Collection { get; set; } = [];
+        public override string ToString() => Track.FullLabel;
 
-        [JsonPropertyName("next_href")]
-        public string? NextHref { get; set; }
+        [JsonPropertyName("created_at")]
+        public DateTime? CreatedAt { get; set; }
 
-        [JsonPropertyName("query_urn")]
-        public string? QueryUrn { get; set; }
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; } = "like";
+
+        [JsonPropertyName("track")]
+        public Track Track { get; set; } = null!;
+    }
+
+    public class HistoryTrack
+    {
+        [JsonPropertyName("played_at")]
+        public long? PlayedAtEpochMs { get; set; }
+
+        public DateTime? PlayedAt => PlayedAtEpochMs.HasValue ? new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(PlayedAtEpochMs.Value) : null;
+
+        [JsonPropertyName("track_id")]
+        public int TrackId { get; set; }
+
+        [JsonPropertyName("track")]
+        public Track? Track { get; set; }
     }
 
     public class Track
@@ -251,26 +267,6 @@ namespace SoundMist.Models
 
         [JsonPropertyName("visual_url")]
         public string VisualUrl { get; set; } = string.Empty;
-    }
-
-    public class LikedTrack
-    {
-        public override string ToString() => Track.FullLabel;
-
-        [JsonPropertyName("created_at")]
-        public DateTime? CreatedAt { get; set; }
-
-        [JsonPropertyName("kind")]
-        public string Kind { get; set; } = "like";
-
-        [JsonPropertyName("track")]
-        public Track Track { get; set; } = null!;
-    }
-
-    public class TrackCollection
-    {
-        [JsonPropertyName("collection")]
-        public List<Track> Collection { get; set; } = [];
     }
 
     public class Badges

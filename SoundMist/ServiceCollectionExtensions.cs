@@ -10,10 +10,12 @@ public static class ServiceCollectionExtensions
 {
     public static void AddServices(this IServiceCollection collection)
     {
+        var programSettings = ProgramSettings.Load();
+
         collection.AddSingleton(new AuthorizedHttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
         collection.AddSingleton(new HttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
-        collection.AddSingleton(ProgramSettings.Load());
-        collection.AddSingleton(History.Load());
+        collection.AddSingleton(programSettings);
+        collection.AddSingleton(History.Load(programSettings));
         collection.AddSingleton<ILogger>(FileLogger.Instance);
         collection.AddSingleton<IMusicPlayer, ManagedBassPlayer>();
         collection.AddSingleton<IDatabase, CacheDatabase>();

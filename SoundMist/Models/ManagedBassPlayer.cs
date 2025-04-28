@@ -387,7 +387,7 @@ namespace SoundMist.Models
                 return [];
             }
 
-            return tracks;
+            return tracks.Collection;
         }
 
         public void PlayPause()

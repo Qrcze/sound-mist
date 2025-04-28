@@ -209,14 +209,14 @@ namespace SoundMist.Helpers
             return (true, string.Empty);
         }
 
-        public static async Task<(List<Track>? tracks, string error)> GetRelatedTracks(HttpClient httpClient, Track track, int userId, string clientId, int appVersion)
+        public static async Task<(QueryResponse<Track>? tracks, string error)> GetRelatedTracks(HttpClient httpClient, Track track, int userId, string clientId, int appVersion)
         {
-            TrackCollection? tracks;
+            QueryResponse<Track>? tracks;
             try
             {
                 using var response = await httpClient.GetAsync($"tracks/{track.Id}/related?user_id={userId}&client_id={clientId}&limit=50&offset=0&linked_partitioning=1&app_version={appVersion}&app_locale=en");
                 response.EnsureSuccessStatusCode();
-                tracks = await response.Content.ReadFromJsonAsync<TrackCollection>();
+                tracks = await response.Content.ReadFromJsonAsync<QueryResponse<Track>>();
             }
             catch (HttpRequestException ex)
             {
@@ -227,7 +227,7 @@ namespace SoundMist.Helpers
             if (tracks == null)
                 return (null, "Couldn't read the related track collection json.");
 
-            return (tracks.Collection, string.Empty);
+            return (tracks, string.Empty);
         }
 
         private class M3ULinkHolder

@@ -28,14 +28,13 @@ public class History
     public enum List
     {
         PlayHistory,
+        OnlinePlayHistory,
         TracksHistory,
         UsersHistory,
         PlaylistsHistory,
     }
 
     private const string FilePath = "history.json";
-
-    public int Limit { get; set; } = 50;
 
     [JsonIgnore] public IReadOnlyCollection<int> PlayHistory => _playHistory;
     [JsonIgnore] public IReadOnlyCollection<int> TracksHistory => _tracksHistory;
@@ -64,19 +63,27 @@ public class History
 
     public event EventHandler<HistoryChangedEventArgs>? HistoryChanged;
 
-    public static History Load()
+    private ProgramSettings _settings = null!;
+
+    public History(ProgramSettings settings) => _settings = settings;
+
+    [JsonConstructor]
+    protected History() { }
+
+    public static History Load(ProgramSettings settings)
     {
         if (!File.Exists(FilePath))
         {
             Debug.Print("creating new history file");
             File.Create(FilePath);
-            return new();
+            return new(settings);
         }
 
         try
         {
             var json = File.ReadAllText(FilePath);
             var history = JsonSerializer.Deserialize<History>(json)!;
+            history._settings = settings;
             return history;
         }
         catch (JsonException ex)
@@ -85,7 +92,7 @@ public class History
             string oldFile = $"{FilePath}.old";
             File.Delete(oldFile);
             File.Move(FilePath, oldFile);
-            return new();
+            return new(settings);
         }
         catch (Exception ex)
         {
@@ -93,7 +100,7 @@ public class History
             string oldFile = $"{FilePath}.old";
             File.Delete(oldFile);
             File.Move(FilePath, oldFile);
-            return new();
+            return new(settings);
         }
     }
 
@@ -115,7 +122,7 @@ public class History
         list.AddFirst(id);
 
         int? removed = null;
-        if (list.Count > Limit)
+        if (list.Count > _settings.HistoryLimit)
         {
             removed = list.Last?.Value;
             list.RemoveLast();

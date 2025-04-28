@@ -182,12 +182,12 @@ public partial class TrackInfoViewModel : ViewModelBase
             {
                 if (_authorizedHttpClient.IsAuthorized)
                 {
-                    (var likedTracksIds, string message) = await SoundCloudQueries.GetUsersLikedTracksIds(_authorizedHttpClient, _settings.ClientId, _settings.AppVersion, token);
+                    (var response, string message) = await SoundCloudQueries.GetUsersLikedTracksIds(_authorizedHttpClient, _settings.ClientId, _settings.AppVersion, token);
                     if (token.IsCancellationRequested)
                         return;
 
-                    if (likedTracksIds is not null)
-                        TrackLiked = likedTracksIds.Contains(Track.Id);
+                    if (response is not null)
+                        TrackLiked = response.Collection.Contains(Track.Id);
                     else
                     {
                         NotificationManager.Show(new("Failed retrieving liked list", "Please check the logs", NotificationType.Warning, TimeSpan.FromSeconds(10)));

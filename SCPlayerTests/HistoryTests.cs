@@ -7,18 +7,20 @@ namespace SCPlayerTests
         [Fact]
         public void HistoryKeepsLimit()
         {
-            var history = new History() { Limit = 10 };
+            var settings = new ProgramSettings() { HistoryLimit = 10 };
+            var history = new History(settings);
 
             for (int i = 0; i < 15; i++)
                 history.AddPlayedHistory(new() { Id = i });
 
-            Assert.True(history.PlayHistory.Count() == history.Limit);
+            Assert.True(history.PlayHistory.Count() == settings.HistoryLimit);
         }
 
         [Fact]
         public void HistoryItemsAreInCorrectOrder()
         {
-            var history = new History { Limit = 3 };
+            var settings = new ProgramSettings() { HistoryLimit = 3 };
+            var history = new History(settings);
 
             history.AddPlayedHistory(new() { Id = 1 });
             history.AddPlayedHistory(new() { Id = 2 });
@@ -34,7 +36,8 @@ namespace SCPlayerTests
         [Fact]
         public void HistoryForwardsEventWithProperNewId()
         {
-            var history = new History { Limit = 3 };
+            var settings = new ProgramSettings() { HistoryLimit = 3 };
+            var history = new History(settings);
 
             int? newId = null;
 
@@ -83,7 +86,8 @@ namespace SCPlayerTests
         [Fact]
         public void HistoryPushesRepeatsToTheTop()
         {
-            var history = new History { Limit = 10 };
+            var settings = new ProgramSettings() { HistoryLimit = 10 };
+            var history = new History(settings);
 
             history.AddPlayedHistory(new() { Id = 1 });
             history.AddPlayedHistory(new() { Id = 2 });
@@ -102,7 +106,8 @@ namespace SCPlayerTests
         [Fact]
         public void HistoryRemovesOldEntriesWhenExceedingLimit()
         {
-            var history = new History { Limit = 3 };
+            var settings = new ProgramSettings() { HistoryLimit = 3 };
+            var history = new History(settings);
 
             int? removedId = null;
 
@@ -122,7 +127,8 @@ namespace SCPlayerTests
         [Fact]
         public void HistoryFiresEventsForEachListType()
         {
-            var history = new History() { Limit = 10 };
+            var settings = new ProgramSettings() { HistoryLimit = 10 };
+            var history = new History(settings);
 
             bool playedFired = false;
             bool tracksFired = false;

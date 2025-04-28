@@ -8,6 +8,7 @@
 			 x:DataType="vm:SettingsViewModel"
 			 IsVisible="{Binding IsVisible}"
 			 x:Name="SettingsControl">
+	
 	<UserControl.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.ThemeDictionaries>
@@ -52,6 +53,9 @@
 		<Border Classes="settings-border" Margin="80" CornerRadius="15">
 			<Grid>
 				<TabControl TabStripPlacement="Left" Padding="18 10" Margin="5">
+					<!-- =================== -->
+					<!-- General tab -->
+					<!-- =================== -->
 					<TabItem Header="General">
 						<Border Classes="setting-tab">
 							<StackPanel>
@@ -67,9 +71,18 @@
 									<TextBlock Text="Theme:" VerticalAlignment="Center" />
 									<ComboBox Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
 								</Grid>
+								<Grid ColumnDefinitions="180,*">
+									<TextBlock Text="Local History Limit:" VerticalAlignment="Center" />
+									<NumericUpDown FormatString="0" Grid.Column="1" Width="120" HorizontalAlignment="Left"
+												   Value="{Binding HistoryLimit}"
+												   ValueChanged="NumericUpDown_ValueChanged" KeyDown="OnlyNumericKeysDown" />
+								</Grid>
 							</StackPanel>
 						</Border>
 					</TabItem>
+					<!-- =================== -->
+					<!-- Blocked Tracks tab -->
+					<!-- =================== -->
 					<TabItem Header="Blocked Tracks">
 						<Border Classes="setting-tab">
 							<ScrollViewer>
@@ -93,6 +106,9 @@
 							</ScrollViewer>
 						</Border>
 					</TabItem>
+					<!-- =================== -->
+					<!-- Blocked Users tab -->
+					<!-- =================== -->
 					<TabItem Header="Blocked Users">
 						<Border Classes="setting-tab">
 							<ScrollViewer>
@@ -118,7 +134,7 @@
 					</TabItem>
 				</TabControl>
 
-				<Button HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding CloseCommand}" Padding="0" Margin="10 8" Width="22">
+				<Button HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding CloseCommand}" Padding="0" Margin="10 15" Width="22">
 					<Image Source="/Assets/close.png" />
 				</Button>
 			</Grid>

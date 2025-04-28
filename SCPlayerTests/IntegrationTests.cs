@@ -8,6 +8,7 @@ namespace SCPlayerTests
     public class IntegrationTests
     {
         private static readonly HttpClient _httpClient = new() { BaseAddress = new(Globals.SoundCloudBaseUrl) };
+        private static readonly IDatabase _database = new DummyDatabase();
         private static readonly ILogger _logger = new DummyLogger();
         private static readonly ProgramSettings _settings = new();
         private static readonly IMusicPlayer _musicPlayer = new MockMusicPlayer();
@@ -36,7 +37,7 @@ namespace SCPlayerTests
         public async Task Search_All()
         {
             //all of the queries are going to be moved to a separate static helper class with querioes only
-            var vm = new SearchViewModel(_httpClient, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "All";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -50,7 +51,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Tracks()
         {
-            var vm = new SearchViewModel(_httpClient, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "Tracks";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -65,7 +66,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_People()
         {
-            var vm = new SearchViewModel(_httpClient, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "People";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -80,7 +81,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Albums()
         {
-            var vm = new SearchViewModel(_httpClient, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "Albums";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();

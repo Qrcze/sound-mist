@@ -4,6 +4,7 @@ using Avalonia.VisualTree;
 using SoundMist.Models;
 using SoundMist.ViewModels;
 using System;
+using System.Diagnostics;
 
 namespace SoundMist.Views;
 
@@ -39,5 +40,20 @@ public partial class SettingsView : UserControl
         var item = b.FindAncestorOfType<ContentPresenter>();
         var entry = item?.Content as BlockedEntry;
         return entry;
+    }
+
+    private void OnlyNumericKeysDown(object? sender, Avalonia.Input.KeyEventArgs e)
+    {
+        if (!int.TryParse(e.KeySymbol, out int _))
+            e.Handled = true;
+    }
+
+    private void NumericUpDown_ValueChanged(object? sender, Avalonia.Controls.NumericUpDownValueChangedEventArgs e)
+    {
+        if (!e.NewValue.HasValue)
+        {
+            var c = (NumericUpDown)sender;
+            c.Value = e.OldValue;
+        }
     }
 }
