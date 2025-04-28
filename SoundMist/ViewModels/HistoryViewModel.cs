@@ -36,7 +36,7 @@ public partial class HistoryViewModel : ViewModelBase
     public ObservableCollection<User> Users { get; } = [];
     public ObservableCollection<Playlist> Playlists { get; } = [];
 
-    public HistoryViewModel(HttpClient httpClient, AuthorizedHttpClient authorizedHttpClient, IDatabase database, ProgramSettings settings, ILogger logger, History history)
+    public HistoryViewModel(HttpClient httpClient, AuthorizedHttpClient authorizedHttpClient, IMusicPlayer musicPlayer, IDatabase database, ProgramSettings settings, ILogger logger, History history)
     {
         _httpClient = httpClient;
         _authorizedHttpClient = authorizedHttpClient;
@@ -47,6 +47,8 @@ public partial class HistoryViewModel : ViewModelBase
 
         if (authorizedHttpClient.IsAuthorized)
             UserLoggedIn = true;
+
+        musicPlayer.TrackChanged += (t) => Played.Insert(0, t);
     }
 
     partial void OnOpenedTabIndexChanged(int value)
