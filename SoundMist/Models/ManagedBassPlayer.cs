@@ -88,10 +88,6 @@ namespace SoundMist.Models
                 logger.Error(m);
             };
 
-            KeyboardHook.PlayPausedTriggered += PlayPause;
-            KeyboardHook.PrevTrackTriggered += () => Task.Run(async () => await PlayPrev());
-            KeyboardHook.NextTrackTriggered += () => Task.Run(async () => await PlayNext());
-
             Bass.Init();
         }
 
@@ -225,15 +221,17 @@ namespace SoundMist.Models
             if (_musicChannel == 0)
                 return;
 
-            _loadTrackTokenSource?.Cancel();
-            _loadTrackTokenSource = new();
-
             if (_positionInSeconds > 5)
             {
+                _loadTrackTokenSource?.Cancel();
+                _loadTrackTokenSource = new();
+
                 Bass.ChannelSetPosition(_musicChannel, 0);
             }
             else if (TracksPlaylist.TryMoveBack(out var track))
             {
+                _loadTrackTokenSource?.Cancel();
+                _loadTrackTokenSource = new();
                 try
                 {
                     if (await LoadTrack(track, _loadTrackTokenSource.Token))
@@ -390,11 +388,37 @@ namespace SoundMist.Models
             return tracks.Collection;
         }
 
+        public void Stop()
+        {
+            _playPauseTokenSource?.Cancel();
+            _playPauseTokenSource = null;
+            Bass.ChannelPause(_musicChannel);
+            _playing = false;
+            _timeUpdateTimer.Stop();
+            SetPosition(0);
+            PlayStateUpdated?.Invoke(PlayState.Paused, string.Empty);
+            TrackTimeUpdated?.Invoke(0);
+        }
+        
         public void PlayPause()
         {
             _playPauseTokenSource?.Cancel();
             _playPauseTokenSource = new();
             Task.Run(() => HandlePlayPause(_playPauseTokenSource.Token), _playPauseTokenSource.Token);
+        }
+
+        public void Play()
+        {
+            if (_playing)
+                return;
+            PlayPause();
+        }
+
+        public void Pause()
+        {
+            if (!_playing)
+                return;
+            PlayPause();
         }
 
         public async Task HandlePlayPause(CancellationToken token)

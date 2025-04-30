@@ -1,11 +1,12 @@
-﻿using SharpHook;
+﻿#if !OS_LINUX //Linux now has MPRIS taking care of media keys
+using SharpHook;
 using SharpHook.Native;
 using System;
 using System.Diagnostics;
 
 namespace SoundMist
 {
-    internal static class KeyboardHook
+    public static class KeyboardHook
     {
         private static SimpleGlobalHook _hook;
 
@@ -14,6 +15,10 @@ namespace SoundMist
         public static event Action? NextTrackTriggered;
 
         public static event Action? PlayPausedTriggered;
+
+        public static event Action? PlayTriggered;
+
+        public static event Action? PauseTriggered;
 
         internal static void Run()
         {
@@ -26,6 +31,18 @@ namespace SoundMist
         {
             switch (e.Data.KeyCode)
             {
+                case KeyCode.VcPlay:
+                case KeyCode.VcPlayCd: //linux uses this one for bluetooth
+                    e.SuppressEvent = true;
+                    PlayTriggered?.Invoke();
+                    break;
+
+                case KeyCode.VcPause:
+                case KeyCode.VcPauseCd: //linux uses this one for bluetooth
+                    e.SuppressEvent = true;
+                    PauseTriggered?.Invoke();
+                    break;
+
                 case KeyCode.VcMediaPlay:
                     e.SuppressEvent = true;
                     PlayPausedTriggered?.Invoke();
@@ -44,3 +61,4 @@ namespace SoundMist
         }
     }
 }
+#endif

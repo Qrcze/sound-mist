@@ -16,6 +16,7 @@ An unofficial desktop SoundCloud player for Windows and Linux, built from the gr
 - Status of the track shown on the taskbar.
 - Local browsing and playing history.
 - Light/Dark themes toggle with your system setting.
+- Linux player controls through MPRIS D-Bus
 - No ads.
 
 ## Planed features:

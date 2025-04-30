@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia;
+using Microsoft.Extensions.DependencyInjection;
 using SoundMist.Models;
+using Tmds.DBus;
 
 namespace SoundMist.Linux;
 
@@ -12,6 +15,18 @@ internal class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        App.ServiceConfigured += (services) =>
+        {
+            Debug.Print("connecting media player");
+            var logger = services.GetRequiredService<ILogger>();
+            var musicPlayer = services.GetRequiredService<IMusicPlayer>();
+
+            var media = new MediaService(logger, musicPlayer);
+            media.Register(new Connection(Address.Session));
+
+            Debug.Print("Media player connected");
+        };
+
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
