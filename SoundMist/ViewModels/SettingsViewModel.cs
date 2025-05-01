@@ -16,7 +16,7 @@ public partial class SettingsViewModel : ViewModelBase
     public bool StartPlayingOnLaunch { get => _settings.StartPlayingOnLaunch; set => _settings.StartPlayingOnLaunch = value; }
     public int HistoryLimit { get => _settings.HistoryLimit; set => _settings.HistoryLimit = value; }
 
-    public MainViewTab[] TabsSelection { get; } = { MainViewTab.Search, MainViewTab.LikedTracks, MainViewTab.Downloaded };
+    public MainViewTab[] TabsSelection { get; } = { MainViewTab.Search, MainViewTab.LikedTracks, MainViewTab.Downloaded, MainViewTab.History };
     public AppColorTheme[] Themes { get; } = Enum.GetValues<AppColorTheme>().ToArray();
 
     public ObservableCollection<BlockedEntry> BlockedUsers { get; } = [];

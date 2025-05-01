@@ -8,5 +8,6 @@
         TrackInfo,
         UserInfo,
         PlaylistInfo,
+        History,
     }
 }

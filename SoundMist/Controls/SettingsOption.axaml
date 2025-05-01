@@ -1,0 +1,51 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:SoundMist.Controls">
+
+	<Design.PreviewWith>
+		<StackPanel Margin="10" Width="400" Spacing="10">
+			<StackPanel Background="{DynamicResource SystemRegionBrush}">
+				<controls:SettingsOption Header="Test header 1">
+					<CheckBox IsChecked="True" />
+				</controls:SettingsOption>
+				<controls:SettingsOption Header="Test header 2">
+					<CheckBox IsChecked="True" />
+				</controls:SettingsOption>
+				<controls:SettingsOption Header="Test header 3">
+					<CheckBox IsChecked="True" />
+				</controls:SettingsOption>
+				<controls:SettingsOption Header="Test header longer 1">
+					<TextBox Text="Sample" Width="150" />
+				</controls:SettingsOption>
+				<controls:SettingsOption Header="Test header longer 2">
+					<TextBlock Text="Normal text" />
+				</controls:SettingsOption>
+				<controls:SettingsOption Header="Test header longer 3">
+					<ComboBox SelectedIndex="0">
+						<ComboBoxItem Content="Option 1" />
+						<ComboBoxItem Content="Option 2 longer" />
+						<ComboBoxItem Content="Option 3 xx" />
+					</ComboBox>
+				</controls:SettingsOption>
+			</StackPanel>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<ControlTheme x:Key="{x:Type controls:SettingsOption}" TargetType="controls:SettingsOption">
+
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Grid ColumnDefinitions="*,auto" Margin="4">
+					<TextBlock Text="{TemplateBinding Header}"
+							   VerticalAlignment="Center"
+							   TextWrapping="Wrap"
+							   Opacity=".75" />
+					<ContentPresenter Grid.Column="1"
+									  HorizontalAlignment="Right"
+									  VerticalAlignment="Center"
+									  Content="{TemplateBinding Content}" />
+				</Grid>
+			</ControlTemplate>
+		</Setter>
+	</ControlTheme>
+</ResourceDictionary>
