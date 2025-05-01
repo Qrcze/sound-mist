@@ -1,10 +1,8 @@
-﻿#if OS_WINDOWS
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SoundMist.Models;
+namespace SoundMist.Windows;
 
 internal class TaskbarManager
 {
@@ -97,5 +95,3 @@ internal interface ITaskbarList3
 internal class CTaskbarList
 {
 }
-
-#endif

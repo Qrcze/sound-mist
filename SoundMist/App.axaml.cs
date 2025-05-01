@@ -47,8 +47,8 @@ public partial class App : Application
         KeyboardHook.PlayPausedTriggered += musicPlayer.PlayPause;
         KeyboardHook.PlayTriggered += musicPlayer.Play;
         KeyboardHook.PauseTriggered += musicPlayer.Pause;
-        KeyboardHook.PrevTrackTriggered += () => System.Threading.Task.Run(async () => await musicPlayer.PlayPrev());
-        KeyboardHook.NextTrackTriggered += () => System.Threading.Task.Run(async () => await musicPlayer.PlayNext());
+        KeyboardHook.PrevTrackTriggered += () => System.Threading.Tasks.Task.Run(async () => await musicPlayer.PlayPrev());
+        KeyboardHook.NextTrackTriggered += () => System.Threading.Tasks.Task.Run(async () => await musicPlayer.PlayNext());
 #endif
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

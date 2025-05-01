@@ -24,42 +24,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
 #if OS_WINDOWS
 
-        _musicPlayer.TrackChanging += (t) =>
-        {
-            TaskbarManager.SetProgressState(TaskbarProgressBarStatus.Indeterminate);
-        };
-
-        _musicPlayer.TrackChanged += (t) =>
-        {
-            TaskbarManager.SetProgressState(TaskbarProgressBarStatus.Normal);
-            TaskbarManager.SetProgressValue(0, t.FullDuration);
-        };
-
-        _musicPlayer.TrackTimeUpdated += (ms) =>
-        {
-            var track = _musicPlayer.CurrentTrack;
-            if (track is null)
-                return;
-            TaskbarManager.SetProgressValue((int)ms, track.FullDuration);
-        };
-
-        _musicPlayer.PlayStateUpdated += (s, m) =>
-        {
-            switch (s)
-            {
-                case PlayState.Error:
-                    TaskbarManager.SetProgressState(TaskbarProgressBarStatus.Error);
-                    break;
-
-                case PlayState.Paused:
-                    TaskbarManager.SetProgressState(TaskbarProgressBarStatus.Paused);
-                    break;
-
-                case PlayState.Playing:
-                    TaskbarManager.SetProgressState(TaskbarProgressBarStatus.Normal);
-                    break;
-            }
-        };
+        
 
 #endif
     }
