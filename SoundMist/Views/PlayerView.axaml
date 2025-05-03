@@ -86,7 +86,7 @@
 
 				<Slider Margin="10 0 0 0" Value="{Binding DesiredVolume}" Minimum="0" Maximum="1" Width="100" />
 
-				<!-- Playlist popup -->
+				<!-- Playlist queue popup -->
 				<Popup Placement="Top" PlacementTarget="{Binding #PlaylistButton}" IsLightDismissEnabled="True" IsOpen="{Binding ShowingPlaylist, Mode=TwoWay}">
 					<Border CornerRadius="10" BorderBrush="{DynamicResource BackgroundBrush}" BorderThickness="1" Background="{DynamicResource BackgroundBrushInner}" Padding="10">
 						<Grid RowDefinitions="auto,*" ColumnDefinitions="*,auto">
@@ -99,15 +99,26 @@
 									 ItemsSource="{Binding TracksQueue}" SelectedItem="{Binding TrackSelectedInQueue}" DoubleTapped="ChangeToSelectedFromQueue">
 								<ListBox.ItemTemplate>
 									<DataTemplate>
-										<Grid RowDefinitions="*,*" ColumnDefinitions="*,auto">
-											<TextBlock Grid.Row="0" Text="{Binding Title}" />
-											<TextBlock Grid.Row="1" Text="{Binding ArtistName}" Opacity="0.6" />
-											<Button Classes="button-small" Grid.RowSpan="2" Grid.Column="1" VerticalAlignment="Center" Click="RemoveTrackFromQueue">
+										<Grid RowDefinitions="*,*" ColumnDefinitions="*,auto,auto">
+											<TextBlock Grid.Row="0" Text="{Binding Title}" ToolTip.Tip="{Binding Title}" />
+											<TextBlock Grid.Row="1" Text="{Binding ArtistName}" ToolTip.Tip="{Binding ArtistName}" Opacity="0.6" />
+											<Image Grid.Column="1" Grid.RowSpan="2"
+												   Source="/Assets/sensors.png" IsVisible="{Binding FromAutoplay}"
+												   Opacity="0.75" Margin="5 0" ToolTip.Tip="Generated from autoplay" />
+											<Button Classes="button-small" Grid.RowSpan="2" Grid.Column="2" VerticalAlignment="Center" Click="RemoveTrackFromQueue">
 												<Image Source="/Assets/close.png" />
 											</Button>
 										</Grid>
 									</DataTemplate>
 								</ListBox.ItemTemplate>
+								<ListBox.ContextMenu>
+									<ContextMenu>
+										<MenuItem Header="Play" Click="PlaylistItem_Play" />
+										<Separator Height="1" />
+										<MenuItem Header="About Track" Click="PlaylistItem_AboutTrack" />
+										<MenuItem Header="About Uploader" Click="PlaylistItem_AboutUploader" />
+									</ContextMenu>
+								</ListBox.ContextMenu>
 							</ListBox>
 						</Grid>
 					</Border>

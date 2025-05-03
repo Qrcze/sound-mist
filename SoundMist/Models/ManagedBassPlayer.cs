@@ -385,6 +385,7 @@ namespace SoundMist.Models
                 return [];
             }
 
+            tracks.Collection.ForEach(track => track.FromAutoplay = true);
             return tracks.Collection;
         }
 

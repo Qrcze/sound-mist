@@ -30,4 +30,21 @@ public partial class PlayerView : UserControl
     {
         await _vm.LoadTrackSelectedInPlaylistQueue();
     }
+
+    private async void PlaylistItem_Play(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        await _vm.LoadTrackSelectedInPlaylistQueue();
+    }
+
+    private void PlaylistItem_AboutTrack(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _vm.ShowingPlaylist = false;
+        Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, _vm.TrackSelectedInQueue);
+    }
+
+    private void PlaylistItem_AboutUploader(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _vm.ShowingPlaylist = false;
+        Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, _vm.TrackSelectedInQueue!.User);
+    }
 }

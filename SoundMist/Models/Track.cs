@@ -96,6 +96,7 @@ namespace SoundMist.Models
 
         [JsonIgnore] public bool RegionBlocked => Policy == "BLOCK";
         [JsonIgnore] public bool Snipped => Policy == "SNIP";
+        [JsonIgnore] public bool FromAutoplay { get; set; }
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }
