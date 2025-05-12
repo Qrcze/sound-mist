@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls.Notifications;
-using ManagedBass;
 using SoundMist.Helpers;
+using SoundMist.Models.Audio;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,30 +31,15 @@ namespace SoundMist.Models
             set
             {
                 _settings.Volume = value;
-
-                ChangeBassVolume(value);
+                _audioController.Volume = value;
             }
         }
 
-        double BassVolume
-        {
-            get
-            {
-                return _musicChannel != 0 ? Bass.ChannelGetAttribute(_musicChannel, ChannelAttribute.Volume) : 0;
-            }
-            set
-            {
-                if (_musicChannel != 0)
-                    ChangeBassVolume(value);
-            }
-        }
+        double Volume { get => _audioController.Volume; set => _audioController.Volume = value; }
 
-        public bool PlayerReady => _musicChannel != 0;
+        public bool PlayerReady => _audioController.ChannelInitialized;
 
-        public bool Playing => _playing;
-
-        private volatile int _musicChannel;
-        private volatile bool _playing;
+        public bool IsPlaying => _audioController.IsPlaying;
 
         public event Action<PlayState, string>? PlayStateUpdated;
 
@@ -68,16 +53,18 @@ namespace SoundMist.Models
 
         private readonly HttpClient _httpClient;
         private readonly ProgramSettings _settings;
+        private readonly IAudioController _audioController;
         private Func<Task<IEnumerable<Track>>>? _continueDownloader;
         private CancellationTokenSource? _loadTrackTokenSource;
         private CancellationTokenSource? _playPauseTokenSource;
         private readonly System.Timers.Timer _timeUpdateTimer;
-        private double _positionInSeconds;
 
-        public ManagedBassPlayer(HttpClient httpClient, ProgramSettings settings, ILogger logger)
+        public ManagedBassPlayer(HttpClient httpClient, ProgramSettings settings, IAudioController audioController, ILogger logger)
         {
             _httpClient = httpClient;
             _settings = settings;
+            _audioController = audioController;
+            _audioController.OnTrackEnded += () => Task.Run(PlayNext);
 
             _timeUpdateTimer = new(250);
             _timeUpdateTimer.Elapsed += _timeUpdateTimer_Elapsed;
@@ -87,33 +74,19 @@ namespace SoundMist.Models
                 NotificationManager.Show(new Notification("Player error", m, NotificationType.Error, TimeSpan.Zero));
                 logger.Error(m);
             };
-
-            Bass.Init();
-        }
-
-        private void ChangeBassVolume(double value)
-        {
-            if (_musicChannel != 0)
-                Bass.ChannelSetAttribute(_musicChannel, ChannelAttribute.Volume, Math.Clamp(value, 0, 1));
         }
 
         public void SetPosition(double value)
         {
-            if (_musicChannel == 0)
-                return;
-
-            long bytePosition = Bass.ChannelSeconds2Bytes(_musicChannel, value / 1000);
-            Bass.ChannelSetPosition(_musicChannel, bytePosition);
+            _audioController.TimeInSeconds = value / 1000;
         }
 
         private void _timeUpdateTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            if (TrackTimeUpdated is null || !_playing)
+            if (TrackTimeUpdated is null || !IsPlaying)
                 return;
 
-            long pos = Bass.ChannelGetPosition(_musicChannel);
-            _positionInSeconds = Bass.ChannelBytes2Seconds(_musicChannel, pos);
-            TrackTimeUpdated.Invoke(_positionInSeconds * 1000);
+            TrackTimeUpdated.Invoke(_audioController.TimeInSeconds * 1000);
         }
 
         public async Task AddToQueue(IEnumerable<Track> tracks, Func<Task<IEnumerable<Track>>>? downloadMore = null)
@@ -143,7 +116,7 @@ namespace SoundMist.Models
 
         private async Task StartLoadingIfNothingLoaded(Func<Task<IEnumerable<Track>>>? downloadMore = null)
         {
-            if (_musicChannel != 0)
+            if (PlayerReady)
                 return;
 
             TracksPlaylist.TryGetCurrent(out var track);
@@ -218,15 +191,15 @@ namespace SoundMist.Models
 
         public async Task PlayPrev()
         {
-            if (_musicChannel == 0)
+            if (!PlayerReady)
                 return;
 
-            if (_positionInSeconds > 5)
+            if (_audioController.TimeInSeconds > 5)
             {
                 _loadTrackTokenSource?.Cancel();
                 _loadTrackTokenSource = new();
 
-                Bass.ChannelSetPosition(_musicChannel, 0);
+                _audioController.TimeInSeconds = 0;
             }
             else if (TracksPlaylist.TryMoveBack(out var track))
             {
@@ -250,18 +223,15 @@ namespace SoundMist.Models
         /// <exception cref="TaskCanceledException" />
         private async Task<bool> LoadTrack(Track track, CancellationToken token)
         {
-            _playing = false;
+            _audioController.Stop();
 
             TrackChanging?.Invoke(track);
             PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
 
-            Bass.ChannelStop(_musicChannel);
-            Bass.StreamFree(_musicChannel);
-
             if (File.Exists(track.LocalFilePath))
             {
                 PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
-                _musicChannel = Bass.CreateStream(track.LocalFilePath, 0, 0, BassFlags.Default);
+                _audioController.LoadFromFile(track.LocalFilePath);
             }
             else if (track.Policy == "BLOCK")
             {
@@ -282,19 +252,12 @@ namespace SoundMist.Models
                 token.ThrowIfCancellationRequested();
 
                 PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
-                byte[]? data = await FullyDownloadTrack(proxyClient, track, token);
-                if (data is null)
-                    return false;
 
-                _musicChannel = Bass.CreateStream(data, 0, data.Length, BassFlags.Default);
+                await InitBuffered(proxyClient, track, token);
             }
             else if (track.Policy == "ALLOW")
             {
-                byte[]? data = await FullyDownloadTrack(_httpClient, track, token);
-                if (data is null)
-                    return false;
-
-                _musicChannel = Bass.CreateStream(data, 0, data.Length, BassFlags.Default);
+                await InitBuffered(_httpClient, track, token);
             }
             else
             {
@@ -302,57 +265,84 @@ namespace SoundMist.Models
                 return false;
             }
 
-            if (_musicChannel == 0)
+            if (!PlayerReady)
             {
-                PlayStateUpdated?.Invoke(PlayState.Error, $"Sound library failed loading track: {Bass.LastError}");
+                PlayStateUpdated?.Invoke(PlayState.Error, $"Sound library failed loading track");
                 return false;
             }
-            Bass.ChannelSetSync(_musicChannel, SyncFlags.End, 0, TrackEnded);
 
-            BassVolume = DesiredVolume;
+            Volume = DesiredVolume;
             PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
             TrackChanged?.Invoke(track);
             _settings.LastTrackId = track.Id;
             return true;
         }
 
-        void TrackEnded(int handle, int channel, int data, nint user)
-        {
-            Bass.StreamFree(channel);
-            Task.Run(PlayNext);
-        }
-
-        private async Task<byte[]?> FullyDownloadTrack(HttpClient httpClient, Track track, CancellationToken token)
+        private async Task<bool> InitBuffered(HttpClient httpClient, Track track, CancellationToken token)
         {
             (var links, string error) = await SoundCloudDownloader.GetTrackLinks(httpClient, track, _settings.ClientId!, token);
             if (links is null)
             {
                 ErrorCallback?.Invoke(error);
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
-                return null;
+                return false;
             }
 
-            void statusCallback(string message) => PlayStateUpdated?.Invoke(PlayState.Loading, message);
+            int initialChunks = Math.Min(3, links.Count);
 
-            (byte[]? data, error) = await SoundCloudDownloader.DownloadTrackData(httpClient, links, statusCallback, token);
-            if (data is null)
+            var initialBytes = new List<byte[]>(initialChunks);
+            for (int i = 0; i < initialChunks; i++)
             {
-                ErrorCallback?.Invoke(error);
-                PlayStateUpdated?.Invoke(PlayState.Error, error);
-                return null;
+                byte[] bytes = await SoundCloudDownloader.DownloadTrackChunk(httpClient, links[i], token);
+                initialBytes.Add(bytes);
+                PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
             }
 
-            return data;
+            try
+            {
+                _audioController.InitBufferedChannel(initialBytes.SelectMany(x => x).ToArray(), track.Duration);
+            }
+            catch (AudioControllerException ex)
+            {
+                string err = $"Failed initializing buffered channel: {ex.Message}";
+                ErrorCallback?.Invoke(err);
+                PlayStateUpdated?.Invoke(PlayState.Error, err);
+                return false;
+            }
+
+            RunDownloaderTask(httpClient, links, initialChunks, token);
+
+            return true;
+        }
+
+        void RunDownloaderTask(HttpClient httpClient, List<string> links, int startingIndex, CancellationToken token)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    for (int i = startingIndex; i < links.Count; i++)
+                    {
+                        byte[] bytes = await SoundCloudDownloader.DownloadTrackChunk(httpClient, links[i], token);
+                        _audioController.AppendBytes(bytes);
+                        PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
+                    }
+                    _audioController.StreamCompleted();
+                    PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
+                }
+                catch (TaskCanceledException ex)
+                {
+                }
+            }, token);
         }
 
         private void StartPlaying()
         {
-            if (_musicChannel == 0)
+            if (!PlayerReady)
                 return;
 
-            _playing = true;
+            _audioController.Play();
             _timeUpdateTimer.Start();
-            Bass.ChannelPlay(_musicChannel);
             PlayStateUpdated?.Invoke(PlayState.Playing, string.Empty);
         }
 
@@ -393,14 +383,15 @@ namespace SoundMist.Models
         {
             _playPauseTokenSource?.Cancel();
             _playPauseTokenSource = null;
-            Bass.ChannelPause(_musicChannel);
-            _playing = false;
+
+            _audioController.Pause();
             _timeUpdateTimer.Stop();
             SetPosition(0);
+
             PlayStateUpdated?.Invoke(PlayState.Paused, string.Empty);
             TrackTimeUpdated?.Invoke(0);
         }
-        
+
         public void PlayPause()
         {
             _playPauseTokenSource?.Cancel();
@@ -410,33 +401,31 @@ namespace SoundMist.Models
 
         public void Play()
         {
-            if (_playing)
+            if (IsPlaying)
                 return;
             PlayPause();
         }
 
         public void Pause()
         {
-            if (!_playing)
+            if (!IsPlaying)
                 return;
             PlayPause();
         }
 
         public async Task HandlePlayPause(CancellationToken token)
         {
-            if (_musicChannel == 0)
+            if (!PlayerReady)
                 return;
 
-            if (_playing)
+            if (IsPlaying)
             {
-                _playing = false;
                 PlayStateUpdated?.Invoke(PlayState.Paused, string.Empty);
                 await FadeOut(token);
                 _timeUpdateTimer.Stop();
             }
             else
             {
-                _playing = true;
                 PlayStateUpdated?.Invoke(PlayState.Playing, string.Empty);
                 await FadeIn(token);
                 _timeUpdateTimer.Start();
@@ -450,15 +439,15 @@ namespace SoundMist.Models
             double steps = fadeDuration / stepDelay;
             double volumeChange = DesiredVolume / steps;
 
-            while (BassVolume > 0)
+            while (Volume > 0)
             {
                 if (token.IsCancellationRequested)
                     return;
-                BassVolume -= volumeChange;
+                Volume -= volumeChange;
                 await Task.Delay(stepDelay);
             }
 
-            Bass.ChannelPause(_musicChannel);
+            _audioController.Pause();
         }
 
         private async Task FadeIn(CancellationToken token)
@@ -468,12 +457,12 @@ namespace SoundMist.Models
             double steps = fadeDuration / stepDelay;
             double volumeChange = DesiredVolume / steps;
 
-            Bass.ChannelPlay(_musicChannel);
-            while (BassVolume < DesiredVolume)
+            _audioController.Play();
+            while (Volume < DesiredVolume)
             {
                 if (token.IsCancellationRequested)
                     return;
-                BassVolume += volumeChange;
+                Volume += volumeChange;
                 await Task.Delay(stepDelay);
             }
         }

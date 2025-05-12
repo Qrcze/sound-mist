@@ -39,7 +39,6 @@
 							<Image Source="/Assets/play.png" IsVisible="{Binding !Playing}" />
 						</Panel>
 					</Button>
-					<!--<li:LoadingIndicator IsActive="{Binding Loading}" Mode="Wave" SpeedRatio="1.2" MinWidth="34" MinHeight="34" Width="34" Height="34" />-->
 				</Grid>
 				<Button Classes="button-medium" Margin="5 0 0 0" IsEnabled="{Binding PlayEnabled}" Command="{Binding PlayNextTrackCommand}">
 					<Image Source="/Assets/next.png" />
@@ -52,8 +51,8 @@
 			<!-- status bar -->
 			<Grid Grid.Column="1" ColumnDefinitions="70,300,70">
 				<TextBlock Grid.Column="0" HorizontalAlignment="Right" Text="{Binding TrackTimeFormatted}" VerticalAlignment="Center" />
-				<TextBlock Grid.Column="1" Margin="5 0" Text="{Binding LoadingMessage}" IsVisible="{Binding Loading}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-				<Slider Grid.Column="1" Margin="5 0" IsVisible="{Binding !Loading}" Minimum="0" Maximum="{Binding TrackLength}" Value="{Binding TrackTime}" />
+				<TextBlock Grid.Column="1" Margin="5 3" Opacity=".60" FontSize="13" Text="{Binding LoadingMessage}" VerticalAlignment="Bottom" HorizontalAlignment="Center" />
+				<Slider Grid.Column="1" Margin="5 0" Minimum="0" Maximum="{Binding TrackLength}" Value="{Binding TrackTime}" />
 				<TextBlock Grid.Column="2" Text="{Binding TrackLengthFormatted}" VerticalAlignment="Center" />
 			</Grid>
 

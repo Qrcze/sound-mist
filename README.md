@@ -8,21 +8,21 @@ An unofficial desktop SoundCloud player for Windows and Linux, built from the gr
 - Autoplay/stations.
 - Basic info page about tracks, users and albums.
 - Play history list.
+- Playing music while it still downloads.
 
 ## Extra features:
 - Blocking selected tracks/uploaders.
 - Shuffling the queue works on stations/autoplay too.
 - Downloading tracks to store locally.
-- Status of the track shown on the taskbar.
 - Local browsing and playing history.
-- Light/Dark themes toggle with your system setting.
-- Linux player controls through MPRIS D-Bus
+- Light/Dark themes.
+- Windows: System integration through SMTC.
+- Linux: System integration through MPRIS D-Bus.
+- System-wide media controls.
 - No ads.
 
 ## Planed features:
-- Playing the music while it still downloads.
 - Private bookmarks/likes list stored on the local machine.
-- More integration with the system (notifications, lock-screen info/controls).
 
 ---
 ![](/images/1.png)

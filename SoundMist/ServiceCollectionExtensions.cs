@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
 using SoundMist.ViewModels;
 using System;
 using System.Net.Http;
@@ -17,6 +18,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(programSettings);
         collection.AddSingleton(History.Load(programSettings));
         collection.AddSingleton<ILogger>(FileLogger.Instance);
+        collection.AddSingleton<IAudioController, ManagedBassController>();
         collection.AddSingleton<IMusicPlayer, ManagedBassPlayer>();
         collection.AddSingleton<IDatabase, CacheDatabase>();
         collection.AddSingleton<MainWindowViewModel>();

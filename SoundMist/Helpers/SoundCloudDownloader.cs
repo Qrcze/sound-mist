@@ -153,10 +153,7 @@ namespace SoundMist.Helpers
 
                     statusCallback?.Invoke($"Downloading: {chunks.Count}/{links.Count}");
 
-                    using var response = await httpClient.GetAsync(link, token);
-                    response.EnsureSuccessStatusCode();
-
-                    chunks.Add(await response.Content.ReadAsByteArrayAsync(token));
+                    chunks.Add(await DownloadTrackChunk(httpClient, link, token));
                 }
             }
             catch (HttpRequestException e)
@@ -164,6 +161,14 @@ namespace SoundMist.Helpers
                 return (null, $"Failed retrieving chunks, return code: {e.StatusCode}: {e.Message}");
             }
             return (chunks.SelectMany(x => x).ToArray(), string.Empty);
+        }
+
+        internal static async Task<byte[]> DownloadTrackChunk(HttpClient httpClient, string link, CancellationToken token)
+        {
+            using var response = await httpClient.GetAsync(link, token);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsByteArrayAsync(token);
         }
 
         public static async Task<(bool success, string error)> SaveTrackLocally(HttpClient httpClient, Track track, string clientId, Action<string> statusCallback)

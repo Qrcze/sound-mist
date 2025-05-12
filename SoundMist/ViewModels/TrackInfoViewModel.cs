@@ -84,7 +84,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         if (track.Id == Track.Id)
         {
             IsCurrentTrack = true;
-            IsPlaying = _musicPlayer.Playing;
+            IsPlaying = _musicPlayer.IsPlaying;
             _musicPlayer.TrackTimeUpdated += TrackTimeUpdated;
         }
         else

@@ -10,7 +10,6 @@ namespace SoundMist.ViewModels;
 public partial class PlayerViewModel : ViewModelBase
 {
     [ObservableProperty] private bool _playing;
-    [ObservableProperty] private bool _loading;
     [ObservableProperty] private bool _playEnabled;
     [ObservableProperty] private bool _showingPlaylist;
     [ObservableProperty] private string _loadingMessage = string.Empty;
@@ -134,33 +133,26 @@ public partial class PlayerViewModel : ViewModelBase
             case PlayState.Playing:
                 Playing = true;
                 PlayEnabled = true;
-                Loading = false;
                 break;
 
             case PlayState.Paused:
                 Playing = false;
                 PlayEnabled = true;
-                Loading = false;
                 break;
 
             case PlayState.Loading:
-                Playing = false;
-                PlayEnabled = false;
-                Loading = true;
                 LoadingMessage = message;
                 break;
 
             case PlayState.Loaded:
-                Playing = false;
                 PlayEnabled = true;
-                Loading = false;
+                LoadingMessage = string.Empty;
                 _history.AddPlayedHistory(_musicPlayer.CurrentTrack!);
                 break;
 
             case PlayState.Error:
                 Playing = false;
                 PlayEnabled = false;
-                Loading = true;
                 LoadingMessage = message;
                 break;
 
@@ -172,7 +164,7 @@ public partial class PlayerViewModel : ViewModelBase
     private void TrackChanging(Track track)
     {
         Playing = false;
-        Loading = true;
+        PlayEnabled = false;
 
         _showHoursOnTime = TimeSpan.FromMilliseconds(track.FullDuration).Hours > 0;
 

@@ -19,7 +19,7 @@ namespace SoundMist.Models
         Track? CurrentTrack { get; }
         float DesiredVolume { get; set; }
         bool PlayerReady { get; }
-        bool Playing { get; }
+        bool IsPlaying { get; }
         TracksPlaylist TracksPlaylist { get; }
 
         event Action<string>? ErrorCallback;
