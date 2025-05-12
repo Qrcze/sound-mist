@@ -1,7 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using SoundMist.Models;
+using SoundMist.Models.Audio;
 using SoundMist.Views;
 
 namespace SoundMist.ViewModels;

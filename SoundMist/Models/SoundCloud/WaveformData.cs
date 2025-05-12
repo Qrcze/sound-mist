@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SoundMist.Models
+namespace SoundMist.Models.SoundCloud
 {
     public class WaveformData
     {

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 			 xmlns:vm="clr-namespace:SoundMist.ViewModels"
-			 xmlns:model="clr-namespace:SoundMist.Models"
+			 xmlns:model="clr-namespace:SoundMist.Models.SoundCloud"
 			 xmlns:li="using:LoadingIndicators.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SoundMist.Views.SearchView"

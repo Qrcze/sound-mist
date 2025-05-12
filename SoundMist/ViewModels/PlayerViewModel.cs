@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
+using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;

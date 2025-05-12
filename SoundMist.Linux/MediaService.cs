@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
 using Tmds.DBus;
 
 namespace SoundMist.Linux;

@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Helpers;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
+using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

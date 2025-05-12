@@ -1,9 +1,10 @@
-﻿using System;
+﻿using SoundMist.Models.SoundCloud;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SoundMist.Models
+namespace SoundMist.Models.Audio
 {
     public enum PlayState
     {

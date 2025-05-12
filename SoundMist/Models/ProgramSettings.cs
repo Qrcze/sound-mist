@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Styling;
+using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
 using System.IO;

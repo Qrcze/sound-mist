@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace SoundMist.Models
+namespace SoundMist.Models.SoundCloud
 {
     public class User
     {

@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
-using SoundMist.Models;
+using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System;
 

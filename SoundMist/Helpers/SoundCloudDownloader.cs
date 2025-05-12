@@ -1,4 +1,4 @@
-﻿using SoundMist.Models;
+﻿using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

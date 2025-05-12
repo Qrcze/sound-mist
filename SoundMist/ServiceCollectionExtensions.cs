@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(History.Load(programSettings));
         collection.AddSingleton<ILogger>(FileLogger.Instance);
         collection.AddSingleton<IAudioController, ManagedBassController>();
-        collection.AddSingleton<IMusicPlayer, ManagedBassPlayer>();
+        collection.AddSingleton<IMusicPlayer, MusicPlayer>();
         collection.AddSingleton<IDatabase, CacheDatabase>();
         collection.AddSingleton<MainWindowViewModel>();
         collection.AddTransient<MainViewModel>();

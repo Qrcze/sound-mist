@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using SoundMist.Models;
+using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System;
 using static SoundMist.ViewModels.SearchViewModel;

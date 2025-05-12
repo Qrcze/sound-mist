@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using SoundMist.Models;
+using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System.Linq;
 using System.Threading.Tasks;

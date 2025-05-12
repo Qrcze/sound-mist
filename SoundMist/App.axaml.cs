@@ -8,6 +8,7 @@ using SoundMist.Models;
 using SoundMist.ViewModels;
 using SoundMist.Views;
 using System.Net.Http;
+using SoundMist.Models.Audio;
 
 namespace SoundMist;
 

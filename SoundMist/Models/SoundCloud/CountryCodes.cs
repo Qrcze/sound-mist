@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SoundMist.Models;
+namespace SoundMist.Models.SoundCloud;
 
 internal static class CountryCodes
 {

@@ -1,4 +1,5 @@
 ﻿using SoundMist.Helpers;
+using SoundMist.Models.SoundCloud;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;

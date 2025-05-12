@@ -1,6 +1,8 @@
 ﻿using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
+using SoundMist.Models.SoundCloud;
 using System;
 using Windows.Media;
 using Windows.Media.Playback;

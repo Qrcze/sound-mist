@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls.Notifications;
 using SoundMist.Helpers;
-using SoundMist.Models.Audio;
+using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,9 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace SoundMist.Models
+namespace SoundMist.Models.Audio
 {
-    public class ManagedBassPlayer : IMusicPlayer
+    public class MusicPlayer : IMusicPlayer
     {
         public TracksPlaylist TracksPlaylist { get; } = new();
 
@@ -59,7 +59,7 @@ namespace SoundMist.Models
         private CancellationTokenSource? _playPauseTokenSource;
         private readonly System.Timers.Timer _timeUpdateTimer;
 
-        public ManagedBassPlayer(HttpClient httpClient, ProgramSettings settings, IAudioController audioController, ILogger logger)
+        public MusicPlayer(HttpClient httpClient, ProgramSettings settings, IAudioController audioController, ILogger logger)
         {
             _httpClient = httpClient;
             _settings = settings;

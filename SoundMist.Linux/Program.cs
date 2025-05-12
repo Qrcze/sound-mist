@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
 using Tmds.DBus;
 
 namespace SoundMist.Linux;

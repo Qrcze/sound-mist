@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Helpers;
 using SoundMist.Models;
+using SoundMist.Models.SoundCloud;
 using System;
 using System.Diagnostics;
 using System.Linq;

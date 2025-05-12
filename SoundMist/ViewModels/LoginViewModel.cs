@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Models;
+using SoundMist.Models.SoundCloud;
 using SoundMist.Views;
 using System.Diagnostics;
 using System.Net.Http;
