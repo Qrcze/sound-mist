@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace SoundMist.Models.Audio
 {
-    internal class BufferProvider(int estimatedSize)
+    public class BufferProvider(int estimatedSize)
     {
         public byte[] RawBuffer => _buffer;
 
@@ -20,7 +20,7 @@ namespace SoundMist.Models.Audio
             {
                 Debug.Print($"had to increase the track buffer size ({_buffer.Length} + {bytes.Length}bytes needed)");
 
-                var newBuffer = new byte[_buffer.Length + bytes.Length];
+                var newBuffer = new byte[LoadedBytes + bytes.Length];
                 Array.Copy(_buffer, newBuffer, _buffer.Length);
                 _buffer = newBuffer;
             }
