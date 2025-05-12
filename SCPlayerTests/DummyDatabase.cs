@@ -1,4 +1,5 @@
 ﻿using SoundMist.Models;
+using SoundMist.Models.SoundCloud;
 
 namespace SCPlayerTests
 {

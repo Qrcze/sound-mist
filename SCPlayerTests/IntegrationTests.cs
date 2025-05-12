@@ -1,6 +1,8 @@
 ﻿using SoundMist;
 using SoundMist.Helpers;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
+using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 
 namespace SCPlayerTests

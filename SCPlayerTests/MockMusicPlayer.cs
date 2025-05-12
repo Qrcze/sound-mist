@@ -1,4 +1,6 @@
 ﻿using SoundMist.Models;
+using SoundMist.Models.Audio;
+using SoundMist.Models.SoundCloud;
 
 namespace SCPlayerTests
 {
@@ -7,7 +9,7 @@ namespace SCPlayerTests
         public Track? CurrentTrack { get; }
         public float DesiredVolume { get; set; }
         public bool PlayerReady { get; }
-        public bool Playing { get; }
+        public bool IsPlaying { get; }
         public TracksPlaylist TracksPlaylist { get; }
         public event Action<string>? ErrorCallback;
         public event Action<PlayState, string>? PlayStateUpdated;
@@ -72,6 +74,21 @@ namespace SCPlayerTests
         }
 
         public Task ReloadCurrentTrack()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Stop()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Play()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Pause()
         {
             throw new NotImplementedException();
         }

@@ -3,12 +3,14 @@ using SoundMist.Models;
 using SoundMist.ViewModels;
 using RichardSzalay.MockHttp;
 using System.Text.Json;
+using SoundMist.Models.Audio;
+using SoundMist.Models.SoundCloud;
 
 namespace SCPlayerTests
 {
     public class UnitTests
     {
-        private static readonly TrackCollection Tracks = JsonSerializer.Deserialize<TrackCollection>(File.ReadAllText("Resources/TracksCollection.json"))!;
+        private static readonly QueryResponse<Track> Tracks = JsonSerializer.Deserialize<QueryResponse<Track>>(File.ReadAllText("Resources/TracksCollection.json"))!;
 
         [Fact]
         public void MainViewCanOpenSettings()
@@ -187,34 +189,32 @@ namespace SCPlayerTests
 
             ProgramSettings settings = new();
             var logger = new DummyLogger();
+            var audioController = new DummyAudioController();
 
-            ManagedBassPlayer mp = new(client, settings, logger);
+            MusicPlayer mp = new(client, settings, audioController, logger);
             mp.ErrorCallback += (s) =>
             {
                 Assert.Fail($"Player triggered an error. Last message: {logger.LastMessage}");
             };
 
             await mp.AddToQueue(mockTrack1);
-            Assert.True(mp.CurrentTrack == null, "Queue shouldn't have changed the track from simply adding to it");
+            Assert.True(mp.CurrentTrack == mockTrack1, "If queue was empty, it should have loaded the newly added track");
 
             await mp.AddToQueue(mockTrack2, null);
-            Assert.True(mp.CurrentTrack == mockTrack1, "Player didn't change changed track after appending to the queue with preload on");
+            Assert.True(mp.CurrentTrack == mockTrack1, "Adding to queue shouldn't change the current track");
             await mp.AddToQueue(mockTrack3);
 
-            Assert.True(mp.CurrentTrack == mockTrack1, "Player changed track after appending to the queue");
             Assert.True(mp.TracksPlaylist.Count == 3, $"Queue has incorrect size: {mp.TracksPlaylist.Count} (should be 3)");
 
             await mp.PlayNext();
-            Assert.True(mp.CurrentTrack == mockTrack2, "Track didn't change to the second track");
+            Assert.True(mp.CurrentTrack == mockTrack2, "PlayNext didn't change to the correct (second) track");
             Assert.True(mp.TracksPlaylist.Count == 3, $"Queue unexpectedly increased after playing next: {mp.TracksPlaylist.Count} (should be 3)");
 
             await mp.PlayNext();
-            Assert.True(mp.CurrentTrack == mockTrack3, "Track didn't change to the third track");
-            Assert.True(mp.TracksPlaylist.Count == 3, $"Queue unexpectedly increased after playing next: {mp.TracksPlaylist.Count} (should be 3)");
+            Assert.True(mp.CurrentTrack == mockTrack3, "PlayNext didn't change to the correct (third) track");
 
-            await mp.PlayNext();
-            Assert.True(mp.CurrentTrack.Id == mockTrack1.Id, "The next in queue was not correct after autoplay download, it should have been the first track");
-            Assert.True(mp.TracksPlaylist.Count == 3 + Tracks.Collection.Count, $"Queue got to unpredicted size: {mp.TracksPlaylist.Count} (should be {3 + Tracks.Collection.Count})");
+            await mp.PlayPrev();
+            Assert.True(mp.CurrentTrack == mockTrack2, "PlayPrev didn't change back to the second track");
         }
     }
 }
