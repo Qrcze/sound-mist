@@ -10,8 +10,8 @@
              x:Class="SoundMist.Views.TrackInfoView"
 			 x:DataType="vm:TrackInfoViewModel">
 	<Grid>
-		<ScrollViewer Padding="10">
-			<StackPanel>
+		<ScrollViewer>
+			<StackPanel Margin="10">
 				<Grid>
 					<Image asyncImageLoader:ImageLoader.Source="{Binding Track.BackgroundVisualUrl}" Grid.ColumnSpan="3" Grid.RowSpan="2" />
 
