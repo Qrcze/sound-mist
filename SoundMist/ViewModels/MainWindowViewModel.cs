@@ -21,12 +21,6 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             TrackTitle = $"{t.Title} by {t.ArtistName}";
         };
-
-#if OS_WINDOWS
-
-        
-
-#endif
     }
 
     public void OpenMainView()
