@@ -6,7 +6,6 @@ using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -59,7 +58,7 @@ namespace SoundMist.ViewModels
             if (Playlist?.PermalinkUrl is null)
                 return;
 
-            Process.Start(new ProcessStartInfo(Playlist.PermalinkUrl) { UseShellExecute = true });
+            SystemHelpers.OpenInBrowser(Playlist.PermalinkUrl);
         }
 
         private void OpenTrackInBrowser()
@@ -67,7 +66,7 @@ namespace SoundMist.ViewModels
             if (SelectedTrack?.PermalinkUrl is null)
                 return;
 
-            Process.Start(new ProcessStartInfo(SelectedTrack.PermalinkUrl) { UseShellExecute = true });
+            SystemHelpers.OpenInBrowser(SelectedTrack.PermalinkUrl);
         }
 
         private void OpenTrackInfo()

@@ -6,8 +6,6 @@ using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -144,7 +142,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         if (Track?.PermalinkUrl is null)
             return;
 
-        Process.Start(new ProcessStartInfo(Track.PermalinkUrl) { UseShellExecute = true });
+        SystemHelpers.OpenInBrowser(Track.PermalinkUrl);
     }
 
     async Task PlayPause(CancellationToken token)

@@ -5,8 +5,6 @@ using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +39,7 @@ public partial class UserInfoViewModel : ViewModelBase
         if (string.IsNullOrEmpty(User?.PermalinkUrl))
             return;
 
-        Process.Start(new ProcessStartInfo(User.PermalinkUrl) { UseShellExecute = true });
+        SystemHelpers.OpenInBrowser(User.PermalinkUrl);
     }
 
     private void OpenUser(object? obj)

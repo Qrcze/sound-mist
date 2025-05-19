@@ -1,10 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
-using SoundMist.Views;
-using System.Diagnostics;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -36,7 +34,7 @@ internal partial class LoginViewModel : ViewModelBase
 
     private void OpenSoundcloudPage()
     {
-        Process.Start(new ProcessStartInfo("https://soundcloud.com") { UseShellExecute = true });
+        SystemHelpers.OpenInBrowser("https://soundcloud.com");
     }
 
     private async Task UseToken()
@@ -49,7 +47,7 @@ internal partial class LoginViewModel : ViewModelBase
         if (!response.IsSuccessStatusCode)
         {
             _logger.Info("Provided authorization token was not valid");
-            _authorizedHttpClient .Authorization = null;
+            _authorizedHttpClient.Authorization = null;
             ValidationMessage = "Provided token is invalid. Are you sure you copied the value from \"oauth_token\" cookie?";
             return;
         }
