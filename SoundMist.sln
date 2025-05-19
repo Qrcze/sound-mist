@@ -15,24 +15,31 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Linux-Publish|Any CPU = Linux-Publish|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AA0FEC9E-6212-466D-AA13-74591A492205}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AA0FEC9E-6212-466D-AA13-74591A492205}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA0FEC9E-6212-466D-AA13-74591A492205}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA0FEC9E-6212-466D-AA13-74591A492205}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA0FEC9E-6212-466D-AA13-74591A492205}.Linux-Publish|Any CPU.ActiveCfg = Linux-Publish|Any CPU
 		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Linux-Publish|Any CPU.ActiveCfg = Linux-Publish|Any CPU
+		{08A7ADB5-00D0-024E-913C-09DC8110FB47}.Linux-Publish|Any CPU.Build.0 = Linux-Publish|Any CPU
 		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3E373C8-E643-27B0-F6BF-BF5284F78DBA}.Linux-Publish|Any CPU.ActiveCfg = Linux-Publish|Any CPU
 		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Linux-Publish|Any CPU.ActiveCfg = Linux-Publish|Any CPU
+		{B3896476-4CB6-4B63-862D-237DB23ABB28}.Linux-Publish|Any CPU.Build.0 = Linux-Publish|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
