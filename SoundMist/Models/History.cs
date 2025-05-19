@@ -76,8 +76,9 @@ public class History
         if (!File.Exists(FilePath))
         {
             Debug.Print("creating new history file");
-            File.Create(FilePath);
-            return new(settings);
+            var history = new History(settings);
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(history));
+            return history;
         }
 
         try
