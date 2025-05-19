@@ -63,4 +63,11 @@ public partial class HistoryView : UserControl
     private void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
     {
     }
+
+    private void PlaySelectedTrack(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        var box = (ListBox)sender!;
+        var track = box.SelectedItem as Track ?? throw new InvalidCastException($"{nameof(PlaySelectedTrack)} can should be only called on lists with items of type {nameof(Track)}");
+        _vm.PlayTrack(track);
+    }
 }

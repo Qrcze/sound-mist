@@ -172,10 +172,10 @@
 	<Grid>
 		<TabControl SelectedIndex="{Binding OpenedTabIndex}">
 			<TabItem Header="Local History">
-				<ListBox ItemsSource="{Binding Played}" />
+				<ListBox ItemsSource="{Binding Played}" DoubleTapped="PlaySelectedTrack" />
 			</TabItem>
 			<TabItem Header="Online History" IsVisible="{Binding UserLoggedIn}">
-				<ListBox x:Name="OnlineHistory" ItemsSource="{Binding PlayedOnline}" ScrollViewer.ScrollChanged="OnlineScrollChangedAsync" />
+				<ListBox x:Name="OnlineHistory" ItemsSource="{Binding PlayedOnline}" DoubleTapped="PlaySelectedTrack" ScrollViewer.ScrollChanged="OnlineScrollChangedAsync" />
 			</TabItem>
 			<TabItem Header="Viewed Tracks">
 				<ListBox ItemsSource="{Binding Tracks}" />

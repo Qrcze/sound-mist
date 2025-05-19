@@ -22,6 +22,7 @@ public partial class HistoryViewModel : ViewModelBase
     History.List OpenedTab { get; set; }
 
     private readonly HttpManager _httpManager;
+    private readonly IMusicPlayer _musicPlayer;
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly ILogger _logger;
@@ -40,6 +41,7 @@ public partial class HistoryViewModel : ViewModelBase
     public HistoryViewModel(HttpManager httpManager, IMusicPlayer musicPlayer, IDatabase database, ProgramSettings settings, ILogger logger, History history)
     {
         _httpManager = httpManager;
+        _musicPlayer = musicPlayer;
         _database = database;
         _settings = settings;
         _logger = logger;
@@ -48,7 +50,11 @@ public partial class HistoryViewModel : ViewModelBase
         if (httpManager.AuthorizedClient.IsAuthorized)
             UserLoggedIn = true;
 
-        musicPlayer.TrackChanged += (t) => Played.Insert(0, t);
+        musicPlayer.TrackChanged += (t) =>
+        {
+            Played.Remove(t);
+            Played.Insert(0, t);
+        };
     }
 
     partial void OnOpenedTabIndexChanged(int value)
@@ -192,5 +198,10 @@ public partial class HistoryViewModel : ViewModelBase
         {
             LoadingView = false;
         }
+    }
+
+    internal void PlayTrack(Track track)
+    {
+        _musicPlayer.LoadNewQueue([track]);
     }
 }
