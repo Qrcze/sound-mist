@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:vm="using:SoundMist.ViewModels"
 			 xmlns:c="using:SoundMist.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="650"
              x:Class="SoundMist.Views.SettingsView"
 			 x:DataType="vm:SettingsViewModel"
 			 IsVisible="{Binding IsVisible}"
@@ -32,13 +32,19 @@
 		<Style Selector="Border.setting-tab">
 			<Setter Property="Background" Value="{DynamicResource BackgroundBrushInner}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Padding" Value="20 15" />
+			<Setter Property="Padding" Value="0 3" />
 			<Setter Property="CornerRadius" Value="8" />
 			<Setter Property="Margin" Value="0 0 15 0" />
 		</Style>
 		<Style Selector="TabItem">
 			<Setter Property="Margin" Value="0 0 0 0" />
 			<Setter Property="FontSize" Value="15" />
+		</Style>
+
+		<Style Selector="TextBlock.setting-header">
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="Margin" Value="4" />
+			<Setter Property="Opacity" Value=".75" />
 		</Style>
 
 		<Style Selector="Border.blocked-item">
@@ -59,21 +65,42 @@
 					<!-- =================== -->
 					<TabItem Header="General">
 						<Border Classes="setting-tab">
-							<StackPanel MaxWidth="800">
-								<c:SettingsOption Header="Default tab on launch:">
-									<ComboBox Width="150" ItemsSource="{Binding TabsSelection}" SelectedItem="{Binding DefaultTabOnLaunch}" />
-								</c:SettingsOption>
-								<c:SettingsOption Header="Start playing on launch:">
-									<CheckBox IsChecked="{Binding StartPlayingOnLaunch}" />
-								</c:SettingsOption>
-								<c:SettingsOption Header="Theme:">
-									<ComboBox Width="100" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
-								</c:SettingsOption>
-								<c:SettingsOption Header="Local History Limit:">
-									<NumericUpDown Width="120" FormatString="0" Value="{Binding HistoryLimit}"
-												   ValueChanged="NumericUpDown_ValueChanged" KeyDown="OnlyNumericKeysDown" />
-								</c:SettingsOption>
-							</StackPanel>
+							<ScrollViewer>
+								<StackPanel Margin="20 15" MaxWidth="700">
+									<c:SettingsOption Header="Default tab on launch:">
+										<ComboBox Width="150" ItemsSource="{Binding TabsSelection}" SelectedItem="{Binding DefaultTabOnLaunch}" />
+									</c:SettingsOption>
+									<c:SettingsOption Header="Start playing on launch:">
+										<CheckBox IsChecked="{Binding StartPlayingOnLaunch}" />
+									</c:SettingsOption>
+									<c:SettingsOption Header="Theme:">
+										<ComboBox Width="100" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
+									</c:SettingsOption>
+									<c:SettingsOption Header="Local History Limit:">
+										<NumericUpDown Width="120" FormatString="0" Value="{Binding HistoryLimit}"
+													   ValueChanged="NumericUpDown_ValueChanged" KeyDown="OnlyNumericKeysDown" />
+									</c:SettingsOption>
+
+									<Separator Margin="15" />
+									<TextBlock Text="Proxy settings" FontSize="16" FontWeight="Medium" />
+
+									<Grid ColumnDefinitions="*,*" Width="400" HorizontalAlignment="Left" Margin="0 0 0 10">
+										<TextBlock Text="Proxy Mode:" Classes="setting-header" />
+										<ComboBox Grid.Column="1" HorizontalAlignment="Stretch" Margin="4 0" ItemsSource="{Binding ProxyModes}" SelectedItem="{Binding ProxyMode}" />
+									</Grid>
+									<Border Margin="0 5" IsVisible="{Binding ProxyMode}">
+										<Grid RowDefinitions="*,10,*,*" ColumnDefinitions="*,*" Width="400" HorizontalAlignment="Left">
+											<TextBlock Text="Protocol:" Grid.Column="0" Grid.Row="0" Classes="setting-header" />
+											<ComboBox ItemsSource="{Binding ProxyProtocols}" SelectedItem="{Binding ProxyProtocol}"
+														  Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch" Margin="4 0" />
+											<TextBlock Text="Host" Grid.Row="2" Grid.Column="0" Margin="4 0" Opacity=".75" />
+											<TextBox Text="{Binding ProxyHost}" MaxWidth="200" Grid.Row="3" Grid.Column="0" Margin="4 0" />
+											<TextBlock Text="Port" Grid.Row="2" Grid.Column="1" Margin="4 0" Opacity=".75" />
+											<NumericUpDown Value="{Binding ProxyPort}" FormatString="0" MaxWidth="200"  Grid.Row="3" Grid.Column="1" Margin="4 0" />
+										</Grid>
+									</Border>
+								</StackPanel>
+							</ScrollViewer>
 						</Border>
 					</TabItem>
 					<!-- =================== -->

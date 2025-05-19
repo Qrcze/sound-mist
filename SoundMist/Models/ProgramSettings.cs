@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Styling;
 using SoundMist.Models.SoundCloud;
+using SoundMist.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,6 +32,11 @@ namespace SoundMist.Models
         private bool _startPlayingOnLaunch;
         private AppColorTheme _appColorTheme;
         private int _historyLimit = 50;
+
+        private ProxyMode _proxyMode;
+        private ProxyProtocol _proxyProtocol;
+        private string _proxyHost;
+        private int _proxyPort;
 
         public static ProgramSettings Load()
         {
@@ -81,6 +87,10 @@ namespace SoundMist.Models
         public MainViewTab StartingTabIndex { get => _startingTabIndex; set => SetPropertyAndSave(ref _startingTabIndex, value); }
         public bool StartPlayingOnLaunch { get => _startPlayingOnLaunch; set => SetPropertyAndSave(ref _startPlayingOnLaunch, value); }
         public int HistoryLimit { get => _historyLimit; set => SetPropertyAndSave(ref _historyLimit, value); }
+        public ProxyMode ProxyMode { get => _proxyMode; set => SetPropertyAndSave(ref _proxyMode, value); }
+        public ProxyProtocol ProxyProtocol { get => _proxyProtocol; set => SetPropertyAndSave(ref _proxyProtocol, value); }
+        public string ProxyHost { get => _proxyHost; set => SetPropertyAndSave(ref _proxyHost, value); }
+        public int ProxyPort { get => _proxyPort; set => SetPropertyAndSave(ref _proxyPort, value); }
 
         public AppColorTheme AppColorTheme
         {
@@ -173,6 +183,21 @@ namespace SoundMist.Models
 
             if (_settingsInitialized)
                 SaveSettingsFile();
+        }
+
+        public void ApplyProxySettings(ProxyMode mode, ProxyProtocol protocol, string host, int port)
+        {
+            _proxyMode = mode;
+            _proxyProtocol = protocol;
+            _proxyHost = host;
+            _proxyPort = port;
+
+            SaveSettingsFile();
+        }
+
+        public (ProxyMode mode, ProxyProtocol protocol, string host, int port) GetProxySettings()
+        {
+            return (ProxyMode, ProxyProtocol, ProxyHost, ProxyPort);
         }
 
         void SaveSettingsFile()

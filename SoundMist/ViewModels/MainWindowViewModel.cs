@@ -23,6 +23,11 @@ public partial class MainWindowViewModel : ViewModelBase
         };
     }
 
+    public void OpenInitializationView()
+    {
+        Dispatcher.UIThread.Post(() => { CurrentControl = new InitializationView(); });
+    }
+
     public void OpenMainView()
     {
         Dispatcher.UIThread.Post(() => { CurrentControl = new MainView(); });
@@ -31,6 +36,11 @@ public partial class MainWindowViewModel : ViewModelBase
     public void OpenLoginView()
     {
         Dispatcher.UIThread.Post(() => { CurrentControl = new LoginView(); });
+    }
+
+    public void OpenProxyFailView()
+    {
+        Dispatcher.UIThread.Post(() => { CurrentControl = new ProxyFailView(); });
     }
 
     public void ShowErrorMessage(string message)

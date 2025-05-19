@@ -64,7 +64,7 @@
 					<TextBlock Text="{Binding Title}" Padding="5 2" HorizontalAlignment="Left" Background="Black" Foreground="White" Margin="5" />
 					<TextBlock Text="{Binding DurationFormatted}" IsVisible="{Binding !RegionBlocked}" Margin="15 2" />
 					<TextBlock Text="Not available in your country" IsVisible="{Binding RegionBlocked}" FontSize="18" Opacity="0.5" Margin="5" />
-					<TextBlock Text="Available via proxy" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="5" />
+					<TextBlock Text="Not available in your country (snipped)" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="5" />
 					<!-- soundcloud's track wave thingy; todo control -->
 				</StackPanel>
 				<StackPanel Grid.Column="1" Grid.Row="1" Margin="5">
@@ -120,7 +120,7 @@
 									<Image Grid.Column="0" asyncImageLoader:ImageLoader.Source="{Binding ArtworkUrlSmall}" />
 									<StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5 0 0 0">
 										<TextBlock Text="{Binding Title}" />
-										<TextBlock Text="Available via proxy" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="2 0" />
+										<TextBlock Text="Not available in your country (snipped)" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="2 0" />
 									</StackPanel>
 									<Image Grid.Column="2" Source="/Assets/play.png" />
 									<TextBlock Grid.Column="3" Text="{Binding PlaybacksFormatted}" />

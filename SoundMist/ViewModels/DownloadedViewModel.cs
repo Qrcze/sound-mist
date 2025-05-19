@@ -26,14 +26,14 @@ internal partial class DownloadedViewModel : ViewModelBase
     public IAsyncRelayCommand PlayStationCommand { get; }
     public IRelayCommand PrependToQueueCommand { get; }
 
-    private readonly HttpClient _httpClient;
+    private readonly HttpManager _httpManager;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
     private readonly ProgramSettings _settings;
 
-    public DownloadedViewModel(HttpClient httpClient, IMusicPlayer musicPlayer, ILogger logger, ProgramSettings settings)
+    public DownloadedViewModel(HttpManager httpManager, IMusicPlayer musicPlayer, ILogger logger, ProgramSettings settings)
     {
-        _httpClient = httpClient;
+        _httpManager = httpManager;
         _musicPlayer = musicPlayer;
         _logger = logger;
         _settings = settings;
@@ -75,7 +75,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             }
         }
 
-        var tracksData = await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, ids.Select(x => x.id));
+        var tracksData = await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, ids.Select(x => x.id));
 
         foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3"))
         {

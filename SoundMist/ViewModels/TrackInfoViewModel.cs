@@ -36,8 +36,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         }
     }
 
-    private readonly AuthorizedHttpClient _authorizedHttpClient;
-    private readonly HttpClient _httpClient;
+    private readonly HttpManager _httpManager;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
@@ -47,11 +46,10 @@ public partial class TrackInfoViewModel : ViewModelBase
     public IAsyncRelayCommand LikeTrackCommand { get; }
     public IAsyncRelayCommand PlayPauseCommand { get; }
 
-    public TrackInfoViewModel(AuthorizedHttpClient authorizedHttpClient, HttpClient httpClient, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
+    public TrackInfoViewModel(HttpManager httpManager, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
     {
         Mediator.Default.Register(MediatorEvent.OpenTrackInfo, OpenTrack);
-        _authorizedHttpClient = authorizedHttpClient;
-        _httpClient = httpClient;
+        _httpManager = httpManager;
         _settings = settings;
         _musicPlayer = musicPlayer;
         _logger = logger;
@@ -113,7 +111,7 @@ public partial class TrackInfoViewModel : ViewModelBase
             return;
         }
 
-        (bool success, string message) = await SoundCloudCommands.ToggleLikedDisliked(TrackLiked, _authorizedHttpClient, Track.Id, _settings.UserId.Value, _settings.ClientId, _settings.AppVersion);
+        (bool success, string message) = await SoundCloudCommands.ToggleLikedDisliked(TrackLiked, _httpManager.AuthorizedClient, Track.Id, _settings.UserId.Value, _settings.ClientId, _settings.AppVersion);
         if (success)
         {
             string title = TrackLiked ? "Track Added to Liked" : "Track Removed from Liked";
@@ -180,9 +178,9 @@ public partial class TrackInfoViewModel : ViewModelBase
         {
             try
             {
-                if (_authorizedHttpClient.IsAuthorized)
+                if (_httpManager.AuthorizedClient.IsAuthorized)
                 {
-                    (var response, string message) = await SoundCloudQueries.GetUsersLikedTracksIds(_authorizedHttpClient, _settings.ClientId, _settings.AppVersion, token);
+                    (var response, string message) = await SoundCloudQueries.GetUsersLikedTracksIds(_httpManager.AuthorizedClient, _settings.ClientId, _settings.AppVersion, token);
                     if (token.IsCancellationRequested)
                         return;
 
@@ -197,7 +195,7 @@ public partial class TrackInfoViewModel : ViewModelBase
 
                 if (Track.WaveformUrl is not null)
                 {
-                    var e = await SoundCloudQueries.GetTrackWaveform(_httpClient, Track.WaveformUrl, token);
+                    var e = await SoundCloudQueries.GetTrackWaveform(_httpManager.DefaultClient, Track.WaveformUrl, token);
                     if (token.IsCancellationRequested)
                         return;
 

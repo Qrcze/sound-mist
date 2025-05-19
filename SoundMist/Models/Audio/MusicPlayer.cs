@@ -51,7 +51,7 @@ namespace SoundMist.Models.Audio
 
         public event Action<double>? TrackTimeUpdated;
 
-        private readonly HttpClient _httpClient;
+        private readonly HttpManager _httpManager;
         private readonly ProgramSettings _settings;
         private readonly IAudioController _audioController;
         private Func<Task<IEnumerable<Track>>>? _continueDownloader;
@@ -59,9 +59,9 @@ namespace SoundMist.Models.Audio
         private CancellationTokenSource? _playPauseTokenSource;
         private readonly System.Timers.Timer _timeUpdateTimer;
 
-        public MusicPlayer(HttpClient httpClient, ProgramSettings settings, IAudioController audioController, ILogger logger)
+        public MusicPlayer(HttpManager httpManager, ProgramSettings settings, IAudioController audioController, ILogger logger)
         {
-            _httpClient = httpClient;
+            _httpManager = httpManager;
             _settings = settings;
             _audioController = audioController;
             _audioController.OnTrackEnded += () => Task.Run(PlayNext);
@@ -235,29 +235,36 @@ namespace SoundMist.Models.Audio
             }
             else if (track.Policy == "BLOCK")
             {
-                PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked, no workaround implemented yet.");
-                return false;
-            }
-            else if (track.Policy == "SNIP")
-            {
-                PlayStateUpdated?.Invoke(PlayState.Loading, "Searching for proxy...");
-                (var proxyClient, string errorMessage) = await SoundCloudDownloader.GetProxyHttpClient(_httpClient, _settings.ClientId, _settings.AppVersion);
-                if (proxyClient is null)
+                if (_settings.ProxyMode != ViewModels.ProxyMode.BypassOnly)
                 {
-                    ErrorCallback?.Invoke(errorMessage);
-                    PlayStateUpdated?.Invoke(PlayState.Error, "Proxy request failed.");
+                    PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked.");
                     return false;
                 }
 
-                token.ThrowIfCancellationRequested();
+                var trackProx = (await SoundCloudQueries.GetTracksById(_httpManager.GetProxiedClient(), _settings.ClientId,
+                    _settings.AppVersion, [track.Id])).Single();
 
-                PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
+                if (trackProx is null || trackProx.Policy == "BLOCK")
+                {
+                    PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked.");
+                    return false;
+                }
 
-                await InitBuffered(proxyClient, track, token);
+                await InitBuffered(_httpManager.GetProxiedClient(), trackProx, token);
             }
-            else if (track.Policy == "ALLOW")
+            else if (track.Policy == "SNIP")
             {
-                await InitBuffered(_httpClient, track, token);
+                if (_settings.ProxyMode != ViewModels.ProxyMode.BypassOnly)
+                {
+                    PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked.");
+                    return false;
+                }
+
+                await InitBuffered(_httpManager.GetProxiedClient(), track, token);
+            }
+            else if (track.Policy == "ALLOW" || track.Policy == "MONETIZE")
+            {
+                await InitBuffered(_httpManager.DefaultClient, track, token);
             }
             else
             {
@@ -368,7 +375,7 @@ namespace SoundMist.Models.Audio
             if (track == null)
                 return [];
 
-            (var tracks, string error) = await SoundCloudDownloader.GetRelatedTracks(_httpClient, track, _settings.UserId.Value, _settings.ClientId, _settings.AppVersion);
+            (var tracks, string error) = await SoundCloudDownloader.GetRelatedTracks(_httpManager.DefaultClient, track, _settings.UserId.Value, _settings.ClientId, _settings.AppVersion);
             if (tracks is null)
             {
                 ErrorCallback?.Invoke(error);

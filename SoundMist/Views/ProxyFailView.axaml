@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:SoundMist.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:DataType="vm:ProxyFailViewModel"
+             x:Class="SoundMist.Views.ProxyFailView">
+	<Grid Margin="10" RowDefinitions="auto,auto,*">
+		<TextBlock Margin="10" Text="Current proxy settings failed connecting to SoundClooud." HorizontalAlignment="Center"/>
+		<Button Content="Retry" Command="{Binding RetryCommand}" Grid.Row="1" HorizontalAlignment="Center" Margin="10" />
+		<StackPanel Grid.Row="2" HorizontalAlignment="Center" Margin="10">
+			<TextBlock Text="Mode:" />
+			<ComboBox Width="200" ItemsSource="{Binding ProxyModes}" SelectedItem="{Binding ProxyMode}" Margin="0 0 0 10" />
+			<StackPanel IsVisible="{Binding ProxyMode}">
+				<TextBlock Text="Protocol:" />
+				<ComboBox Width="200" ItemsSource="{Binding ProxyProtocols}" SelectedItem="{Binding ProxyProtocol}" Margin="0 0 0 10" />
+				<TextBlock Text="Host" Opacity=".75" />
+				<TextBox Text="{Binding ProxyHost}" Margin="0 0 0 10" />
+				<TextBlock Text="Port" Opacity=".75" />
+				<NumericUpDown Value="{Binding ProxyPort}" Width="200" FormatString="0" Grid.Column="1" Margin="0 0 0 10" />
+			</StackPanel>
+		</StackPanel>
+	</Grid>
+</UserControl>

@@ -39,7 +39,7 @@ namespace SoundMist.ViewModels
 
         private volatile bool _loadingItems;
 
-        private readonly HttpClient _httpClient;
+        private readonly HttpManager _httpManager;
         private readonly ProgramSettings _settings;
         private readonly IDatabase _database;
         private readonly IMusicPlayer _musicPlayer;
@@ -47,9 +47,9 @@ namespace SoundMist.ViewModels
         private string? _nextHref;
         private readonly Timer _filterDelay;
 
-        public LikedLibraryViewModel(HttpClient httpClient, ProgramSettings settings, IDatabase database, IMusicPlayer musicPlayer, ILogger logger)
+        public LikedLibraryViewModel(HttpManager httpManager, ProgramSettings settings, IDatabase database, IMusicPlayer musicPlayer, ILogger logger)
         {
-            _httpClient = httpClient;
+            _httpManager = httpManager;
             _settings = settings;
             _database = database;
             _musicPlayer = musicPlayer;
@@ -119,11 +119,11 @@ namespace SoundMist.ViewModels
             Debug.Print("downloading liked tracks list");
 
             QueryResponse<LikedTrack> tracks;
-            var auth = _httpClient.DefaultRequestHeaders.Authorization;
-            _httpClient.DefaultRequestHeaders.Authorization = null;
+            var auth = _httpManager.DefaultClient.DefaultRequestHeaders.Authorization;
+            _httpManager.DefaultClient.DefaultRequestHeaders.Authorization = null;
             try
             {
-                using var response = await _httpClient.GetAsync(_nextHref);
+                using var response = await _httpManager.DefaultClient.GetAsync(_nextHref);
                 response.EnsureSuccessStatusCode();
 
                 tracks = await response.Content.ReadFromJsonAsync<QueryResponse<LikedTrack>>() ?? throw new Exception("lol");
@@ -137,7 +137,7 @@ namespace SoundMist.ViewModels
             }
             finally
             {
-                _httpClient.DefaultRequestHeaders.Authorization = auth;
+                _httpManager.DefaultClient.DefaultRequestHeaders.Authorization = auth;
             }
 
             if (!string.IsNullOrEmpty(tracks.NextHref))
@@ -203,7 +203,7 @@ namespace SoundMist.ViewModels
             var notif = new Notification($"Downloading {SelectedTrack.FullLabel}", "Downloading started...", NotificationType.Information, TimeSpan.Zero);
             NotificationManager.Show(notif);
 
-            (bool success, string errorMessage) = await SoundCloudDownloader.SaveTrackLocally(_httpClient, SelectedTrack, _settings.ClientId, (message) =>
+            (bool success, string errorMessage) = await SoundCloudDownloader.SaveTrackLocally(_httpManager, _settings.ProxyMode, SelectedTrack, _settings.ClientId, _settings.AppVersion, (message) =>
             {
                 notif.Message = message;
             });

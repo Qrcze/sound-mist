@@ -7,7 +7,6 @@ using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,8 +20,7 @@ namespace SoundMist.ViewModels
         [ObservableProperty] private Track? _selectedTrack;
 
         private CancellationTokenSource? _tokenSource;
-        private readonly HttpClient _httpClient;
-        private readonly AuthorizedHttpClient _authorizedHttpClient;
+        private readonly HttpManager _httpManager;
         private readonly IDatabase _database;
         private readonly ProgramSettings _settings;
         private readonly ILogger _logger;
@@ -36,10 +34,9 @@ namespace SoundMist.ViewModels
         public IRelayCommand OpenTrackInfoCommand { get; }
         public IRelayCommand OpenUserInfoCommand { get; }
 
-        public PlaylistInfoViewModel(HttpClient httpClient, AuthorizedHttpClient authorizedHttpClient, IDatabase database, ProgramSettings settings, ILogger logger, IMusicPlayer musicPlayer, History history)
+        public PlaylistInfoViewModel(HttpManager httpManager, IDatabase database, ProgramSettings settings, ILogger logger, IMusicPlayer musicPlayer, History history)
         {
-            _httpClient = httpClient;
-            _authorizedHttpClient = authorizedHttpClient;
+            _httpManager = httpManager;
             _database = database;
             _settings = settings;
             _logger = logger;
@@ -107,9 +104,9 @@ namespace SoundMist.ViewModels
             {
                 try
                 {
-                    if (_authorizedHttpClient.IsAuthorized)
+                    if (_httpManager.AuthorizedClient.IsAuthorized)
                     {
-                        var (response, message) = await SoundCloudQueries.GetUsersLikedPlaylistsIds(_authorizedHttpClient, _settings.ClientId, _settings.AppVersion, token);
+                        var (response, message) = await SoundCloudQueries.GetUsersLikedPlaylistsIds(_httpManager.AuthorizedClient, _settings.ClientId, _settings.AppVersion, token);
                         if (response is null)
                         {
                             _logger.Error($"Failed getting liked playlists list: {message}");

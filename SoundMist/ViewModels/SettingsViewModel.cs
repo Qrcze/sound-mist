@@ -4,13 +4,38 @@ using SoundMist.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
 
 namespace SoundMist.ViewModels;
+
+public enum ProxyMode
+{
+    Disable,
+    BypassOnly,
+    Always
+}
+
+public enum ProxyProtocol
+{
+    Http,
+    Socks4,
+    Socks5,
+}
 
 public partial class SettingsViewModel : ViewModelBase
 {
     [ObservableProperty] private bool _isVisible;
     [ObservableProperty] private AppColorTheme _selectedTheme;
+
+    [ObservableProperty] private ProxyMode _proxyMode;
+    [ObservableProperty] private ProxyProtocol _proxyProtocol;
+    [ObservableProperty] private string _proxyHost;
+    [ObservableProperty] private int _proxyPort;
+
+    //public ProxyMode ProxyMode { get => _settings.ProxyMode; set => _settings.ProxyMode = value; }
+    //public ProxyProtocol ProxyProtocol { get => _settings.ProxyProtocol; set => _settings.ProxyProtocol = value; }
+    //public string ProxyHost { get => _settings.ProxyHost; set => _settings.ProxyHost = value; }
+    //public int ProxyPort { get => _settings.ProxyPort; set => _settings.ProxyPort = value; }
 
     public MainViewTab DefaultTabOnLaunch { get => _settings.StartingTabIndex; set => _settings.StartingTabIndex = value; }
     public bool StartPlayingOnLaunch { get => _settings.StartPlayingOnLaunch; set => _settings.StartPlayingOnLaunch = value; }
@@ -18,20 +43,24 @@ public partial class SettingsViewModel : ViewModelBase
 
     public MainViewTab[] TabsSelection { get; } = { MainViewTab.Search, MainViewTab.LikedTracks, MainViewTab.Downloaded, MainViewTab.History };
     public AppColorTheme[] Themes { get; } = Enum.GetValues<AppColorTheme>().ToArray();
+    public ProxyMode[] ProxyModes { get; } = Enum.GetValues<ProxyMode>().ToArray();
+    public ProxyProtocol[] ProxyProtocols { get; } = Enum.GetValues<ProxyProtocol>().ToArray();
 
     public ObservableCollection<BlockedEntry> BlockedUsers { get; } = [];
     public ObservableCollection<BlockedEntry> BlockedTracks { get; } = [];
 
     public IRelayCommand CloseCommand { get; }
 
+    private readonly HttpManager _httpManager;
     private readonly ProgramSettings _settings;
-    private readonly History _history;
 
-    public SettingsViewModel(ProgramSettings settings, History history)
+    public SettingsViewModel(HttpManager httpManager, ProgramSettings settings)
     {
+        _httpManager = httpManager;
         _settings = settings;
-        _history = history;
         SelectedTheme = _settings.AppColorTheme;
+
+        (_proxyMode, _proxyProtocol, _proxyHost, _proxyPort) = _settings.GetProxySettings();
 
         Mediator.Default.Register(MediatorEvent.OpenSettings, _ => IsVisible = true);
 
@@ -41,7 +70,10 @@ public partial class SettingsViewModel : ViewModelBase
     partial void OnIsVisibleChanged(bool value)
     {
         if (!value)
+        {
+            SetProxySettings();
             return;
+        }
 
         BlockedUsers.Clear();
         BlockedTracks.Clear();
@@ -51,6 +83,20 @@ public partial class SettingsViewModel : ViewModelBase
         foreach (var item in _settings.BlockedUsers)
             BlockedUsers.Add(item);
     }
+
+    private void SetProxySettings()
+    {
+        if (_settings.ProxyMode == ProxyMode &&
+            _settings.ProxyProtocol == ProxyProtocol &&
+            _settings.ProxyHost == ProxyHost &&
+            _settings.ProxyPort == ProxyPort)
+        {
+            return;
+        }
+
+        _settings.ApplyProxySettings(ProxyMode, ProxyProtocol, ProxyHost, ProxyPort);
+    }
+
 
     partial void OnSelectedThemeChanged(AppColorTheme value)
     {

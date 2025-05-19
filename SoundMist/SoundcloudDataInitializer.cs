@@ -17,16 +17,15 @@ namespace SoundMist;
 public partial class SoundcloudDataInitializer
 {
     private readonly ProgramSettings _settings;
-    private readonly AuthorizedHttpClient _authorizedHttpClient;
-    private readonly HttpClient _httpClient;
+    private readonly HttpManager _httpManager;
     private readonly ILogger _logger;
     private readonly MainWindowViewModel _mainWindowViewModel;
+    private bool _mainViewOpened;
 
-    public SoundcloudDataInitializer(ProgramSettings settings, AuthorizedHttpClient authorizedHttpClient, HttpClient httpClient, ILogger logger, MainWindowViewModel mainWindowViewModel)
+    public SoundcloudDataInitializer(ProgramSettings settings, HttpManager httpManager, ILogger logger, MainWindowViewModel mainWindowViewModel)
     {
         _settings = settings;
-        _authorizedHttpClient = authorizedHttpClient;
-        _httpClient = httpClient;
+        _httpManager = httpManager;
         _logger = logger;
         _mainWindowViewModel = mainWindowViewModel;
     }
@@ -41,8 +40,7 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                _logger.Fatal($"Failed retrieving app version: {ex.Message}");
-                _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
+                HandleExceptioon(ex, "Failed retrieving app version");
                 return;
             }
 
@@ -52,7 +50,7 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                _logger.Fatal($"Failed retrieving client and anonymous user IDs: {ex.Message}");
+                HandleExceptioon(ex, "Failed retrieving client and anonymous user IDs");
                 _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
                 return;
             }
@@ -63,10 +61,13 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                _logger.Fatal($"Failed loading the view: {ex.Message}");
+                HandleExceptioon(ex, "Failed loading the view");
                 _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
                 return;
             }
+
+            if (!_mainViewOpened)
+                return;
 
             try
             {
@@ -81,9 +82,26 @@ public partial class SoundcloudDataInitializer
         });
     }
 
+    void HandleExceptioon(Exception ex, string message)
+    {
+        if (ex is HttpRequestException)
+        {
+            if (_settings.ProxyMode == ProxyMode.Always)
+            {
+                _logger.Error($"{message} while in always-proxy mode: {ex.Message}");
+                _mainWindowViewModel.OpenProxyFailView();
+                return;
+            }
+        }
+
+        _logger.Fatal($"{message}: {ex.Message}");
+        _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
+    }
+
     public async Task<int> GetAppVersion()
     {
-        using var response = await _httpClient.GetAsync("https://soundcloud.com/versions.json");
+        using var response = await _httpManager.DefaultClient.GetAsync("https://soundcloud.com/versions.json");
+
         response.EnsureSuccessStatusCode();
         var version = await response.Content.ReadFromJsonAsync<VersionResponse>();
 
@@ -95,7 +113,7 @@ public partial class SoundcloudDataInitializer
 
     public async Task<(string clientId, string? userId)> GetClientAndAnonymousUserIds()
     {
-        using var response = await _httpClient.GetAsync("https://soundcloud.com");
+        using var response = await _httpManager.DefaultClient.GetAsync("https://soundcloud.com");
         response.EnsureSuccessStatusCode();
 
         string? clientId = null;
@@ -105,7 +123,7 @@ public partial class SoundcloudDataInitializer
         {
             string link = match.Groups[1].Value;
 
-            using var script = await _httpClient.GetAsync(link);
+            using var script = await _httpManager.DefaultClient.GetAsync(link);
             if (!script.IsSuccessStatusCode)
                 continue;
 
@@ -150,21 +168,22 @@ public partial class SoundcloudDataInitializer
         else
         {
             //check if token is still valid
-            _authorizedHttpClient.DefaultRequestHeaders.Authorization = new("OAuth", _settings.AuthToken);
+            _httpManager.AuthorizedClient.DefaultRequestHeaders.Authorization = new("OAuth", _settings.AuthToken);
 
-            using var response = await _authorizedHttpClient.GetAsync("me");
+            using var response = await _httpManager.AuthorizedClient.GetAsync("me");
             if (response.IsSuccessStatusCode)
             {
                 var user = await response.Content.ReadFromJsonAsync<User>();
                 _settings.UserId = user.Id;
 
                 _mainWindowViewModel.OpenMainView();
+                _mainViewOpened = true;
                 return;
             }
         }
 
-        _authorizedHttpClient.DefaultRequestHeaders.Authorization = null;
-        _logger.Info("The previously given authorization token expired");
+        _httpManager.AuthorizedClient.DefaultRequestHeaders.Authorization = null;
+        _logger.Warn("The previously given authorization token expired");
         _mainWindowViewModel.OpenLoginView();
     }
 
@@ -173,7 +192,7 @@ public partial class SoundcloudDataInitializer
         if (_settings.LastTrackId.HasValue)
         {
             var musicPlayer = App.GetService<IMusicPlayer>();
-            var lastTrack = (await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, [_settings.LastTrackId.Value]))
+            var lastTrack = (await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, [_settings.LastTrackId.Value]))
                 .Single();
             await musicPlayer.LoadNewQueue([lastTrack], null, _settings.StartPlayingOnLaunch);
         }

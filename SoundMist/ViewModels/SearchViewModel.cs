@@ -41,7 +41,7 @@ public partial class SearchViewModel : ViewModelBase
     public ObservableCollection<SearchQuery> QueryResults { get; } = [];
 
     private readonly Timer _querySearchDelay;
-    private readonly HttpClient _httpClient;
+    private readonly HttpManager _httpManager;
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
@@ -52,12 +52,12 @@ public partial class SearchViewModel : ViewModelBase
     public IAsyncRelayCommand RunSearchCommand { get; }
     public IRelayCommand OpenAboutPageCommand { get; }
 
-    public SearchViewModel(HttpClient httpClient, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
+    public SearchViewModel(HttpManager httpManager, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
     {
         _querySearchDelay = new(800) { AutoReset = false };
         _querySearchDelay.Elapsed += GetSearchResults;
 
-        _httpClient = httpClient;
+        _httpManager = httpManager;
         _database = database;
         _settings = settings;
         _musicPlayer = musicPlayer;
@@ -105,7 +105,7 @@ public partial class SearchViewModel : ViewModelBase
         SearchQueryCollection? q;
         try
         {
-            using var response = await _httpClient.GetAsync(url);
+            using var response = await _httpManager.DefaultClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             q = await response.Content.ReadFromJsonAsync<SearchQueryCollection>();
@@ -214,7 +214,7 @@ public partial class SearchViewModel : ViewModelBase
 
         url += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
-        using var response = await _httpClient.GetAsync(url);
+        using var response = await _httpManager.DefaultClient.GetAsync(url);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<SearchCollection>(_convertJsonScObjects);
@@ -279,7 +279,7 @@ public partial class SearchViewModel : ViewModelBase
             try
             {
                 var trackIds = playlist.Tracks.Except(tracks).Where(x => x.User is null).Select(x => x.Id);
-                var restOfTracks = await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, trackIds);
+                var restOfTracks = await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, trackIds);
                 if (restOfTracks != null && restOfTracks.Count != 0)
                     tracks = tracks.Concat(restOfTracks);
             }

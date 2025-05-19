@@ -64,13 +64,7 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
 
-        var initializer = new SoundcloudDataInitializer(
-            services.GetRequiredService<ProgramSettings>(),
-            services.GetRequiredService<AuthorizedHttpClient>(),
-            services.GetRequiredService<HttpClient>(),
-            services.GetRequiredService<ILogger>(),
-            services.GetRequiredService<MainWindowViewModel>()
-        );
+        var initializer = services.GetRequiredService<SoundcloudDataInitializer>();
         initializer.Run();
     }
 }

@@ -13,9 +13,10 @@ public static class ServiceCollectionExtensions
     {
         var programSettings = ProgramSettings.Load();
 
-        collection.AddSingleton(new AuthorizedHttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
-        collection.AddSingleton(new HttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
+        //collection.AddSingleton(new AuthorizedHttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
+        //collection.AddSingleton(new HttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) });
         collection.AddSingleton(programSettings);
+        collection.AddSingleton(new HttpManager(programSettings));
         collection.AddSingleton(History.Load(programSettings));
         collection.AddSingleton<ILogger>(FileLogger.Instance);
         collection.AddSingleton<IAudioController, ManagedBassController>();
@@ -33,5 +34,7 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<UserInfoViewModel>();
         collection.AddTransient<PlaylistInfoViewModel>();
         collection.AddTransient<HistoryViewModel>();
+        collection.AddTransient<ProxyFailViewModel>();
+        collection.AddTransient<SoundcloudDataInitializer>();
     }
 }

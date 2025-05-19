@@ -12,7 +12,7 @@ internal partial class LoginViewModel : ViewModelBase
 {
     [ObservableProperty] private string _validationMessage = string.Empty;
     [ObservableProperty] private string _authToken = string.Empty;
-    private readonly AuthorizedHttpClient _authorizedHttpClient;
+    private readonly HttpManager _httpManager;
     private readonly ProgramSettings _settings;
     private readonly ILogger _logger;
     private readonly MainWindowViewModel _mainWindowViewModel;
@@ -21,9 +21,9 @@ internal partial class LoginViewModel : ViewModelBase
     public IAsyncRelayCommand UseTokenCommand { get; }
     public IRelayCommand OpenSoundcloudPageCommand { get; }
 
-    public LoginViewModel(AuthorizedHttpClient authorizedHttpClient, ProgramSettings settings, ILogger logger, MainWindowViewModel mainViewModel)
+    public LoginViewModel(HttpManager httpManager, ProgramSettings settings, ILogger logger, MainWindowViewModel mainViewModel)
     {
-        _authorizedHttpClient = authorizedHttpClient;
+        _httpManager = httpManager;
         _settings = settings;
         _logger = logger;
         _mainWindowViewModel = mainViewModel;
@@ -41,13 +41,13 @@ internal partial class LoginViewModel : ViewModelBase
     {
         _logger.Info("Checking authorization token");
         AuthToken = AuthToken.Trim();
-        _authorizedHttpClient.Authorization = new("OAuth", AuthToken);
+        _httpManager.AuthorizedClient.Authorization = new("OAuth", AuthToken);
 
-        using var response = await _authorizedHttpClient.GetAsync("me");
+        using var response = await _httpManager.AuthorizedClient.GetAsync("me");
         if (!response.IsSuccessStatusCode)
         {
             _logger.Info("Provided authorization token was not valid");
-            _authorizedHttpClient.Authorization = null;
+            _httpManager.AuthorizedClient.Authorization = null;
             ValidationMessage = "Provided token is invalid. Are you sure you copied the value from \"oauth_token\" cookie?";
             return;
         }

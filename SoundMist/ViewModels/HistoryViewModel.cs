@@ -21,8 +21,7 @@ public partial class HistoryViewModel : ViewModelBase
 
     History.List OpenedTab { get; set; }
 
-    private readonly HttpClient _httpClient;
-    private readonly AuthorizedHttpClient _authorizedHttpClient;
+    private readonly HttpManager _httpManager;
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly ILogger _logger;
@@ -38,16 +37,15 @@ public partial class HistoryViewModel : ViewModelBase
     public ObservableCollection<User> Users { get; } = [];
     public ObservableCollection<Playlist> Playlists { get; } = [];
 
-    public HistoryViewModel(HttpClient httpClient, AuthorizedHttpClient authorizedHttpClient, IMusicPlayer musicPlayer, IDatabase database, ProgramSettings settings, ILogger logger, History history)
+    public HistoryViewModel(HttpManager httpManager, IMusicPlayer musicPlayer, IDatabase database, ProgramSettings settings, ILogger logger, History history)
     {
-        _httpClient = httpClient;
-        _authorizedHttpClient = authorizedHttpClient;
+        _httpManager = httpManager;
         _database = database;
         _settings = settings;
         _logger = logger;
         _history = history;
 
-        if (authorizedHttpClient.IsAuthorized)
+        if (httpManager.AuthorizedClient.IsAuthorized)
             UserLoggedIn = true;
 
         musicPlayer.TrackChanged += (t) => Played.Insert(0, t);
@@ -169,7 +167,7 @@ public partial class HistoryViewModel : ViewModelBase
 
         try
         {
-            var (response, errorMessage) = await SoundCloudQueries.GetPlayHistory(_authorizedHttpClient, _nextOnlineHistoryHref, _settings.ClientId, _settings.AppVersion, PlayedOnline.Count, token);
+            var (response, errorMessage) = await SoundCloudQueries.GetPlayHistory(_httpManager.AuthorizedClient, _nextOnlineHistoryHref, _settings.ClientId, _settings.AppVersion, PlayedOnline.Count, token);
             if (response is null)
             {
                 _logger.Warn($"Failed getting online history: {errorMessage}");
