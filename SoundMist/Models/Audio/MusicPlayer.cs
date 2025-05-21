@@ -228,6 +228,8 @@ namespace SoundMist.Models.Audio
             TrackChanging?.Invoke(track);
             PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
 
+            bool trackLoadInitialized = false;
+
             if (File.Exists(track.LocalFilePath))
             {
                 PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
@@ -250,7 +252,7 @@ namespace SoundMist.Models.Audio
                     return false;
                 }
 
-                await InitBuffered(_httpManager.GetProxiedClient(), trackProx, token);
+                trackLoadInitialized = await InitBuffered(_httpManager.GetProxiedClient(), trackProx, token);
             }
             else if (track.Policy == "SNIP")
             {
@@ -260,15 +262,20 @@ namespace SoundMist.Models.Audio
                     return false;
                 }
 
-                await InitBuffered(_httpManager.GetProxiedClient(), track, token);
+                trackLoadInitialized = await InitBuffered(_httpManager.GetProxiedClient(), track, token);
             }
             else if (track.Policy == "ALLOW" || track.Policy == "MONETIZE")
             {
-                await InitBuffered(_httpManager.DefaultClient, track, token);
+                trackLoadInitialized = await InitBuffered(_httpManager.DefaultClient, track, token);
             }
             else
             {
                 PlayStateUpdated?.Invoke(PlayState.Error, $"Unhandled track policy: {track.Policy}, cancelling.");
+                return false;
+            }
+
+            if (!trackLoadInitialized)
+            {
                 return false;
             }
 

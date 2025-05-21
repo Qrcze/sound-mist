@@ -33,7 +33,7 @@ namespace SoundMist.Helpers
             }
             catch (HttpRequestException e)
             {
-                return (null, $"Failed getting playback stream url {track.Title}, return code: {e.StatusCode}: {e.Message}");
+                return (null, $"Failed getting playback stream url for track: {track.Title} by {track.ArtistName}, return code: {e.StatusCode}: {e.Message}");
             }
 
             //get the list of streams
