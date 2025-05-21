@@ -43,8 +43,8 @@ public partial class MainWindowViewModel : ViewModelBase
         Dispatcher.UIThread.Post(() => { CurrentControl = new ProxyFailView(); });
     }
 
-    public void ShowErrorMessage(string message)
+    public void ShowInitializationErrorMessage(string message)
     {
-        Dispatcher.UIThread.Post(() => { CurrentControl = new TextBlock() { Text = message }; });
+        Dispatcher.UIThread.Post(() => { CurrentControl = new InitializationErrorView() { Text = message, MainWindowViewModel = this }; });
     }
 }

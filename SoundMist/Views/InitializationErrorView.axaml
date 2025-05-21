@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SoundMist.Views.InitializationErrorView">
+	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
+		<Button Click="OpenSoundCloud" HorizontalAlignment="Center" Background="Transparent" Margin="5" Height="160" Padding="0" >
+			<Image Source="avares://SoundMist/Assets/SoundCloud-Logo.png" Width="" />
+		</Button>
+		<TextBlock Text="Failed initializing SoundCloud client:" HorizontalAlignment="Center" />
+		<TextBlock x:Name="ErrorTextBlock" HorizontalAlignment="Center" Margin="5 5 5 15" />
+		<TextBlock Text="Please check logs for more details." HorizontalAlignment="Center" />
+		<Button Content="Retry" Click="RetryInit" HorizontalAlignment="Center" Margin="10" />
+	</StackPanel>
+</UserControl>

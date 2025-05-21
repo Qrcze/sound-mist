@@ -40,7 +40,7 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                HandleExceptioon(ex, "Failed retrieving app version");
+                HandleExceptioon(ex, "Couldn't retrieve app version");
                 return;
             }
 
@@ -50,8 +50,8 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                HandleExceptioon(ex, "Failed retrieving client and anonymous user IDs");
-                _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
+                HandleExceptioon(ex, "Couldn't retrieve client and anonymous user IDs");
+                _mainWindowViewModel.ShowInitializationErrorMessage("Initialization failed, please check the logs");
                 return;
             }
 
@@ -61,8 +61,8 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                HandleExceptioon(ex, "Failed loading the view");
-                _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
+                HandleExceptioon(ex, "Couldn't load the main view");
+                _mainWindowViewModel.ShowInitializationErrorMessage("Initialization failed, please check the logs");
                 return;
             }
 
@@ -75,7 +75,7 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed loading last track with id {_settings.LastTrackId}: {ex.Message}");
+                _logger.Error($"Couldn't load last track with id {_settings.LastTrackId}: {ex.Message}");
                 NotificationManager.Show(new("Initialization failure", $"Couldn't load last track with id: {_settings.LastTrackId}."));
                 return;
             }
@@ -95,7 +95,7 @@ public partial class SoundcloudDataInitializer
         }
 
         _logger.Fatal($"{message}: {ex.Message}");
-        _mainWindowViewModel.ShowErrorMessage("Initialization failed, please check the logs");
+        _mainWindowViewModel.ShowInitializationErrorMessage(message);
     }
 
     public async Task<int> GetAppVersion()
