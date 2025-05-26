@@ -234,6 +234,7 @@ namespace SoundMist.Models.Audio
             {
                 PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
                 _audioController.LoadFromFile(track.LocalFilePath);
+                trackLoadInitialized = true;
             }
             else if (track.Policy == "BLOCK")
             {
