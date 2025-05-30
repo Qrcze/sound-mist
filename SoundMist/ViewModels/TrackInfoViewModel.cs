@@ -70,6 +70,8 @@ public partial class TrackInfoViewModel : ViewModelBase
         IsPlaying = state switch
         {
             PlayState.Playing => true,
+            PlayState.Loading => true,
+            PlayState.Loaded => true,
             _ => false,
         };
     }
