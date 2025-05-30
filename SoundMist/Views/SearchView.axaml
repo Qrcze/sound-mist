@@ -23,7 +23,7 @@
 				</Border>
 
 				<StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="5 0">
-					<TextBlock Text="{Binding Username}" Margin="2" />
+					<TextBlock Text="{Binding Username}" Classes="WhiteOnBlack" Margin="2" />
 					<StackPanel Orientation="Horizontal">
 						<Image Source="/Assets/followers.png" Width="15" Margin="2" />
 						<TextBlock Opacity="0.5" FontSize="12" Text="{Binding FollowersCount}" Margin="2" />
@@ -59,8 +59,8 @@
 				<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" Width="120" Height="120" />
 
 				<StackPanel Grid.Column="1" Margin="5">
-					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding ArtistName}" Padding="5 2" HorizontalAlignment="Left" Background="Black" Foreground="White" Margin="5" />
-					<TextBlock Text="{Binding Title}" Padding="5 2" HorizontalAlignment="Left" Background="Black" Foreground="White" Margin="5" />
+					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding ArtistName}" Classes="WhiteOnBlack" Margin="5" />
+					<TextBlock Text="{Binding Title}" Classes="WhiteOnBlack" Margin="5" />
 					<TextBlock Text="{Binding DurationFormatted}" IsVisible="{Binding !RegionBlocked}" Margin="15 2" />
 					<TextBlock Text="Not available in your country" IsVisible="{Binding RegionBlocked}" FontSize="18" Opacity="0.5" Margin="5" />
 					<TextBlock Text="Not available in your country (snipped)" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="5" />
@@ -76,7 +76,17 @@
 				</StackPanel>
 
 				<StackPanel Grid.Column="2" Margin="5">
-					<TextBlock Text="{Binding CreatedAgo}" HorizontalAlignment="Right" Opacity="0.5" ToolTip.Tip="{Binding CreatedLocalTime}" />
+					<TextBlock Text="{Binding DisplayDateAgo}" IsVisible="{Binding ShowDisplayDate}" ToolTip.Tip="{Binding DisplayDate}" Margin="3" HorizontalAlignment="Right" />
+					<StackPanel Orientation="Horizontal" Spacing="5" Margin="3" ToolTip.Tip="{Binding CreatedLocalTime}" HorizontalAlignment="Right" >
+						<TextBlock Text="Uploaded:" IsVisible="{Binding WasModified}" Opacity="0.5" />
+						<TextBlock Text="{Binding CreatedAgo}" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" IsVisible="{Binding WasModified}"
+								HorizontalAlignment="Right" Margin="3" Spacing="5" Opacity="0.6"
+								ToolTip.Tip="{Binding ModifiedLocalTime}" >
+						<TextBlock Text="Last Modified:" />
+						<TextBlock Text="{Binding ModifiedAgo}" />
+					</StackPanel>
 					<Button CornerRadius="100" Margin="0 5" Background="#111" HorizontalAlignment="Right" IsVisible="{Binding HasGenre}">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="#" Foreground="LightGray" />
@@ -103,14 +113,14 @@
 				<Image VerticalAlignment="Top" Grid.RowSpan="3" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrFirstTrackArtwork}" Width="120" Height="120" />
 
 				<StackPanel Grid.Column="1" Margin="5">
-					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding Author}" Margin="2" />
-					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="{Binding Title}" Margin="2" />
-						<StackPanel Orientation="Horizontal" IsVisible="{Binding IsAlbum}" VerticalAlignment="Center">
+					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding Author}" Classes="WhiteOnBlack" Margin="2" />
+					<Grid ColumnDefinitions="*,auto">
+						<TextBlock Text="{Binding Title}" Classes="WhiteOnBlack" Margin="5"  />
+						<StackPanel Grid.Column="1" Orientation="Horizontal" IsVisible="{Binding IsAlbum}" VerticalAlignment="Center">
 							<TextBlock Opacity="0.5" FontSize="12" Text="Album" Margin="2" />
 							<TextBlock Opacity="0.5" FontSize="12" Text="{Binding ReleaseYear}" Margin="2" />
 						</StackPanel>
-					</StackPanel>
+					</Grid>
 					<!-- soundcloud's track wave thingy; todo control -->
 					<ListBox ItemsSource="{Binding FirstFiveTracks}" DoubleTapped="ListBox_DoubleTapped_PlaylistItem">
 						<ListBox.ItemTemplate>
@@ -140,7 +150,17 @@
 				</StackPanel>
 
 				<StackPanel Grid.Column="2" Margin="5">
-					<TextBlock Text="{Binding CreatedAgo}" HorizontalAlignment="Right" Opacity="0.5" ToolTip.Tip="{Binding CreatedLocalTime}" />
+					<TextBlock Text="{Binding DisplayDateAgo}" IsVisible="{Binding ShowDisplayDate}" ToolTip.Tip="{Binding DisplayDate}" Margin="3" HorizontalAlignment="Right" />
+					<StackPanel Orientation="Horizontal" Spacing="5" Margin="3" ToolTip.Tip="{Binding CreatedLocalTime}" HorizontalAlignment="Right" >
+						<TextBlock Text="Uploaded:" IsVisible="{Binding WasModified}" Opacity="0.5" />
+						<TextBlock Text="{Binding CreatedAgo}" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" IsVisible="{Binding WasModified}"
+								HorizontalAlignment="Right" Margin="3" Spacing="5" Opacity="0.6"
+								ToolTip.Tip="{Binding ModifiedLocalTime}" >
+						<TextBlock Text="Last Modified:" />
+						<TextBlock Text="{Binding ModifiedAgo}" />
+					</StackPanel>
 					<Button CornerRadius="100" Margin="0 5" HorizontalAlignment="Right" IsVisible="{Binding HasGenre}">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="#" Foreground="LightGray" />

@@ -17,19 +17,19 @@ namespace SoundMist.Helpers
             return time.ToString(@"mm\:ss");
         }
 
-        internal static string CreatedAgo(DateTime createdAt)
+        internal static string TimeAgo(DateTime createdAt)
         {
             var createdLocalTime = createdAt.ToLocalTime();
             DateTime diff = new(DateTime.Now.Ticks - createdLocalTime.Ticks);
             if (diff.Year - 1 > 0)
-                return $"{diff.Year - 1} years ago";
+                return $"{diff.Year - 1} year{(diff.Year - 1 > 1 ? "s" : "")} ago";
             if (diff.Month - 1 > 0)
-                return $"{diff.Month - 1} months ago";
+                return $"{diff.Month - 1} month{(diff.Month - 1 > 1 ? "s" : "")} ago";
             if (diff.Day - 1 > 0)
-                return $"{diff.Day - 1} days ago";
+                return $"{diff.Day - 1} day{(diff.Day - 1 > 1 ? "s" : "")} ago";
             if (diff.Hour - 1 > 0)
-                return $"{diff.Hour - 1} hours ago";
-            return $"{diff.Minute - 1} minutes ago";
+                return $"{diff.Hour - 1} hour{(diff.Hour - 1 > 1 ? "s" : "")} ago";
+            return $"{diff.Minute - 1} minute{(diff.Minute - 1 > 1 ? "s" : "")} ago";
         }
 
         internal static string ShortenedNumber(int num)

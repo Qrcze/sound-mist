@@ -25,27 +25,18 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public bool HasGenre => !string.IsNullOrEmpty(Genre);
 
-        [JsonIgnore]
-        public string CreatedAgo
-        {
-            get
-            {
-                DateTime diff = new(DateTime.Now.Ticks - CreatedLocalTime.Ticks);
-                if (diff.Year - 1 > 0)
-                    return $"{diff.Year - 1} years ago";
-                if (diff.Month - 1 > 0)
-                    return $"{diff.Month - 1} months ago";
-                if (diff.Day - 1 > 0)
-                    return $"{diff.Day - 1} days ago";
-                if (diff.Hour - 1 > 0)
-                    return $"{diff.Hour - 1} hours ago";
-                return $"{diff.Minute - 1} minutes ago";
-            }
-        }
+        [JsonIgnore] public string DisplayDateAgo => StringHelpers.TimeAgo(DisplayDate);
+        [JsonIgnore] public bool ShowDisplayDate => DisplayDate != CreatedAt && DisplayDate != LastModified;
+        [JsonIgnore] public string CreatedAgo => StringHelpers.TimeAgo(CreatedAt);
+        [JsonIgnore] public string ModifiedAgo => StringHelpers.TimeAgo(LastModified);
+        [JsonIgnore] public bool WasModified => CreatedAt != LastModified;
+
+        [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
+        [JsonIgnore] public DateTime DisplayDateLocalTime => DisplayDate.ToLocalTime();
+        [JsonIgnore] public DateTime ModifiedLocalTime => LastModified.ToLocalTime();
 
         [JsonIgnore] public string DurationFormatted => Duration.HasValue ? StringHelpers.DurationFormatted(Duration.Value) : string.Empty;
 
-        [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
 
         [JsonIgnore] public string? ArtworkOrFirstTrackArtwork => ArtworkUrl ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
         [JsonIgnore] public string? ArtworkOrFirstTrackArtworkOriginal => ArtworkUrl?.Replace("large", "original") ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
@@ -60,7 +51,7 @@ namespace SoundMist.Models.SoundCloud
         public string? Description { get; set; }
 
         [JsonPropertyName("display_date")]
-        public DateTime? DisplayDate { get; set; }
+        public DateTime DisplayDate { get; set; }
 
         [JsonPropertyName("duration")]
         public int? Duration { get; set; }
@@ -84,7 +75,7 @@ namespace SoundMist.Models.SoundCloud
         public string? LabelName { get; set; }
 
         [JsonPropertyName("last_modified")]
-        public DateTime? LastModified { get; set; }
+        public DateTime LastModified { get; set; }
 
         [JsonPropertyName("license")]
         public string? License { get; set; }

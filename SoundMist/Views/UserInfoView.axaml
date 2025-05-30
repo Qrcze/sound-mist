@@ -17,9 +17,9 @@
 						<Image asyncImageLoader:ImageLoader.Source="{Binding User.AvatarUrl}" />
 					</Border>
 					<StackPanel Grid.Column="1">
-						<TextBlock Margin="5" Padding="8 5" HorizontalAlignment="Left" Background="Black" Foreground="White" FontSize="25" Text="{Binding User.Username}" />
-						<TextBlock Margin="5" Padding="8 5" HorizontalAlignment="Left" Background="Black" Foreground="LightGray" IsVisible="{Binding User.HasFullName}" Text="{Binding User.FullName}" />
-						<TextBlock Margin="5" Padding="8 5" HorizontalAlignment="Left" Background="Black" Foreground="LightGray" IsVisible="{Binding User.HasCityOrCountry}" Text="{Binding User.CityAndCountry}" />
+						<TextBlock Margin="5" Classes="WhiteOnBlack" FontSize="25" Text="{Binding User.Username}" />
+						<TextBlock Margin="5" Classes="WhiteOnBlack" Foreground="LightGray" IsVisible="{Binding User.HasFullName}" Text="{Binding User.FullName}" />
+						<TextBlock Margin="5" Classes="WhiteOnBlack" Foreground="LightGray" IsVisible="{Binding User.HasCityOrCountry}" Text="{Binding User.CityAndCountry}" />
 					</StackPanel>
 				</Grid>
 			</Grid>

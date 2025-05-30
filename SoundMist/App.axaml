@@ -44,6 +44,14 @@
 			<Setter Property="BorderThickness" Value="0" />
 			<Setter Property="CornerRadius" Value="0" />
 		</Style>
+
+		<Style Selector="TextBlock.WhiteOnBlack">
+			<Setter Property="TextWrapping" Value="Wrap" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="Background" Value="Black" />
+			<Setter Property="Foreground" Value="White" />
+			<Setter Property="Padding" Value="5 2" />
+		</Style>
 	</Application.Styles>
 
 	<Application.Resources>

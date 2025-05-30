@@ -73,9 +73,14 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public string? ArtworkUrlLarge => ArtworkOrAvatarUrl;
         [JsonIgnore] public string? ArtworkUrlOriginal => ArtworkOrAvatarUrl?.Replace("large", "original");
 
-        [JsonIgnore] public string CreatedAgo => StringHelpers.CreatedAgo(CreatedAt);
+        [JsonIgnore] public string DisplayDateAgo => StringHelpers.TimeAgo(DisplayDate);
+        [JsonIgnore] public bool ShowDisplayDate => DisplayDate != CreatedAt && DisplayDate != LastModified;
+        [JsonIgnore] public string CreatedAgo => StringHelpers.TimeAgo(CreatedAt);
+        [JsonIgnore] public string ModifiedAgo => StringHelpers.TimeAgo(LastModified);
+        [JsonIgnore] public bool WasModified => CreatedAt != LastModified;
 
         [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
+        [JsonIgnore] public DateTime ModifiedLocalTime => LastModified.ToLocalTime();
 
         [JsonIgnore] public string LikesFormatted => LikesCount.HasValue ? StringHelpers.ShortenedNumber(LikesCount.Value) : string.Empty;
         [JsonIgnore] public string PlaybacksFormatted => PlaybackCount.HasValue ? StringHelpers.ShortenedNumber(PlaybackCount.Value) : string.Empty;
@@ -117,7 +122,7 @@ namespace SoundMist.Models.SoundCloud
         public string? Description { get; set; }
 
         [JsonPropertyName("display_date")]
-        public DateTime? DisplayDate { get; set; }
+        public DateTime DisplayDate { get; set; }
 
         [JsonPropertyName("download_count")]
         public int? DownloadCount { get; set; }
@@ -150,7 +155,7 @@ namespace SoundMist.Models.SoundCloud
         public string? LabelName { get; set; }
 
         [JsonPropertyName("last_modified")]
-        public DateTime? LastModified { get; set; }
+        public DateTime LastModified { get; set; }
 
         [JsonPropertyName("license")]
         public string? License { get; set; }

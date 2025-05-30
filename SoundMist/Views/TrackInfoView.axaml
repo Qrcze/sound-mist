@@ -25,12 +25,22 @@
 						</Button>
 
 						<StackPanel Grid.Column="1" Margin="5">
-							<TextBlock Text="{Binding Track.Title}" TextWrapping="Wrap" FontSize="25" Background="Black" HorizontalAlignment="Left" Foreground="White" Margin="2" Padding="5" />
-							<TextBlock Text="{Binding Track.ArtistName}" TextWrapping="Wrap" FontSize="15" Background="Black" HorizontalAlignment="Left" Foreground="LightGray" Margin="2" Padding="5" />
+							<TextBlock Text="{Binding Track.Title}" Classes="WhiteOnBlack" FontSize="25" Margin="2" />
+							<TextBlock Text="{Binding Track.ArtistName}" Classes="WhiteOnBlack" FontSize="15" Foreground="LightGray" Margin="2" />
 						</StackPanel>
 
 						<StackPanel Grid.Column="2" Margin="5">
-							<TextBlock Margin="3" Text="{Binding Track.CreatedAgo}" HorizontalAlignment="Right" />
+							<TextBlock Text="{Binding Track.DisplayDateAgo}" IsVisible="{Binding Track.ShowDisplayDate}" ToolTip.Tip="{Binding Track.DisplayDate}" Margin="3" HorizontalAlignment="Right" />
+							<StackPanel Orientation="Horizontal" Spacing="5" Margin="3" ToolTip.Tip="{Binding Track.CreatedLocalTime}" HorizontalAlignment="Right" >
+								<TextBlock Text="Uploaded:" IsVisible="{Binding Track.WasModified}" Opacity="0.5" />
+								<TextBlock Text="{Binding Track.CreatedAgo}" />
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" IsVisible="{Binding Track.WasModified}"
+										HorizontalAlignment="Right" Margin="3" Spacing="5" Opacity="0.6"
+										ToolTip.Tip="{Binding Track.ModifiedLocalTime}" >
+								<TextBlock Text="Last Modified:" />
+								<TextBlock Text="{Binding Track.ModifiedAgo}" />
+							</StackPanel>
 							<Border HorizontalAlignment="Right" Padding="5 3" Margin="3" IsVisible="{Binding Track.HasGenre}" Background="Gray" CornerRadius="10">
 								<StackPanel Orientation="Horizontal">
 									<TextBlock Text="#" Foreground="White" />
