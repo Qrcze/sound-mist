@@ -178,13 +178,13 @@
 				<ListBox x:Name="OnlineHistory" ItemsSource="{Binding PlayedOnline}" DoubleTapped="PlaySelectedTrack" ScrollViewer.ScrollChanged="OnlineScrollChangedAsync" />
 			</TabItem>
 			<TabItem Header="Viewed Tracks">
-				<ListBox ItemsSource="{Binding Tracks}" />
+				<ListBox ItemsSource="{Binding Tracks}" DoubleTapped="PlaySelectedTrack" />
 			</TabItem>
 			<TabItem Header="Viewed Users">
-				<ListBox ItemsSource="{Binding Users}" />
+				<ListBox ItemsSource="{Binding Users}" DoubleTapped="OpenSelectedUser" />
 			</TabItem>
 			<TabItem Header="Viewed Playlists">
-				<ListBox ItemsSource="{Binding Playlists}" />
+				<ListBox ItemsSource="{Binding Playlists}" DoubleTapped="OpenSelectedPlaylist" />
 			</TabItem>
 		</TabControl>
 		<Panel Background="#9333" IsVisible="{Binding LoadingView}">

@@ -70,4 +70,18 @@ public partial class HistoryView : UserControl
         var track = box.SelectedItem as Track ?? throw new InvalidCastException($"{nameof(PlaySelectedTrack)} can should be only called on lists with items of type {nameof(Track)}");
         _vm.PlayTrack(track);
     }
+
+    private void OpenSelectedUser(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        var box = (ListBox)sender!;
+        var user = box.SelectedItem as User ?? throw new InvalidCastException($"{nameof(OpenSelectedUser)} can should be only called on lists with items of type {nameof(User)}");
+        Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, user);
+    }
+
+    private void OpenSelectedPlaylist(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        var box = (ListBox)sender!;
+        var playlist = box.SelectedItem as Playlist ?? throw new InvalidCastException($"{nameof(OpenSelectedPlaylist)} can should be only called on lists with items of type {nameof(Playlist)}");
+        Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, playlist);
+    }
 }
