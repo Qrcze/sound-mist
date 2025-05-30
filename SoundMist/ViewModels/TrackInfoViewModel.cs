@@ -47,6 +47,7 @@ public partial class TrackInfoViewModel : ViewModelBase
     public IAsyncRelayCommand LikeTrackCommand { get; }
     public IAsyncRelayCommand PlayPauseCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
+    public IRelayCommand OpenArtistProfileCommand { get; }
 
     public TrackInfoViewModel(HttpManager httpManager, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
     {
@@ -60,6 +61,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         LikeTrackCommand = new AsyncRelayCommand(LikeTrack);
         PlayPauseCommand = new AsyncRelayCommand(PlayPause);
         ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
+        OpenArtistProfileCommand = new RelayCommand(OpenArtistProfile);
 
         _musicPlayer.TrackChanged += TrackChanged;
         _musicPlayer.PlayStateUpdated += TrackStateUpdated;
@@ -138,6 +140,18 @@ public partial class TrackInfoViewModel : ViewModelBase
                 TimeSpan.Zero));
             _logger.Error($"failed sending a like request: {message}");
         }
+    }
+
+    private void OpenArtistProfile()
+    {
+        if (Track is null)
+            return;
+        if (Track.User is null)
+        {
+            _logger.Warn($"Track id {Track.Id} didn't have a user reference");
+            return;
+        }
+        Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, Track.User);
     }
 
     private void OpenUrlInBrowser()

@@ -26,7 +26,9 @@
 
 						<StackPanel Grid.Column="1" Margin="5">
 							<TextBlock Text="{Binding Track.Title}" Classes="WhiteOnBlack" FontSize="25" Margin="2" />
-							<TextBlock Text="{Binding Track.ArtistName}" Classes="WhiteOnBlack" FontSize="15" Foreground="LightGray" Margin="2" />
+							<Button Padding="0" Background="Transparent" Margin="1" Command="{Binding OpenArtistProfileCommand}">
+								<TextBlock Text="{Binding Track.ArtistName}" Classes="WhiteOnBlack" FontSize="15" Foreground="LightGray" />
+							</Button>
 						</StackPanel>
 
 						<StackPanel Grid.Column="2" Margin="5">
