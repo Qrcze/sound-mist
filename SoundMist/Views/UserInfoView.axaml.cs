@@ -5,9 +5,16 @@ namespace SoundMist.Views;
 
 public partial class UserInfoView : UserControl
 {
+    private readonly UserInfoViewModel _vm;
+
     public UserInfoView()
     {
         InitializeComponent();
-        DataContext = App.GetService<UserInfoViewModel>();
+        DataContext = _vm = App.GetService<UserInfoViewModel>();
+    }
+
+    private void TogglePreview(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        _vm.ToggleFullImageCommand.Execute(null);
     }
 }

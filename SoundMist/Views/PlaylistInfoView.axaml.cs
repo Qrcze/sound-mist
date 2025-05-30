@@ -18,4 +18,9 @@ public partial class PlaylistInfoView : UserControl
         var lb = (ListBox)sender!;
         _vm.PlayFromIndex(lb.SelectedIndex);
     }
+
+    private void TogglePreview(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        _vm.ToggleFullImageCommand.Execute(null);
+    }
 }

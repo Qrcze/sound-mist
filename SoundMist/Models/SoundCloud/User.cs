@@ -7,10 +7,10 @@ namespace SoundMist.Models.SoundCloud
 {
     public class User
     {
-        public string? BackgroundVisual => Visuals?.Items.FirstOrDefault()?.VisualUrl;
+        [JsonIgnore] public string? BackgroundVisual => Visuals?.Items.FirstOrDefault()?.VisualUrl;
 
         //CountryCode comes in a form like "GB" instead of "United Kingdom" and such, so not very verbose, but it'll have to do for now
-        public string? CityAndCountry
+        [JsonIgnore] public string? CityAndCountry
         {
             get
             {
@@ -22,9 +22,14 @@ namespace SoundMist.Models.SoundCloud
             }
         }
 
-        public bool HasCityOrCountry => !(string.IsNullOrEmpty(City) && string.IsNullOrEmpty(CountryCode));
+        [JsonIgnore] public bool HasCityOrCountry => !(string.IsNullOrEmpty(City) && string.IsNullOrEmpty(CountryCode));
 
-        public bool HasFullName => !string.IsNullOrEmpty(FullName);
+        [JsonIgnore] public bool HasFullName => !string.IsNullOrEmpty(FullName);
+
+        [JsonIgnore] public string? AvatarUrlSmall => AvatarUrl?.Replace("large", "small");
+        [JsonIgnore] public string? AvatarUrlLarge => AvatarUrl;
+        [JsonIgnore] public string? AvatarUrlOriginal => AvatarUrl?.Replace("large", "original");
+
 
         [JsonPropertyName("avatar_url")]
         public string AvatarUrl { get; set; } = null!;

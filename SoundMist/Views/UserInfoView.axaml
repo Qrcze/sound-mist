@@ -12,10 +12,12 @@
 		<StackPanel>
 			<Grid>
 				<Image asyncImageLoader:ImageLoader.Source="{Binding User.BackgroundVisual}" VerticalAlignment="Top" />
-				<Grid Margin="10" ColumnDefinitions="100 *">
-					<Border VerticalAlignment="Top" Margin="5" Width="100" Height="100" CornerRadius="50" ClipToBounds="True">
-						<Image asyncImageLoader:ImageLoader.Source="{Binding User.AvatarUrl}" />
-					</Border>
+				<Grid Margin="10" ColumnDefinitions="120 *">
+					<Button CornerRadius="60" Width="120" Height="120" VerticalAlignment="Top" Padding="0" Command="{Binding ToggleFullImageCommand}">
+						<Border CornerRadius="60" Padding="0" ClipToBounds="True">
+							<Image asyncImageLoader:ImageLoader.Source="{Binding User.AvatarUrl}" Stretch="Fill" />
+						</Border>
+					</Button>
 					<StackPanel Grid.Column="1">
 						<TextBlock Margin="5" Classes="WhiteOnBlack" FontSize="25" Text="{Binding User.Username}" />
 						<TextBlock Margin="5" Classes="WhiteOnBlack" Foreground="LightGray" IsVisible="{Binding User.HasFullName}" Text="{Binding User.FullName}" />
@@ -28,8 +30,15 @@
 			</StackPanel>
 		</StackPanel>
 
-		<Panel Background="#9333" IsVisible="{Binding LoadingView}" >
+		<Panel Background="#9333" IsVisible="{Binding LoadingView}">
 			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />
+		</Panel>
+		<Panel IsVisible="{Binding ShowFullImage}">
+			<Border Background="#a222" Tapped="TogglePreview" />
+			<Image StretchDirection="DownOnly" asyncImageLoader:ImageLoader.Source="{Binding User.AvatarUrlOriginal}" />
+			<Button Command="{Binding ToggleFullImageCommand}" Width="25" Height="25" Padding="0" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Top">
+				<Image Source="/Assets/close.png" />
+			</Button>
 		</Panel>
 	</Grid>
 </UserControl>

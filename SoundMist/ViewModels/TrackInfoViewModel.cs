@@ -19,6 +19,7 @@ public partial class TrackInfoViewModel : ViewModelBase
     [ObservableProperty] private bool _isCurrentTrack;
     [ObservableProperty] private bool _trackLiked;
     [ObservableProperty] private bool _loadingView;
+    [ObservableProperty] private bool _showFullImage;
     [ObservableProperty] private int[] _samples = [];
     private double _position;
 
@@ -45,6 +46,7 @@ public partial class TrackInfoViewModel : ViewModelBase
     public IRelayCommand OpenUrlInBrowserCommand { get; }
     public IAsyncRelayCommand LikeTrackCommand { get; }
     public IAsyncRelayCommand PlayPauseCommand { get; }
+    public IRelayCommand ToggleFullImageCommand { get; }
 
     public TrackInfoViewModel(HttpManager httpManager, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
     {
@@ -57,6 +59,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         OpenUrlInBrowserCommand = new RelayCommand(OpenUrlInBrowser);
         LikeTrackCommand = new AsyncRelayCommand(LikeTrack);
         PlayPauseCommand = new AsyncRelayCommand(PlayPause);
+        ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
 
         _musicPlayer.TrackChanged += TrackChanged;
         _musicPlayer.PlayStateUpdated += TrackStateUpdated;
@@ -70,9 +73,9 @@ public partial class TrackInfoViewModel : ViewModelBase
         IsPlaying = state switch
         {
             PlayState.Playing => true,
-            PlayState.Loading => true,
-            PlayState.Loaded => true,
-            _ => false,
+            PlayState.Paused => false,
+            PlayState.Error => false,
+            _ => IsPlaying
         };
     }
 
@@ -168,6 +171,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         if (track == Track)
             return;
 
+        ShowFullImage = false;
         LoadingView = true;
         Samples = [];
         Track = track;

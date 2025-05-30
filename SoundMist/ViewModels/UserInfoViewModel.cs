@@ -15,6 +15,7 @@ public partial class UserInfoViewModel : ViewModelBase
 {
     [ObservableProperty] private User? _user;
     [ObservableProperty] private bool _loadingView;
+    [ObservableProperty] private bool _showFullImage;
 
     private readonly IDatabase _database;
     private readonly ILogger _logger;
@@ -23,6 +24,7 @@ public partial class UserInfoViewModel : ViewModelBase
     private CancellationTokenSource? _tokenSource;
 
     public IRelayCommand OpenInBrowserCommand { get; }
+    public IRelayCommand ToggleFullImageCommand { get; }
 
     public UserInfoViewModel(IDatabase database, ILogger logger, History history)
     {
@@ -32,6 +34,7 @@ public partial class UserInfoViewModel : ViewModelBase
         _logger = logger;
         _history = history;
         OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
+        ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
     }
 
     private void OpenInBrowser()
@@ -46,6 +49,7 @@ public partial class UserInfoViewModel : ViewModelBase
     {
         LoadingView = true;
         User = null;
+        ShowFullImage = false;
 
         if (obj is not User userWithIdOnly)
             return;

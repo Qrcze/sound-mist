@@ -17,6 +17,7 @@ namespace SoundMist.ViewModels
         [ObservableProperty] private Playlist? _playlist;
         [ObservableProperty] private bool _loadingView;
         [ObservableProperty] private bool _isLiked;
+        [ObservableProperty] private bool _showFullImage;
         [ObservableProperty] private Track? _selectedTrack;
 
         private CancellationTokenSource? _tokenSource;
@@ -33,6 +34,7 @@ namespace SoundMist.ViewModels
         public IRelayCommand OpenTrackInBrowserCommand { get; }
         public IRelayCommand OpenTrackInfoCommand { get; }
         public IRelayCommand OpenUserInfoCommand { get; }
+        public IRelayCommand ToggleFullImageCommand { get; }
 
         public PlaylistInfoViewModel(HttpManager httpManager, IDatabase database, ProgramSettings settings, ILogger logger, IMusicPlayer musicPlayer, History history)
         {
@@ -48,6 +50,7 @@ namespace SoundMist.ViewModels
             OpenTrackInBrowserCommand = new RelayCommand(OpenTrackInBrowser);
             OpenTrackInfoCommand = new RelayCommand(OpenTrackInfo);
             OpenUserInfoCommand = new RelayCommand(OpenUserInfo);
+            ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
         }
 
         private void OpenPlaylistInBrowser()
@@ -87,6 +90,8 @@ namespace SoundMist.ViewModels
             _tokenSource?.Cancel();
             _tokenSource = new CancellationTokenSource();
             var token = _tokenSource.Token;
+
+            ShowFullImage = false;
 
             if (obj is not Playlist playlist)
                 throw new ArgumentException($"{MediatorEvent.OpenPlaylistInfo} mediator event is expected to provide a {nameof(Playlist)} object as parameter");
