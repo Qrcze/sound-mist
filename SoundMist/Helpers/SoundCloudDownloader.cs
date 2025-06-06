@@ -33,7 +33,7 @@ namespace SoundMist.Helpers
             }
             catch (HttpRequestException e)
             {
-                return (null, $"Failed getting playback stream url for track: {track.Title} by {track.ArtistName}, return code: {e.StatusCode}: {e.Message}");
+                return (null, $"Failed getting playback stream url for track: {track.Title} by {track.ArtistName} (ID: {track.Id}), return code: {e.StatusCode}: {e.Message}");
             }
 
             //get the list of streams
@@ -45,7 +45,7 @@ namespace SoundMist.Helpers
             }
             catch (HttpRequestException e)
             {
-                return (null, $"exception while getting chunks list for {track.Title}: {e.Message}");
+                return (null, $"exception while getting chunks list for {track.Title} (ID: {track.Id}): {e.Message}");
             }
 
             return (chunks.Split('\n').Where(x => !x.StartsWith('#')).ToList(), string.Empty);
@@ -70,9 +70,15 @@ namespace SoundMist.Helpers
             {
                 return (null, $"Failed retrieving chunks, return code: {e.StatusCode}: {e.Message}");
             }
+            catch (TaskCanceledException)
+            {
+                return (null, "Download task cancelled");
+            }
             return (chunks.SelectMany(x => x).ToArray(), string.Empty);
         }
 
+        /// <exception cref="HttpRequestException" />
+        /// <exception cref="TaskCanceledException" />
         internal static async Task<byte[]> DownloadTrackChunk(HttpClient httpClient, string link, CancellationToken token)
         {
             using var response = await httpClient.GetAsync(link, token);

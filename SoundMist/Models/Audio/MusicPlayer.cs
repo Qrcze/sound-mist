@@ -304,13 +304,22 @@ namespace SoundMist.Models.Audio
             }
 
             int initialChunks = Math.Min(3, links.Count);
-
             var initialBytes = new List<byte[]>(initialChunks);
+
+            try
+            {
             for (int i = 0; i < initialChunks; i++)
             {
                 byte[] bytes = await SoundCloudDownloader.DownloadTrackChunk(httpClient, links[i], token);
                 initialBytes.Add(bytes);
                 PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
+            }
+            }
+            catch (HttpRequestException ex)
+            {
+                ErrorCallback?.Invoke($"Error while getting initial chunks for track ID: {track.Id} - {ex.Message}");
+                PlayStateUpdated?.Invoke(PlayState.Error, "Failed loading track");
+                return false;
             }
 
             try
@@ -344,6 +353,12 @@ namespace SoundMist.Models.Audio
                     }
                     _audioController.StreamCompleted();
                     PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
+                }
+                catch (HttpRequestException ex)
+                {
+                    _audioController.Stop();
+                    ErrorCallback?.Invoke($"Error while loading chunks for track ID: {CurrentTrack?.Id} - {ex.Message}");
+                    PlayStateUpdated?.Invoke(PlayState.Error, "Failed bufferring track");
                 }
                 catch (TaskCanceledException ex)
                 {
