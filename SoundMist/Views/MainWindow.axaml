@@ -8,7 +8,7 @@
 		Width="1100" Height="800"
         x:Class="SoundMist.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/soundmist-logo.ico"
         Title="{Binding TrackTitle}">
 	<Grid>
 		<UserControl Content="{Binding CurrentControl}" />

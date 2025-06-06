@@ -8,8 +8,12 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Configurations>Debug;Release;Linux-Publish</Configurations>
+	<ApplicationIcon>soundmist-logo.ico</ApplicationIcon>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="soundmist-logo.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.5" />
