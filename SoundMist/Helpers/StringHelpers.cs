@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace SoundMist.Helpers
             return time.ToString(@"mm\:ss");
         }
 
-        internal static string TimeAgo(DateTime createdAt)
+        public static string TimeAgo(DateTime createdAt)
         {
             var createdLocalTime = createdAt.ToLocalTime();
             DateTime diff = new(DateTime.Now.Ticks - createdLocalTime.Ticks);
@@ -32,13 +33,18 @@ namespace SoundMist.Helpers
             return $"{diff.Minute - 1} minute{(diff.Minute - 1 > 1 ? "s" : "")} ago";
         }
 
-        internal static string ShortenedNumber(int num)
+        public static string ShortenedNumber(int num)
         {
             if (num > 1_000_000)
                 return $"{(float)num / 1_000_000:0.##}M";
             if (num > 10_000)
                 return $"{(float)num / 1_000:0.##}K";
             return num.ToString();
+        }
+
+        public static string NumberWithSeparators(int num)
+        {
+            return num.ToString(CultureInfo.CurrentCulture);
         }
     }
 }

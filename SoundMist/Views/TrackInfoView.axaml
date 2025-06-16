@@ -9,6 +9,29 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SoundMist.Views.TrackInfoView"
 			 x:DataType="vm:TrackInfoViewModel">
+	<UserControl.Styles>
+		<Style Selector="ListBoxItem">
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Padding" Value="0" />
+		</Style>
+		<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+
+		<Style Selector="Button.tag-button">
+			<!--<Setter Property="Background" Value="DimGray" />-->
+			<Setter Property="CornerRadius" Value="15" />
+			<Setter Property="Margin" Value="3" />
+			<Setter Property="Padding" Value="8 2" />
+		</Style>
+		
+		<!--<Style Selector="Button.tag-button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="Red" />
+		</Style>-->
+	</UserControl.Styles>
 	<Grid>
 		<ScrollViewer>
 			<StackPanel Margin="10">
@@ -33,13 +56,13 @@
 
 						<StackPanel Grid.Column="2" Margin="5">
 							<TextBlock Text="{Binding Track.DisplayDateAgo}" IsVisible="{Binding Track.ShowDisplayDate}" ToolTip.Tip="{Binding Track.DisplayDate}" Margin="3" HorizontalAlignment="Right" />
-							<StackPanel Orientation="Horizontal" Spacing="5" Margin="3" ToolTip.Tip="{Binding Track.CreatedLocalTime}" HorizontalAlignment="Right" >
+							<StackPanel Orientation="Horizontal" Spacing="5" Margin="3" ToolTip.Tip="{Binding Track.CreatedLocalTime}" HorizontalAlignment="Right">
 								<TextBlock Text="Uploaded:" IsVisible="{Binding Track.WasModified}" Opacity="0.5" />
 								<TextBlock Text="{Binding Track.CreatedAgo}" />
 							</StackPanel>
 							<StackPanel Orientation="Horizontal" IsVisible="{Binding Track.WasModified}"
 										HorizontalAlignment="Right" Margin="3" Spacing="5" Opacity="0.6"
-										ToolTip.Tip="{Binding Track.ModifiedLocalTime}" >
+										ToolTip.Tip="{Binding Track.ModifiedLocalTime}">
 								<TextBlock Text="Last Modified:" />
 								<TextBlock Text="{Binding Track.ModifiedAgo}" />
 							</StackPanel>
@@ -63,27 +86,72 @@
 					</Grid>
 				</Grid>
 
-				<StackPanel Orientation="Horizontal">
-					<ToggleButton Padding="0" Margin="5" Command="{Binding LikeTrackCommand}" IsChecked="{Binding TrackLiked}">
-						<Grid>
-							<StackPanel Orientation="Horizontal" >
-								<Image IsVisible="{Binding TrackLiked}" Source="/Assets/favorite-filled.png" Width="24" />
-								<Image IsVisible="{Binding !TrackLiked}" Source="/Assets/favorite.png" Width="24" />
-								<TextBlock IsVisible="{Binding TrackLiked}" Text="Liked" VerticalAlignment="Center" Margin="5" />
-								<TextBlock IsVisible="{Binding !TrackLiked}" Text="Like" VerticalAlignment="Center" Margin="5" />
-							</StackPanel>
-						</Grid>
-					</ToggleButton>
-					<Button Content="Open in browser" Command="{Binding OpenUrlInBrowserCommand}" />
-				</StackPanel>
+				<Grid ColumnDefinitions="*,*">
+					<StackPanel Orientation="Horizontal">
+						<ToggleButton Padding="0" Margin="5" Command="{Binding LikeTrackCommand}" IsChecked="{Binding TrackLiked}">
+							<Grid>
+								<StackPanel Orientation="Horizontal">
+									<Image IsVisible="{Binding TrackLiked}" Source="/Assets/favorite-filled.png" Width="24" />
+									<Image IsVisible="{Binding !TrackLiked}" Source="/Assets/favorite.png" Width="24" />
+									<TextBlock IsVisible="{Binding TrackLiked}" Text="Liked" VerticalAlignment="Center" Margin="5" />
+									<TextBlock IsVisible="{Binding !TrackLiked}" Text="Like" VerticalAlignment="Center" Margin="5" />
+								</StackPanel>
+							</Grid>
+						</ToggleButton>
+						<Button Content="Open in browser" Command="{Binding OpenUrlInBrowserCommand}" />
+					</StackPanel>
 
-				<TextBox Margin="5" IsReadOnly="True" Text="{Binding Track.Description}" TextWrapping="Wrap" />
+					<StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+						<StackPanel Orientation="Horizontal" Margin="0 0 15 0" ToolTip.Tip="{Binding Track.PlaybackTooltip}">
+							<Image Source="/Assets/play.png" Width="16" Margin="0 0 3 0" />
+							<TextBlock Text="{Binding Track.PlaybackFormatted}" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0 0 15 0" ToolTip.Tip="{Binding Track.LikesTooltip}" IsVisible="{Binding Track.HasLikes}">
+							<Image Source="/Assets/favorite-filled.png" Width="16" Margin="0 0 3 0" />
+							<TextBlock Text="{Binding Track.LikesFormatted}" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0 0 15 0" ToolTip.Tip="{Binding Track.RepostsTooltip}" IsVisible="{Binding Track.HasReposts}">
+							<Image Source="/Assets/repeat.png" Width="16" Margin="0 0 3 0" />
+							<TextBlock Text="{Binding Track.RepostsFormatted}" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0 0 5 0" ToolTip.Tip="{Binding Track.CommentTooltip}" IsVisible="{Binding Track.HasComment}">
+							<Image Source="/Assets/message.png" Width="16" Margin="0 0 3 0" />
+							<TextBlock Text="{Binding Track.CommentFormatted}" />
+						</StackPanel>
+					</StackPanel>
+				</Grid>
+				
+				<Separator Margin="15" IsVisible="{Binding Track.HasTags}" />
+
+				<ListBox ItemsSource="{Binding Track.TagListArray}" Background="Transparent">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel />
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Button Classes="tag-button" Click="OpenTagPage" Tag="{Binding .}">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="#" Foreground="White" />
+									<TextBlock Text="{Binding .}" Foreground="White" />
+								</StackPanel>
+							</Button>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+
+				<Separator Margin="15" IsVisible="{Binding Track.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+				<TextBox Margin="5" IsReadOnly="True" Text="{Binding Track.Description}" IsVisible="{Binding Track.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" />
 			</StackPanel>
 		</ScrollViewer>
-		<Panel Background="#9333" IsVisible="{Binding LoadingView}" >
+
+		<!-- Loading overlay -->
+		<Panel Background="#9333" IsVisible="{Binding LoadingView}">
 			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />
 		</Panel>
-		<Panel IsVisible="{Binding ShowFullImage}" >
+		<Panel IsVisible="{Binding ShowFullImage}">
 			<Border Background="#a222" Tapped="TogglePreview" />
 			<Image StretchDirection="DownOnly" asyncImageLoader:ImageLoader.Source="{Binding Track.ArtworkUrlOriginal}" />
 			<Button Command="{Binding ToggleFullImageCommand}" Width="25" Height="25" Padding="0" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Top">

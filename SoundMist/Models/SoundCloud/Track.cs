@@ -82,11 +82,24 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
         [JsonIgnore] public DateTime ModifiedLocalTime => LastModified.ToLocalTime();
 
-        [JsonIgnore] public string LikesFormatted => LikesCount.HasValue ? StringHelpers.ShortenedNumber(LikesCount.Value) : string.Empty;
-        [JsonIgnore] public string PlaybacksFormatted => PlaybackCount.HasValue ? StringHelpers.ShortenedNumber(PlaybackCount.Value) : string.Empty;
+        [JsonIgnore] public string LikesFormatted => LikesCount.HasValue ? StringHelpers.ShortenedNumber(LikesCount.Value) : "0";
+        [JsonIgnore] public string PlaybackFormatted => PlaybackCount.HasValue ? StringHelpers.ShortenedNumber(PlaybackCount.Value) : "0";
+        [JsonIgnore] public string RepostsFormatted => RepostsCount.HasValue ? StringHelpers.ShortenedNumber(RepostsCount.Value) : "0";
+        [JsonIgnore] public string CommentFormatted => CommentCount.HasValue ? StringHelpers.ShortenedNumber(CommentCount.Value) : "0";
+
+        [JsonIgnore] public string PlaybackTooltip => PlaybackCount.HasValue ? $"{PlaybackCount.Value:n0} plays" : "0 plays";
+        [JsonIgnore] public string LikesTooltip => LikesCount.HasValue ? $"{LikesCount.Value:n0} likes" : "0 likes";
+        [JsonIgnore] public string RepostsTooltip => RepostsCount.HasValue ? $"{RepostsCount.Value:n0} reposts" : "0 reposts";
+        [JsonIgnore] public string CommentTooltip => CommentCount.HasValue ? $"{CommentCount.Value:n0} comments" : "0 reposts";
+
+        [JsonIgnore] public bool HasPlaybacks => PlaybackCount.HasValue && PlaybackCount.Value > 0;
+        [JsonIgnore] public bool HasLikes => LikesCount.HasValue && LikesCount.Value > 0;
+        [JsonIgnore] public bool HasReposts => RepostsCount.HasValue && RepostsCount.Value > 0;
+        [JsonIgnore] public bool HasComment => CommentCount.HasValue && CommentCount.Value > 0;
 
         [JsonIgnore] public bool HasGenre => !string.IsNullOrEmpty(Genre);
 
+        [JsonIgnore]
         public string? BackgroundVisualUrl
         {
             get
@@ -102,6 +115,49 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public bool RegionBlocked => Policy == "BLOCK";
         [JsonIgnore] public bool Snipped => Policy == "SNIP";
         [JsonIgnore] public bool FromAutoplay { get; set; }
+
+        [JsonIgnore]
+        public List<string> TagListArray
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(TagList))
+                    return [];
+
+                //TagList?.Split(' ') ?? []
+                List<string> tags = [];
+                int start = 0;
+                bool compoundTag = false;
+                for (int i = 0; i < TagList.Length; i++)
+                {
+                    var c = TagList[i];
+                    if (c == '"')
+                    {
+                        if (!compoundTag)
+                        {
+                            compoundTag = true;
+                            start = i + 1;
+                        }
+                        else
+                        {
+                            compoundTag = false;
+                            tags.Add(TagList[start..i]);
+                            start = i + 2;
+                            i++;
+                        }
+                    }
+                    else if (!compoundTag && char.IsWhiteSpace(c))
+                    {
+                        tags.Add(TagList[start..i]);
+                        start = i + 1;
+                    }
+                }
+
+                return tags;
+            }
+        }
+
+        [JsonIgnore] public bool HasTags => !string.IsNullOrEmpty(TagList);
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }

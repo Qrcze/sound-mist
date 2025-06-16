@@ -45,7 +45,7 @@
 
 							<StackPanel Grid.Column="1" Orientation="Horizontal">
 								<Image Source="/Assets/play.png" Width="24" Height="24" />
-								<TextBlock VerticalAlignment="Center" Text="{Binding PlaybacksFormatted}" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding PlaybackFormatted}" />
 							</StackPanel>
 						</Grid>
 					</DataTemplate>

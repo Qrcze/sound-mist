@@ -123,7 +123,7 @@
 										<TextBlock Text="Not available in your country (snipped)" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="2 0" />
 									</StackPanel>
 									<Image Grid.Column="2" Source="/Assets/play.png" />
-									<TextBlock Grid.Column="3" Text="{Binding PlaybacksFormatted}" />
+									<TextBlock Grid.Column="3" Text="{Binding PlaybackFormatted}" />
 									<TextBlock Grid.ColumnSpan="4" Text="Not available in your country" IsVisible="{Binding RegionBlocked}" Opacity="0.5" HorizontalAlignment="Center" />
 								</Grid>
 							</DataTemplate>
