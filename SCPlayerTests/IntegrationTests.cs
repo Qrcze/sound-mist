@@ -9,15 +9,15 @@ namespace SCPlayerTests
 {
     public class IntegrationTests
     {
-        private static readonly HttpClient _httpClient = new() { BaseAddress = new(Globals.SoundCloudBaseUrl) };
         private static readonly IDatabase _database = new DummyDatabase();
         private static readonly ILogger _logger = new DummyLogger();
         private static readonly ProgramSettings _settings = new();
+        private static readonly HttpManager _httpManager = new(_settings);
         private static readonly IMusicPlayer _musicPlayer = new MockMusicPlayer();
 
         public IntegrationTests()
         {
-            var initializer = new SoundcloudDataInitializer(_settings, new AuthorizedHttpClient(), _httpClient, _logger, null!);
+            var initializer = new SoundcloudDataInitializer(_settings, new HttpManager(_settings), _logger, null!);
 
             _settings.AppVersion = initializer.GetAppVersion().Result;
             (_settings.ClientId, _settings.AnonymousUserId) = initializer.GetClientAndAnonymousUserIds().Result;
@@ -39,7 +39,7 @@ namespace SCPlayerTests
         public async Task Search_All()
         {
             //all of the queries are going to be moved to a separate static helper class with querioes only
-            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpManager, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "All";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -53,7 +53,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Tracks()
         {
-            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpManager, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "Tracks";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -68,7 +68,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_People()
         {
-            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpManager, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "People";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -83,7 +83,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Albums()
         {
-            var vm = new SearchViewModel(_httpClient, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(_httpManager, _database, _settings, _musicPlayer, _logger);
             vm.SelectedFilter = "Albums";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -99,7 +99,7 @@ namespace SCPlayerTests
         public async Task Get_TracksById()
         {
             //tracks with id 2 and 17 are the oldest available tracks i could find, rather unlikely they'll get deleted lol
-            var tracks = await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, [2, 17]);
+            var tracks = await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, [2, 17]);
 
             Assert.True(tracks.Count == 2, $"Failed downloading all of the tracks; got: {tracks.Count}");
 
@@ -110,10 +110,10 @@ namespace SCPlayerTests
         [Fact]
         public async Task Get_Waveform()
         {
-            var tracks = await SoundCloudQueries.GetTracksById(_httpClient, _settings.ClientId, _settings.AppVersion, [2]);
+            var tracks = await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, [2]);
             Assert.True(tracks.Count == 1, "Tracks download malfunction");
 
-            var wave = await SoundCloudQueries.GetTrackWaveform(_httpClient, tracks[0].WaveformUrl!, CancellationToken.None);
+            var wave = await SoundCloudQueries.GetTrackWaveform(_httpManager.DefaultClient, tracks[0].WaveformUrl!, CancellationToken.None);
 
             Assert.True(wave is not null, "Retrieved waveform is null");
         }
