@@ -24,20 +24,20 @@ namespace SoundMist.Models
         {
             lock (_lock)
             {
-                var file = File.Open("log.txt", FileMode.Append);
+                var file = File.Open(Globals.AppDirectory + "log.txt", FileMode.Append);
                 if (file.Length > 1_000_000) //if > ~1mb
                 {
                     file.Close();
-                    var logFiles = Directory.GetFiles(".", "log.*.txt");
+                    var logFiles = Directory.GetFiles(".", Globals.AppDirectory + "log.*.txt");
                     for (int i = logFiles.Length - 1; i >= 0; i--)
                     {
                         if (i > 3)
-                            File.Delete($"log.{i}.txt");
+                            File.Delete(Globals.AppDirectory + $"log.{i}.txt");
                         else
-                            File.Move($"log.{i}.txt", $"log.{i + 1}.txt");
+                            File.Move(Globals.AppDirectory + $"log.{i}.txt", Globals.AppDirectory + $"log.{i + 1}.txt");
                     }
-                    File.Move("log.txt", $"log.0.txt");
-                    file = File.Create("log.txt");
+                    File.Move(Globals.AppDirectory + "log.txt", Globals.AppDirectory + "log.0.txt");
+                    file = File.Create(Globals.AppDirectory + "log.txt");
                 }
                 var writer = new StreamWriter(file);
                 writer.WriteLine(message);

@@ -19,8 +19,6 @@ namespace SoundMist.Models
 
     public class ProgramSettings
     {
-        private const string SettingsFilePath = "settings.json";
-
         private bool _settingsInitialized; // a guard, otherwise json uses property to SetPropertyAndSave and it can break stuff
 
         private string? _authToken;
@@ -40,12 +38,13 @@ namespace SoundMist.Models
 
         public static ProgramSettings Load()
         {
+            
             ProgramSettings? settings = null;
             string json;
 
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(Globals.SettingsFilePath))
             {
-                json = File.ReadAllText(SettingsFilePath);
+                json = File.ReadAllText(Globals.SettingsFilePath);
 
                 try
                 {
@@ -54,7 +53,7 @@ namespace SoundMist.Models
                 catch (Exception ex)
                 {
                     FileLogger.Instance.Error($"Failed reading settings json: {ex.Message}");
-                    File.Copy(SettingsFilePath, SettingsFilePath + ".old", overwrite: true);
+                    File.Copy(Globals.SettingsFilePath, Globals.SettingsFilePath + ".old", overwrite: true);
                 }
             }
 
@@ -62,7 +61,7 @@ namespace SoundMist.Models
             {
                 settings = new();
                 json = JsonSerializer.Serialize(settings);
-                File.WriteAllText(SettingsFilePath, json);
+                File.WriteAllText(Globals.SettingsFilePath, json);
             }
 
             settings._settingsInitialized = true;
@@ -203,7 +202,7 @@ namespace SoundMist.Models
         void SaveSettingsFile()
         {
             var json = JsonSerializer.Serialize(this);
-            File.WriteAllText(SettingsFilePath, json);
+            File.WriteAllText(Globals.SettingsFilePath, json);
         }
     }
 }

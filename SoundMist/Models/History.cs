@@ -35,8 +35,6 @@ public class History
         PlaylistsHistory,
     }
 
-    private const string FilePath = "history.json";
-
     [JsonIgnore] public IReadOnlyCollection<int> PlayHistory => _playHistory;
     [JsonIgnore] public IReadOnlyCollection<int> TracksHistory => _tracksHistory;
     [JsonIgnore] public IReadOnlyCollection<int> UsersHistory => _usersHistory;
@@ -73,17 +71,17 @@ public class History
 
     public static History Load(ProgramSettings settings)
     {
-        if (!File.Exists(FilePath))
+        if (!File.Exists(Globals.HistoryFilePath))
         {
             Debug.Print("creating new history file");
             var history = new History(settings);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(history));
+            File.WriteAllText(Globals.HistoryFilePath, JsonSerializer.Serialize(history));
             return history;
         }
 
         try
         {
-            var json = File.ReadAllText(FilePath);
+            var json = File.ReadAllText(Globals.HistoryFilePath);
             var history = JsonSerializer.Deserialize<History>(json)!;
             history._settings = settings;
             return history;
@@ -91,17 +89,17 @@ public class History
         catch (JsonException ex)
         {
             FileLogger.Instance.Error($"Failed deserializing the history json: {ex.Message}");
-            string oldFile = $"{FilePath}.old";
+            string oldFile = $"{Globals.HistoryFilePath}.old";
             File.Delete(oldFile);
-            File.Move(FilePath, oldFile);
+            File.Move(Globals.HistoryFilePath, oldFile);
             return new(settings);
         }
         catch (Exception ex)
         {
             FileLogger.Instance.Error($"Exception while reading the history json: {ex.Message}");
-            string oldFile = $"{FilePath}.old";
+            string oldFile = $"{Globals.HistoryFilePath}.old";
             File.Delete(oldFile);
-            File.Move(FilePath, oldFile);
+            File.Move(Globals.HistoryFilePath, oldFile);
             return new(settings);
         }
     }
@@ -133,6 +131,6 @@ public class History
         HistoryChanged?.Invoke(this, new(listId, id, removed, addedObject));
 
         var json = JsonSerializer.Serialize(this);
-        File.WriteAllText(FilePath, json);
+        File.WriteAllText(Globals.HistoryFilePath, json);
     }
 }
