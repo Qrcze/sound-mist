@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls.Notifications;
-using SoundMist.Helpers;
+﻿using SoundMist.Helpers;
 using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
@@ -71,7 +70,6 @@ namespace SoundMist.Models.Audio
 
             ErrorCallback += m =>
             {
-                NotificationManager.Show(new Notification("Player error", m, NotificationType.Error, TimeSpan.Zero));
                 logger.Error(m);
             };
         }
@@ -308,12 +306,12 @@ namespace SoundMist.Models.Audio
 
             try
             {
-            for (int i = 0; i < initialChunks; i++)
-            {
-                byte[] bytes = await SoundCloudDownloader.DownloadTrackChunk(httpClient, links[i], token);
-                initialBytes.Add(bytes);
-                PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
-            }
+                for (int i = 0; i < initialChunks; i++)
+                {
+                    byte[] bytes = await SoundCloudDownloader.DownloadTrackChunk(httpClient, links[i], token);
+                    initialBytes.Add(bytes);
+                    PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
+                }
             }
             catch (HttpRequestException ex)
             {
