@@ -5,6 +5,7 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Views;
 using System;
@@ -40,12 +41,26 @@ public partial class App : Application
 
         ServiceConfigured?.Invoke(services);
 
+        var musicPlayer = services.GetRequiredService<IMusicPlayer>();
+
+#if !OS_LINUX
+        var settings = services.GetRequiredService<ProgramSettings>();
+        if (settings.AlternativeWindowsMediaKeysHandling)
+        {
+            KeyboardHook.Run();
+            KeyboardHook.PlayPausedTriggered += musicPlayer.PlayPause;
+            KeyboardHook.PlayTriggered += musicPlayer.Play;
+            KeyboardHook.PauseTriggered += musicPlayer.Pause;
+            KeyboardHook.PrevTrackTriggered += () => System.Threading.Tasks.Task.Run(async () => await musicPlayer.PlayPrev());
+            KeyboardHook.NextTrackTriggered += () => System.Threading.Tasks.Task.Run(async () => await musicPlayer.PlayNext());
+        }
+#endif
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();
             NotificationManager.Toplevel = desktop.MainWindow;
 
-            var musicPlayer = services.GetRequiredService<IMusicPlayer>();
             musicPlayer.ErrorCallback += error =>
             {
                 Dispatcher.UIThread.Post(() =>

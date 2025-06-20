@@ -80,6 +80,9 @@
 										<NumericUpDown Width="120" FormatString="0" Value="{Binding HistoryLimit}"
 													   ValueChanged="NumericUpDown_ValueChanged" KeyDown="OnlyNumericKeysDown" />
 									</c:SettingsOption>
+									<c:SettingsOption IsVisible="{Binding OnWindows}" Header="Alternative media keys handling (requires restart):" ToolTip.Tip="Will directly hook into the keyboard for global media keys, bypassing Windows API, and disabling the Windows' media overlay.&#x0a;Useful for Chrome/Chromium-based browsers, so it doesn't play/pause the videos in browser when trying to pause/play the music.&#x0a;&#x0a;It may require running with administrator privilages, to work over other programs, that run with admin privilages." >
+										<CheckBox IsChecked="{Binding AlternativeMediaKeys}" />
+									</c:SettingsOption>
 
 									<Separator Margin="15" />
 									<TextBlock Text="Proxy settings" FontSize="16" FontWeight="Medium" />

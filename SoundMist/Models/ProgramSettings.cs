@@ -35,10 +35,10 @@ namespace SoundMist.Models
         private ProxyProtocol _proxyProtocol;
         private string _proxyHost;
         private int _proxyPort;
+        private bool _alternativeWindowsMediaKeysHandling;
 
         public static ProgramSettings Load()
         {
-            
             ProgramSettings? settings = null;
             string json;
 
@@ -90,6 +90,7 @@ namespace SoundMist.Models
         public ProxyProtocol ProxyProtocol { get => _proxyProtocol; set => SetPropertyAndSave(ref _proxyProtocol, value); }
         public string ProxyHost { get => _proxyHost; set => SetPropertyAndSave(ref _proxyHost, value); }
         public int ProxyPort { get => _proxyPort; set => SetPropertyAndSave(ref _proxyPort, value); }
+        public bool AlternativeWindowsMediaKeysHandling { get => _alternativeWindowsMediaKeysHandling; set => SetPropertyAndSave(ref _alternativeWindowsMediaKeysHandling, value); }
 
         public AppColorTheme AppColorTheme
         {
