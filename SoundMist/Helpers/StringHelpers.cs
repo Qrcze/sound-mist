@@ -14,8 +14,8 @@ namespace SoundMist.Helpers
         {
             var time = TimeSpan.FromMilliseconds(fullDuration);
             if (time.Hours > 0)
-                return time.ToString(@"hh\:mm\:ss");
-            return time.ToString(@"mm\:ss");
+                return time.ToString(@"h\:mm\:ss");
+            return time.ToString(@"m\:ss");
         }
 
         public static string TimeAgo(DateTime createdAt)

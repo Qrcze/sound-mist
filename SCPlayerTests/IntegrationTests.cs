@@ -117,5 +117,23 @@ namespace SCPlayerTests
 
             Assert.True(wave is not null, "Retrieved waveform is null");
         }
+
+        [Fact]
+        public async Task Get_Comments()
+        {
+            var (response, error) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, null, 2, _settings.ClientId, _settings.AppVersion, CancellationToken.None);
+
+            Assert.True(string.IsNullOrEmpty(error));
+            Assert.True(response != null && response.Collection.Count > 0);
+            Assert.True(!string.IsNullOrEmpty(response.NextHref));
+
+            var (response2, error2) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, response.NextHref, 2, _settings.ClientId, _settings.AppVersion, CancellationToken.None);
+
+            Assert.True(string.IsNullOrEmpty(error2));
+            Assert.True(response2 != null && response2.Collection.Count > 0);
+            Assert.True(response.Collection[0].Id != response2.Collection[0].Id, "Comments NextHref returned the same set of comments");
+            Assert.True(!string.IsNullOrEmpty(response2.NextHref));
+
+        }
     }
 }

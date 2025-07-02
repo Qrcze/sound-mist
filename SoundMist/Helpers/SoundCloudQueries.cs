@@ -1,5 +1,4 @@
 ﻿using SoundMist.Models.SoundCloud;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -160,6 +159,71 @@ namespace SoundMist.Helpers
             catch (HttpRequestException ex)
             {
                 return (null, $"Failed play history request: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Grabs a much larger chunk of comments, but doesn't include the comments posted as replies
+        /// </summary>
+        public static async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackCommentsAhead(HttpClient httpClient, string? href, int trackId, string clientId, int appVersion, CancellationToken token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(href))
+                {
+                    href = $"tracks/{trackId}/comments?threaded=0&client_id={clientId}&limit=200&offset=0&linked_partitioning=1&app_version={appVersion}&app_locale=en";
+                }
+                else
+                    href += $"&client_id={clientId}&app_version={appVersion}&app_locale=en";
+
+                var response = await httpClient.GetAsync(href, token);
+                response.EnsureSuccessStatusCode();
+
+                var c = await response.Content.ReadFromJsonAsync<QueryResponse<Comment>>(token);
+
+                return (c, null);
+            }
+            catch (HttpRequestException ex)
+            {
+                return (null, $"Failed retrieving non-threaded comments for track id {trackId}: {ex}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                return (null, null);
+            }
+        }
+
+        public static async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackComments(HttpClient httpClient, string? href, HashSet<long> nonThreadedComments, int trackId, string clientId, int appVersion, CancellationToken token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(href))
+                {
+                    href = $"tracks/{trackId}/comments?sort=newest&threaded=1&client_id={clientId}&limit=20&offset=0&linked_partitioning=1&app_version={appVersion}&app_locale=en";
+                }
+                else
+                    href += $"&client_id={clientId}&app_version={appVersion}&app_locale=en";
+
+                var response = await httpClient.GetAsync(href, token);
+                response.EnsureSuccessStatusCode();
+
+                var c = await response.Content.ReadFromJsonAsync<QueryResponse<Comment>>(token);
+
+                //if the comment doesn't exist in the non-threaded comments, it's a reply comment
+                c!.Collection.ForEach(x =>
+                {
+                    x.InThread = !nonThreadedComments.Contains(x.Id);
+                });
+
+                return (c, null);
+            }
+            catch (HttpRequestException ex)
+            {
+                return (null, $"Failed retrieving threaded comments for track id {trackId}: {ex}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                return (null, null);
             }
         }
     }

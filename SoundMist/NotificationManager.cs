@@ -20,6 +20,10 @@ namespace SoundMist
 
         private static INotificationManager? _manager;
 
+        /// <summary>
+        /// Shows a toast notification in the top-right corner of the window. Needs to be run on the UI thread.
+        /// </summary>
+        /// <param name="notification"></param>
         public static void Show(Notification notification)
         {
             _manager?.Show(notification);

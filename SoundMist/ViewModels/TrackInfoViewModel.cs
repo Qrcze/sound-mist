@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Notifications;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundMist.Helpers;
@@ -6,6 +7,9 @@ using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +26,14 @@ public partial class TrackInfoViewModel : ViewModelBase
     [ObservableProperty] private bool _showFullImage;
     [ObservableProperty] private int[] _samples = [];
     private double _position;
-
+    private bool _loadingComments;
+    private bool _commentsEnded;
+    private string? _commentsNextHref;
+    private HashSet<long> _commentsLookup = [];
+    private CancellationTokenSource? _commentsTokenSource;
     private CancellationTokenSource? _loadTrackCancellationToken;
+
+    public ObservableCollection<Comment> Comments { get; } = [];
 
     public bool TrackOpened => Track is not null;
 
@@ -142,6 +152,49 @@ public partial class TrackInfoViewModel : ViewModelBase
         }
     }
 
+    public async Task LoadMoreComments(bool force = false)
+    {
+        if (Track is null)
+            return;
+
+        if (_loadingComments && !force || _commentsEnded)
+            return;
+
+        _commentsTokenSource?.Cancel();
+        _commentsTokenSource = new CancellationTokenSource();
+        var token = _commentsTokenSource.Token;
+
+        _loadingComments = true;
+
+        var (response, error) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, _commentsNextHref, _commentsLookup, Track.Id, _settings.ClientId, _settings.AppVersion, token);
+
+        if (token.IsCancellationRequested)
+            return;
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            _loadingComments = false;
+            _logger.Error(error);
+            Dispatcher.UIThread.Post(() => NotificationManager.Show(new("Failed retrieving comments", "Please check logs for more information.", NotificationType.Error)));
+        }
+
+        _commentsNextHref = response!.NextHref;
+        _commentsEnded = string.IsNullOrEmpty(_commentsNextHref);
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            foreach (var item in response.Collection)
+            {
+                if (token.IsCancellationRequested)
+                    break;
+
+                Comments.Add(item);
+            }
+
+            _loadingComments = false;
+        });
+    }
+
     private void OpenArtistProfile()
     {
         if (Track is null)
@@ -173,20 +226,42 @@ public partial class TrackInfoViewModel : ViewModelBase
             await _musicPlayer.LoadNewQueue([Track]);
     }
 
+    internal async Task PlayTrackFromTimestamp(int timestamp)
+    {
+        if (Track is null)
+            return;
+
+        if (Track.Id == _musicPlayer.CurrentTrack?.Id)
+        {
+            _musicPlayer.SetPosition(timestamp);
+            _musicPlayer.Play();
+        }
+        else
+        {
+            await _musicPlayer.LoadNewQueue([Track]);
+            _musicPlayer.SetPosition(timestamp);
+        }
+    }
+
     private void OpenTrack(object? obj)
     {
-        _loadTrackCancellationToken?.Cancel();
-        _loadTrackCancellationToken = new CancellationTokenSource();
-        var token = _loadTrackCancellationToken.Token;
-
         if (obj is not Track track)
             throw new ArgumentException($"{MediatorEvent.OpenTrackInfo} mediator event is expected to provide a {nameof(Track)} object as parameter");
 
         if (track == Track)
             return;
 
-        ShowFullImage = false;
+        _loadTrackCancellationToken?.Cancel();
+        _loadTrackCancellationToken = new CancellationTokenSource();
+        var token = _loadTrackCancellationToken.Token;
+
         LoadingView = true;
+        ShowFullImage = false;
+
+        Comments.Clear();
+        _commentsEnded = false;
+        _commentsNextHref = null;
+
         Samples = [];
         Track = track;
         _history.AddTrackInfoHistory(Track);
@@ -200,7 +275,7 @@ public partial class TrackInfoViewModel : ViewModelBase
             {
                 if (_httpManager.AuthorizedClient.IsAuthorized)
                 {
-                    (var response, string message) = await SoundCloudQueries.GetUsersLikedTracksIds(_httpManager.AuthorizedClient, _settings.ClientId, _settings.AppVersion, token);
+                    var (response, message) = await SoundCloudQueries.GetUsersLikedTracksIds(_httpManager.AuthorizedClient, _settings.ClientId, _settings.AppVersion, token);
                     if (token.IsCancellationRequested)
                         return;
 
@@ -208,8 +283,8 @@ public partial class TrackInfoViewModel : ViewModelBase
                         TrackLiked = response.Collection.Contains(Track.Id);
                     else
                     {
-                        NotificationManager.Show(new("Failed retrieving liked list", "Please check the logs", NotificationType.Warning, TimeSpan.FromSeconds(10)));
                         _logger.Error($"Failed retrieving liked tracks: {message}");
+                        Dispatcher.UIThread.Post(() => NotificationManager.Show(new("Failed retrieving liked list", "Please check the logs", NotificationType.Warning, TimeSpan.FromSeconds(10))));
                     }
                 }
 
@@ -235,6 +310,19 @@ public partial class TrackInfoViewModel : ViewModelBase
             }
 
             LoadingView = false;
+
+            var (commentsAll, error) = await SoundCloudQueries.GetTrackCommentsAhead(_httpManager.DefaultClient, null, Track.Id, _settings.ClientId, _settings.AppVersion, token);
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                _logger.Error(error);
+                Dispatcher.UIThread.Post(() => NotificationManager.Show(new("Failed retrieving comments", "Please check logs for more information.", NotificationType.Error)));
+            }
+            else
+            {
+                _commentsLookup = commentsAll!.Collection.Select(x => x.Id).ToHashSet();
+                await LoadMoreComments(true);
+            }
         }, token);
     }
 }
