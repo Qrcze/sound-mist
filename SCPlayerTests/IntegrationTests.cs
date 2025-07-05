@@ -121,13 +121,13 @@ namespace SCPlayerTests
         [Fact]
         public async Task Get_Comments()
         {
-            var (response, error) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, null, 2, _settings.ClientId, _settings.AppVersion, CancellationToken.None);
+            var (response, error) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, null, [], 2, _settings.ClientId, _settings.AppVersion, CancellationToken.None);
 
             Assert.True(string.IsNullOrEmpty(error));
             Assert.True(response != null && response.Collection.Count > 0);
             Assert.True(!string.IsNullOrEmpty(response.NextHref));
 
-            var (response2, error2) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, response.NextHref, 2, _settings.ClientId, _settings.AppVersion, CancellationToken.None);
+            var (response2, error2) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, response.NextHref, [], 2, _settings.ClientId, _settings.AppVersion, CancellationToken.None);
 
             Assert.True(string.IsNullOrEmpty(error2));
             Assert.True(response2 != null && response2.Collection.Count > 0);
