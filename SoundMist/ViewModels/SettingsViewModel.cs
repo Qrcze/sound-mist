@@ -4,7 +4,6 @@ using SoundMist.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 
 namespace SoundMist.ViewModels;
 
@@ -54,16 +53,14 @@ public partial class SettingsViewModel : ViewModelBase
 
     public IRelayCommand CloseCommand { get; }
 
-    private readonly HttpManager _httpManager;
     private readonly ProgramSettings _settings;
 
-    public SettingsViewModel(HttpManager httpManager, ProgramSettings settings)
+    public SettingsViewModel(ProgramSettings settings)
     {
 #if OS_WINDOWS
         OnWindows = true;
 #endif
 
-        _httpManager = httpManager;
         _settings = settings;
         SelectedTheme = _settings.AppColorTheme;
 
@@ -103,7 +100,6 @@ public partial class SettingsViewModel : ViewModelBase
 
         _settings.ApplyProxySettings(ProxyMode, ProxyProtocol, ProxyHost, ProxyPort);
     }
-
 
     partial void OnSelectedThemeChanged(AppColorTheme value)
     {

@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace SoundMist.Models
 {
-    public class CacheDatabase(HttpManager httpManager, ProgramSettings settings) : IDatabase
+    public class CacheDatabase(IHttpManager httpManager, ProgramSettings settings, SoundCloudQueries queries) : IDatabase
     {
-        private readonly HttpManager _httpManager = httpManager;
+        private readonly IHttpManager _httpManager = httpManager;
         private readonly ProgramSettings _settings = settings;
+        private readonly SoundCloudQueries _queries = queries;
 
         private readonly Dictionary<int, Track> _tracks = [];
         private readonly Dictionary<int, User> _users = [];
@@ -45,7 +46,7 @@ namespace SoundMist.Models
 
             if (missingItems.Any())
             {
-                var tracks = await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, missingItems, token);
+                var tracks = await _queries.GetTracksById(missingItems, false, token);
 
                 foreach (var track in tracks)
                     _tracks.Add(track.Id, track);
@@ -67,7 +68,7 @@ namespace SoundMist.Models
             {
                 foreach (var item in missingItems)
                 {
-                    var user = await SoundCloudQueries.GetUserInfo(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, item, token);
+                    var user = await _queries.GetUserInfo(item, token);
 
                     _users.Add(user.Id, user);
                 }
@@ -89,7 +90,7 @@ namespace SoundMist.Models
             {
                 foreach (var item in missingItems)
                 {
-                    var playlist = await SoundCloudQueries.GetPlaylistInfo(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, item, token);
+                    var playlist = await _queries.GetPlaylistInfo(item, token);
 
                     _playlists.Add(playlist.Id, playlist);
                 }

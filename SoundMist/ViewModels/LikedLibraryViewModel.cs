@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Timers;
@@ -39,18 +38,20 @@ namespace SoundMist.ViewModels
 
         private volatile bool _loadingItems;
 
-        private readonly HttpManager _httpManager;
+        private readonly IHttpManager _httpManager;
         private readonly ProgramSettings _settings;
+        private readonly SoundCloudDownloader _downloader;
         private readonly IDatabase _database;
         private readonly IMusicPlayer _musicPlayer;
         private readonly ILogger _logger;
         private string? _nextHref;
         private readonly Timer _filterDelay;
 
-        public LikedLibraryViewModel(HttpManager httpManager, ProgramSettings settings, IDatabase database, IMusicPlayer musicPlayer, ILogger logger)
+        public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer, ILogger logger)
         {
             _httpManager = httpManager;
             _settings = settings;
+            _downloader = downloader;
             _database = database;
             _musicPlayer = musicPlayer;
             _logger = logger;
@@ -203,7 +204,7 @@ namespace SoundMist.ViewModels
             var notif = new Notification($"Downloading {SelectedTrack.FullLabel}", "Downloading started...", NotificationType.Information, TimeSpan.Zero);
             NotificationManager.Show(notif);
 
-            (bool success, string errorMessage) = await SoundCloudDownloader.SaveTrackLocally(_httpManager, _settings.ProxyMode, SelectedTrack, _settings.ClientId, _settings.AppVersion, (message) =>
+            (bool success, string errorMessage) = await _downloader.SaveTrackLocally(SelectedTrack, (message) =>
             {
                 notif.Message = message;
             });

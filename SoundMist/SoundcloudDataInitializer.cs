@@ -17,15 +17,17 @@ namespace SoundMist;
 public partial class SoundcloudDataInitializer
 {
     private readonly ProgramSettings _settings;
-    private readonly HttpManager _httpManager;
+    private readonly IHttpManager _httpManager;
+    private readonly SoundCloudQueries _queries;
     private readonly ILogger _logger;
     private readonly MainWindowViewModel _mainWindowViewModel;
     private bool _mainViewOpened;
 
-    public SoundcloudDataInitializer(ProgramSettings settings, HttpManager httpManager, ILogger logger, MainWindowViewModel mainWindowViewModel)
+    public SoundcloudDataInitializer(ProgramSettings settings, IHttpManager httpManager, SoundCloudQueries queries, ILogger logger, MainWindowViewModel mainWindowViewModel)
     {
         _settings = settings;
         _httpManager = httpManager;
+        _queries = queries;
         _logger = logger;
         _mainWindowViewModel = mainWindowViewModel;
     }
@@ -192,7 +194,7 @@ public partial class SoundcloudDataInitializer
         if (_settings.LastTrackId.HasValue)
         {
             var musicPlayer = App.GetService<IMusicPlayer>();
-            var lastTrack = (await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, [_settings.LastTrackId.Value]))
+            var lastTrack = (await _queries.GetTracksById([_settings.LastTrackId.Value]))
                 .Single();
             await musicPlayer.LoadNewQueue([lastTrack], null, _settings.StartPlayingOnLaunch);
         }

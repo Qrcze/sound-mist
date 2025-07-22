@@ -1,4 +1,5 @@
-﻿using SoundMist.Models.SoundCloud;
+﻿using SoundMist.Models;
+using SoundMist.Models.SoundCloud;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -9,14 +10,17 @@ using System.Web;
 
 namespace SoundMist.Helpers
 {
-    public static class SoundCloudQueries
+    public class SoundCloudQueries(IHttpManager httpManager, ProgramSettings settings)
     {
         /// <summary> hard defined by SoundCloud api </summary>
         private const int TracksQueryLimit = 50;
 
-        /// <inheritdoc cref="GetTracksById(HttpClient, string, int, IEnumerable{int}, CancellationToken)"/>
-        public static async Task<List<Track>> GetTracksById(HttpClient httpClient, string clientId, int appVersion, IEnumerable<int> tracksIds)
-            => await GetTracksById(httpClient, clientId, appVersion, tracksIds, CancellationToken.None);
+        private readonly IHttpManager _httpManager = httpManager;
+        private readonly ProgramSettings _settings = settings;
+
+        /// <inheritdoc cref="GetTracksById(IEnumerable{int}, bool, CancellationToken)"/>
+        public async Task<List<Track>> GetTracksById(IEnumerable<int> tracksIds, bool forceProxy = false)
+            => await GetTracksById(tracksIds, forceProxy, CancellationToken.None);
 
         /// <summary>
         /// Will return a list of tracks with their full info. It divides each query into chunks of 50 tracks per request, so SC doesn't complain.
@@ -24,10 +28,11 @@ namespace SoundMist.Helpers
         /// <returns></returns>
         /// <exception cref="HttpRequestException" />
         /// <exception cref="TaskCanceledException" />
-        public static async Task<List<Track>> GetTracksById(HttpClient httpClient, string clientId, int appVersion, IEnumerable<int> tracksIds, CancellationToken token)
+        public async Task<List<Track>> GetTracksById(IEnumerable<int> tracksIds, bool forceProxy, CancellationToken token)
         {
             int skip = 0;
             var fullTracks = new List<Track>();
+            var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
             while (true)
             {
                 token.ThrowIfCancellationRequested();
@@ -38,8 +43,9 @@ namespace SoundMist.Helpers
 
                 skip += 50;
 
-                string url = $"https://api-v2.soundcloud.com/tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={clientId}&app_version={appVersion}&app_locale=en";
-                using var response = await httpClient.GetAsync(url, token);
+                string url = $"https://api-v2.soundcloud.com/tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+
+                using var response = await client.GetAsync(url, token);
                 response.EnsureSuccessStatusCode();
 
                 var list = await response.Content.ReadFromJsonAsync<List<Track>>(token);
@@ -49,39 +55,39 @@ namespace SoundMist.Helpers
             return fullTracks;
         }
 
-        public static async Task<WaveformData?> GetTrackWaveform(HttpClient httpClient, string waveformUrl, CancellationToken token)
+        public async Task<WaveformData?> GetTrackWaveform(string waveformUrl, CancellationToken token)
         {
-            using var response = await httpClient.GetAsync(waveformUrl, token);
+            using var response = await _httpManager.DefaultClient.GetAsync(waveformUrl, token);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<WaveformData>(token);
         }
 
-        internal static async Task<User?> GetUserInfo(HttpClient httpClient, string clientId, int appVersion, int userId, CancellationToken token)
+        internal async Task<User?> GetUserInfo(int userId, CancellationToken token)
         {
-            using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/users/{userId}?client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+            using var response = await _httpManager.DefaultClient.GetAsync($"https://api-v2.soundcloud.com/users/{userId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<User>(token);
         }
 
-        internal static async Task<Playlist?> GetPlaylistInfo(HttpClient httpClient, string clientId, int appVersion, int playlistId, CancellationToken token)
+        internal async Task<Playlist?> GetPlaylistInfo(int playlistId, CancellationToken token)
         {
-            using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/playlists/{playlistId}?client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+            using var response = await _httpManager.DefaultClient.GetAsync($"https://api-v2.soundcloud.com/playlists/{playlistId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<Playlist>(token);
         }
 
         /// <exception cref="TaskCanceledException" />
-        public static async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedTracksIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
+        public async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedTracksIds(CancellationToken token)
         {
-            if (!httpClient.IsAuthorized)
+            if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
             try
             {
-                using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/me/track_likes/ids?limit=200&client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+                using var response = await _httpManager.AuthorizedClient.GetAsync($"https://api-v2.soundcloud.com/me/track_likes/ids?limit=200&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
                 response.EnsureSuccessStatusCode();
 
                 var c = await response.Content.ReadFromJsonAsync<QueryResponse<int>>(token);
@@ -95,14 +101,14 @@ namespace SoundMist.Helpers
         }
 
         /// <exception cref="TaskCanceledException" />
-        public static async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedUsersIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
+        public async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedUsersIds(CancellationToken token)
         {
-            if (!httpClient.IsAuthorized)
+            if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
             try
             {
-                using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/me/user_likes/ids?limit=5000&client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+                using var response = await _httpManager.AuthorizedClient.GetAsync($"https://api-v2.soundcloud.com/me/user_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
                 response.EnsureSuccessStatusCode();
 
                 var c = await response.Content.ReadFromJsonAsync<QueryResponse<int>>(token);
@@ -116,14 +122,14 @@ namespace SoundMist.Helpers
         }
 
         /// <exception cref="TaskCanceledException" />
-        public static async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedPlaylistsIds(AuthorizedHttpClient httpClient, string clientId, int appVersion, CancellationToken token)
+        public async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedPlaylistsIds(CancellationToken token)
         {
-            if (!httpClient.IsAuthorized)
+            if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
             try
             {
-                using var response = await httpClient.GetAsync($"https://api-v2.soundcloud.com/me/playlist_likes/ids?limit=5000&client_id={clientId}&app_version={appVersion}&app_locale=en", token);
+                using var response = await _httpManager.AuthorizedClient.GetAsync($"https://api-v2.soundcloud.com/me/playlist_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
                 response.EnsureSuccessStatusCode();
 
                 var c = await response.Content.ReadFromJsonAsync<QueryResponse<int>>(token);
@@ -137,19 +143,19 @@ namespace SoundMist.Helpers
         }
 
         /// <exception cref="TaskCanceledException" />
-        internal static async Task<(QueryResponse<HistoryTrack>? tracks, string? errorMessage)> GetPlayHistory(AuthorizedHttpClient httpClient, string? href, string clientId, int appVersion, int offset, CancellationToken token)
+        internal async Task<(QueryResponse<HistoryTrack>? tracks, string? errorMessage)> GetPlayHistory(string? href, int offset, CancellationToken token)
         {
-            if (!httpClient.IsAuthorized)
+            if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
             try
             {
                 if (string.IsNullOrEmpty(href))
-                    href = $"https://api-v2.soundcloud.com/me/play-history/tracks?client_id={clientId}&limit=25&offset={offset}&linked_partitioning=1&app_version={appVersion}&app_locale=en";
+                    href = $"https://api-v2.soundcloud.com/me/play-history/tracks?client_id={_settings.ClientId}&limit=25&offset={offset}&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
                 else
-                    href += $"&client_id={clientId}&app_version={appVersion}&app_locale=en";
+                    href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
-                using var response = await httpClient.GetAsync(href, token);
+                using var response = await _httpManager.AuthorizedClient.GetAsync(href, token);
                 response.EnsureSuccessStatusCode();
 
                 var c = await response.Content.ReadFromJsonAsync<QueryResponse<HistoryTrack>>(token);
@@ -165,18 +171,18 @@ namespace SoundMist.Helpers
         /// <summary>
         /// Grabs a much larger chunk of comments, but doesn't include the comments posted as replies
         /// </summary>
-        public static async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackCommentsAhead(HttpClient httpClient, string? href, int trackId, string clientId, int appVersion, CancellationToken token)
+        public async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackCommentsAhead(string? href, int trackId, CancellationToken token)
         {
             try
             {
                 if (string.IsNullOrEmpty(href))
                 {
-                    href = $"tracks/{trackId}/comments?threaded=0&client_id={clientId}&limit=200&offset=0&linked_partitioning=1&app_version={appVersion}&app_locale=en";
+                    href = $"tracks/{trackId}/comments?threaded=0&client_id={_settings.ClientId}&limit=200&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
                 }
                 else
-                    href += $"&client_id={clientId}&app_version={appVersion}&app_locale=en";
+                    href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
-                var response = await httpClient.GetAsync(href, token);
+                var response = await _httpManager.DefaultClient.GetAsync(href, token);
                 response.EnsureSuccessStatusCode();
 
                 var c = await response.Content.ReadFromJsonAsync<QueryResponse<Comment>>(token);
@@ -193,18 +199,18 @@ namespace SoundMist.Helpers
             }
         }
 
-        public static async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackComments(HttpClient httpClient, string? href, HashSet<long> nonThreadedComments, int trackId, string clientId, int appVersion, CancellationToken token)
+        public async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackComments(string? href, HashSet<long> nonThreadedComments, int trackId, CancellationToken token)
         {
             try
             {
                 if (string.IsNullOrEmpty(href))
                 {
-                    href = $"tracks/{trackId}/comments?sort=newest&threaded=1&client_id={clientId}&limit=20&offset=0&linked_partitioning=1&app_version={appVersion}&app_locale=en";
+                    href = $"tracks/{trackId}/comments?sort=newest&threaded=1&client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
                 }
                 else
-                    href += $"&client_id={clientId}&app_version={appVersion}&app_locale=en";
+                    href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
-                var response = await httpClient.GetAsync(href, token);
+                var response = await _httpManager.DefaultClient.GetAsync(href, token);
                 response.EnsureSuccessStatusCode();
 
                 var c = await response.Content.ReadFromJsonAsync<QueryResponse<Comment>>(token);

@@ -5,7 +5,7 @@ using System.Net.Http;
 
 namespace SoundMist;
 
-public class HttpManager
+public class HttpManager : IHttpManager
 {
     private readonly ProgramSettings _programSettings;
 
@@ -68,7 +68,7 @@ public class HttpManager
             }
         }
     }
-    
+
     Uri ProxyUri() => new Uri($"{_programSettings.ProxyProtocol}://{_programSettings.ProxyHost}:{_programSettings.ProxyPort}");
 
     public HttpClient GetProxiedClient()

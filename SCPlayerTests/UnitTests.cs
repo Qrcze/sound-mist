@@ -5,6 +5,7 @@ using RichardSzalay.MockHttp;
 using System.Text.Json;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
+using SoundMist.Helpers;
 
 namespace SCPlayerTests
 {
@@ -17,7 +18,7 @@ namespace SCPlayerTests
         {
             var settings = new ProgramSettings();
             var vm = new MainViewModel(settings);
-            var sv = new SettingsViewModel(null!, settings);
+            var sv = new SettingsViewModel(settings);
 
             bool mediatorTriggered = false;
             Mediator.Default.Register(MediatorEvent.OpenSettings, _ => mediatorTriggered = true);
@@ -43,7 +44,7 @@ namespace SCPlayerTests
 
             var mv = new MainViewModel(settings);
 
-            var lv = new LikedLibraryViewModel(null, settings, database, musicPlayer, logger);
+            var lv = new LikedLibraryViewModel(null, settings, null!, database, musicPlayer, logger);
             lv.SelectedTrack = new Track() { Id = 5 };
 
             object? track = null;
@@ -73,7 +74,7 @@ namespace SCPlayerTests
 
             var mv = new MainViewModel(settings);
 
-            var lv = new LikedLibraryViewModel(null!, settings, database, musicPlayer, logger);
+            var lv = new LikedLibraryViewModel(null!, settings, null!, database, musicPlayer, logger);
             lv.SelectedTrack = new Track() { Id = 1, User = new User() { Id = 5 } };
 
             object? user = null;
@@ -100,7 +101,7 @@ namespace SCPlayerTests
             var logger = new DummyLogger();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null!, settings, musicPlayer, logger, history);
+            var tv = new TrackInfoViewModel(null!, null!, null!, settings, musicPlayer, logger, history);
 
             var track = new Track() { Id = 5 };
 

@@ -47,7 +47,9 @@ public partial class TrackInfoViewModel : ViewModelBase
         }
     }
 
-    private readonly HttpManager _httpManager;
+    private readonly IHttpManager _httpManager;
+    private readonly SoundCloudQueries _soundCloudQueries;
+    private readonly SoundCloudCommands _soundCloudCommands;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
@@ -59,10 +61,12 @@ public partial class TrackInfoViewModel : ViewModelBase
     public IRelayCommand ToggleFullImageCommand { get; }
     public IRelayCommand OpenArtistProfileCommand { get; }
 
-    public TrackInfoViewModel(HttpManager httpManager, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
+    public TrackInfoViewModel(IHttpManager httpManager, SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
     {
         Mediator.Default.Register(MediatorEvent.OpenTrackInfo, OpenTrack);
         _httpManager = httpManager;
+        _soundCloudQueries = soundCloudQueries;
+        _soundCloudCommands = soundCloudCommands;
         _settings = settings;
         _musicPlayer = musicPlayer;
         _logger = logger;
@@ -128,7 +132,7 @@ public partial class TrackInfoViewModel : ViewModelBase
             return;
         }
 
-        (bool success, string message) = await SoundCloudCommands.ToggleLikedDisliked(TrackLiked, _httpManager.AuthorizedClient, Track.Id, _settings.UserId.Value, _settings.ClientId, _settings.AppVersion);
+        (bool success, string message) = await _soundCloudCommands.ToggleLikedDisliked(TrackLiked, Track.Id);
         if (success)
         {
             string title = TrackLiked ? "Track Added to Liked" : "Track Removed from Liked";
@@ -166,7 +170,7 @@ public partial class TrackInfoViewModel : ViewModelBase
 
         _loadingComments = true;
 
-        var (response, error) = await SoundCloudQueries.GetTrackComments(_httpManager.DefaultClient, _commentsNextHref, _commentsLookup, Track.Id, _settings.ClientId, _settings.AppVersion, token);
+        var (response, error) = await _soundCloudQueries.GetTrackComments(_commentsNextHref, _commentsLookup, Track.Id, token);
 
         if (token.IsCancellationRequested)
             return;
@@ -275,7 +279,7 @@ public partial class TrackInfoViewModel : ViewModelBase
             {
                 if (_httpManager.AuthorizedClient.IsAuthorized)
                 {
-                    var (response, message) = await SoundCloudQueries.GetUsersLikedTracksIds(_httpManager.AuthorizedClient, _settings.ClientId, _settings.AppVersion, token);
+                    var (response, message) = await _soundCloudQueries.GetUsersLikedTracksIds(token);
                     if (token.IsCancellationRequested)
                         return;
 
@@ -290,7 +294,7 @@ public partial class TrackInfoViewModel : ViewModelBase
 
                 if (Track.WaveformUrl is not null)
                 {
-                    var e = await SoundCloudQueries.GetTrackWaveform(_httpManager.DefaultClient, Track.WaveformUrl, token);
+                    var e = await _soundCloudQueries.GetTrackWaveform(Track.WaveformUrl, token);
                     if (token.IsCancellationRequested)
                         return;
 
@@ -311,7 +315,7 @@ public partial class TrackInfoViewModel : ViewModelBase
 
             LoadingView = false;
 
-            var (commentsAll, error) = await SoundCloudQueries.GetTrackCommentsAhead(_httpManager.DefaultClient, null, Track.Id, _settings.ClientId, _settings.AppVersion, token);
+            var (commentsAll, error) = await _soundCloudQueries.GetTrackCommentsAhead(null, Track.Id, token);
 
             if (!string.IsNullOrEmpty(error))
             {

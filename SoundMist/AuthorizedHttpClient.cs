@@ -11,7 +11,7 @@ public class AuthorizedHttpClient : HttpClient
     {
     }
 
-    public AuthorizedHttpClient(HttpClientHandler handler)
+    public AuthorizedHttpClient(HttpMessageHandler handler)
         : base(handler)
     {
         

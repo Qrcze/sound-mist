@@ -21,10 +21,9 @@ public partial class HistoryViewModel : ViewModelBase
 
     History.List OpenedTab { get; set; }
 
-    private readonly HttpManager _httpManager;
+    private readonly SoundCloudQueries _queries;
     private readonly IMusicPlayer _musicPlayer;
     private readonly IDatabase _database;
-    private readonly ProgramSettings _settings;
     private readonly ILogger _logger;
     private readonly History _history;
 
@@ -38,12 +37,11 @@ public partial class HistoryViewModel : ViewModelBase
     public ObservableCollection<User> Users { get; } = [];
     public ObservableCollection<Playlist> Playlists { get; } = [];
 
-    public HistoryViewModel(HttpManager httpManager, IMusicPlayer musicPlayer, IDatabase database, ProgramSettings settings, ILogger logger, History history)
+    public HistoryViewModel(IHttpManager httpManager, SoundCloudQueries queries, IMusicPlayer musicPlayer, IDatabase database, ILogger logger, History history)
     {
-        _httpManager = httpManager;
+        _queries = queries;
         _musicPlayer = musicPlayer;
         _database = database;
-        _settings = settings;
         _logger = logger;
         _history = history;
 
@@ -173,7 +171,7 @@ public partial class HistoryViewModel : ViewModelBase
 
         try
         {
-            var (response, errorMessage) = await SoundCloudQueries.GetPlayHistory(_httpManager.AuthorizedClient, _nextOnlineHistoryHref, _settings.ClientId, _settings.AppVersion, PlayedOnline.Count, token);
+            var (response, errorMessage) = await _queries.GetPlayHistory(_nextOnlineHistoryHref, PlayedOnline.Count, token);
             if (response is null)
             {
                 _logger.Warn($"Failed getting online history: {errorMessage}");

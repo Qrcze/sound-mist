@@ -12,7 +12,7 @@ internal partial class LoginViewModel : ViewModelBase
 {
     [ObservableProperty] private string _validationMessage = string.Empty;
     [ObservableProperty] private string _authToken = string.Empty;
-    private readonly HttpManager _httpManager;
+    private readonly IHttpManager _httpManager;
     private readonly ProgramSettings _settings;
     private readonly ILogger _logger;
     private readonly MainWindowViewModel _mainWindowViewModel;
@@ -21,7 +21,7 @@ internal partial class LoginViewModel : ViewModelBase
     public IAsyncRelayCommand UseTokenCommand { get; }
     public IRelayCommand OpenSoundcloudPageCommand { get; }
 
-    public LoginViewModel(HttpManager httpManager, ProgramSettings settings, ILogger logger, MainWindowViewModel mainViewModel)
+    public LoginViewModel(IHttpManager httpManager, ProgramSettings settings, ILogger logger, MainWindowViewModel mainViewModel)
     {
         _httpManager = httpManager;
         _settings = settings;

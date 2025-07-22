@@ -50,7 +50,8 @@ namespace SoundMist.Models.Audio
 
         public event Action<double>? TrackTimeUpdated;
 
-        private readonly HttpManager _httpManager;
+        private readonly SoundCloudQueries _soundCloudQueries;
+        private readonly SoundCloudDownloader _soundCloudDownloader;
         private readonly ProgramSettings _settings;
         private readonly IAudioController _audioController;
         private Func<Task<IEnumerable<Track>>>? _continueDownloader;
@@ -58,9 +59,10 @@ namespace SoundMist.Models.Audio
         private CancellationTokenSource? _playPauseTokenSource;
         private readonly System.Timers.Timer _timeUpdateTimer;
 
-        public MusicPlayer(HttpManager httpManager, ProgramSettings settings, IAudioController audioController, ILogger logger)
+        public MusicPlayer(SoundCloudQueries soundCloudQueries, SoundCloudDownloader soundCloudDownloader, ProgramSettings settings, IAudioController audioController, ILogger logger)
         {
-            _httpManager = httpManager;
+            _soundCloudQueries = soundCloudQueries;
+            _soundCloudDownloader = soundCloudDownloader;
             _settings = settings;
             _audioController = audioController;
             _audioController.OnTrackEnded += () => Task.Run(PlayNext);
@@ -242,8 +244,17 @@ namespace SoundMist.Models.Audio
                     return false;
                 }
 
-                var trackProx = (await SoundCloudQueries.GetTracksById(_httpManager.GetProxiedClient(), _settings.ClientId,
-                    _settings.AppVersion, [track.Id])).Single();
+                Track trackProx;
+                try
+                {
+                    trackProx = (await _soundCloudQueries.GetTracksById([track.Id], true, token)).Single();
+                } 
+                catch(HttpRequestException ex)
+                {
+                    PlayStateUpdated?.Invoke(PlayState.Error, ex.Message);
+                    return false;
+                }
+
 
                 if (trackProx is null || trackProx.Policy == "BLOCK")
                 {
@@ -251,7 +262,7 @@ namespace SoundMist.Models.Audio
                     return false;
                 }
 
-                trackLoadInitialized = await InitBuffered(_httpManager.GetProxiedClient(), trackProx, token);
+                trackLoadInitialized = await InitBuffered(true, trackProx, token);
             }
             else if (track.Policy == "SNIP")
             {
@@ -261,11 +272,11 @@ namespace SoundMist.Models.Audio
                     return false;
                 }
 
-                trackLoadInitialized = await InitBuffered(_httpManager.GetProxiedClient(), track, token);
+                trackLoadInitialized = await InitBuffered(true, track, token);
             }
             else if (track.Policy == "ALLOW" || track.Policy == "MONETIZE")
             {
-                trackLoadInitialized = await InitBuffered(_httpManager.DefaultClient, track, token);
+                trackLoadInitialized = await InitBuffered(false, track, token);
             }
             else
             {
@@ -291,9 +302,9 @@ namespace SoundMist.Models.Audio
             return true;
         }
 
-        private async Task<bool> InitBuffered(HttpClient httpClient, Track track, CancellationToken token)
+        private async Task<bool> InitBuffered(bool throughProxy, Track track, CancellationToken token)
         {
-            (var links, string error) = await SoundCloudDownloader.GetTrackLinks(httpClient, track, _settings.ClientId!, token);
+            (var links, string error) = await _soundCloudDownloader.GetTrackLinks(track, throughProxy, token);
             if (links is null)
             {
                 ErrorCallback?.Invoke(error);
@@ -308,7 +319,7 @@ namespace SoundMist.Models.Audio
             {
                 for (int i = 0; i < initialChunks; i++)
                 {
-                    byte[] bytes = await SoundCloudDownloader.DownloadTrackChunk(httpClient, links[i], token);
+                    byte[] bytes = await _soundCloudDownloader.DownloadTrackChunk(links[i], throughProxy, token);
                     initialBytes.Add(bytes);
                     PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
                 }
@@ -332,12 +343,12 @@ namespace SoundMist.Models.Audio
                 return false;
             }
 
-            RunDownloaderTask(httpClient, links, initialChunks, token);
+            RunDownloaderTask(throughProxy, links, initialChunks, token);
 
             return true;
         }
 
-        void RunDownloaderTask(HttpClient httpClient, List<string> links, int startingIndex, CancellationToken token)
+        void RunDownloaderTask(bool throughProxy, List<string> links, int startingIndex, CancellationToken token)
         {
             _ = Task.Run(async () =>
             {
@@ -345,7 +356,7 @@ namespace SoundMist.Models.Audio
                 {
                     for (int i = startingIndex; i < links.Count; i++)
                     {
-                        byte[] bytes = await SoundCloudDownloader.DownloadTrackChunk(httpClient, links[i], token);
+                        byte[] bytes = await _soundCloudDownloader.DownloadTrackChunk(links[i], throughProxy, token);
                         _audioController.AppendBytes(bytes);
                         PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
                     }
@@ -396,7 +407,7 @@ namespace SoundMist.Models.Audio
             if (track == null)
                 return [];
 
-            (var tracks, string error) = await SoundCloudDownloader.GetRelatedTracks(_httpManager.DefaultClient, track, _settings.UserId.Value, _settings.ClientId, _settings.AppVersion);
+            (var tracks, string error) = await _soundCloudDownloader.GetRelatedTracks(track);
             if (tracks is null)
             {
                 ErrorCallback?.Invoke(error);

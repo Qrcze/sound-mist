@@ -9,8 +9,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SoundMist.ViewModels;
@@ -26,17 +24,15 @@ internal partial class DownloadedViewModel : ViewModelBase
     public IAsyncRelayCommand PlayStationCommand { get; }
     public IRelayCommand PrependToQueueCommand { get; }
 
-    private readonly HttpManager _httpManager;
+    private readonly SoundCloudQueries _queries;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
-    private readonly ProgramSettings _settings;
 
-    public DownloadedViewModel(HttpManager httpManager, IMusicPlayer musicPlayer, ILogger logger, ProgramSettings settings)
+    public DownloadedViewModel(SoundCloudQueries queries, IMusicPlayer musicPlayer, ILogger logger)
     {
-        _httpManager = httpManager;
+        _queries = queries;
         _musicPlayer = musicPlayer;
         _logger = logger;
-        _settings = settings;
         AppendToQueueCommand = new AsyncRelayCommand(AppendToQueue);
         PlayStationCommand = new AsyncRelayCommand(PlayStation);
         PrependToQueueCommand = new RelayCommand(PrependToQueue);
@@ -75,7 +71,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             }
         }
 
-        var tracksData = await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, ids.Select(x => x.id));
+        var tracksData = await _queries.GetTracksById(ids.Select(x => x.id));
 
         foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3"))
         {

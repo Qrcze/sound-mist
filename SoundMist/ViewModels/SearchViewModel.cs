@@ -41,7 +41,8 @@ public partial class SearchViewModel : ViewModelBase
     public ObservableCollection<SearchQuery> QueryResults { get; } = [];
 
     private readonly Timer _querySearchDelay;
-    private readonly HttpManager _httpManager;
+    private readonly IHttpManager _httpManager;
+    private readonly SoundCloudQueries _queries;
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
@@ -52,12 +53,13 @@ public partial class SearchViewModel : ViewModelBase
     public IAsyncRelayCommand RunSearchCommand { get; }
     public IRelayCommand OpenAboutPageCommand { get; }
 
-    public SearchViewModel(HttpManager httpManager, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
+    public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
     {
         _querySearchDelay = new(800) { AutoReset = false };
         _querySearchDelay.Elapsed += GetSearchResults;
 
         _httpManager = httpManager;
+        _queries = queries;
         _database = database;
         _settings = settings;
         _musicPlayer = musicPlayer;
@@ -279,7 +281,7 @@ public partial class SearchViewModel : ViewModelBase
             try
             {
                 var trackIds = playlist.Tracks.Except(tracks).Where(x => x.User is null).Select(x => x.Id);
-                var restOfTracks = await SoundCloudQueries.GetTracksById(_httpManager.DefaultClient, _settings.ClientId, _settings.AppVersion, trackIds);
+                var restOfTracks = await _queries.GetTracksById(trackIds);
                 if (restOfTracks != null && restOfTracks.Count != 0)
                     tracks = tracks.Concat(restOfTracks);
             }
