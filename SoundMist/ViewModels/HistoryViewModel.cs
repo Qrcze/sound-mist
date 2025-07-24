@@ -81,7 +81,10 @@ public partial class HistoryViewModel : ViewModelBase
                 case History.List.PlayHistory:
                     Played.Clear();
                     foreach (var item in await _database.GetTracksById(_history.PlayHistory, token))
+                    {
+                        token.ThrowIfCancellationRequested();
                         Played.Add(item);
+                    }
                     break;
 
                 case History.List.OnlinePlayHistory:
@@ -90,19 +93,28 @@ public partial class HistoryViewModel : ViewModelBase
                 case History.List.TracksHistory:
                     Tracks.Clear();
                     foreach (var item in await _database.GetTracksById(_history.TracksHistory, token))
+                    {
+                        token.ThrowIfCancellationRequested();
                         Tracks.Add(item);
+                    }
                     break;
 
                 case History.List.UsersHistory:
                     Users.Clear();
                     foreach (var item in await _database.GetUsersById(_history.UsersHistory, token))
+                    {
+                        token.ThrowIfCancellationRequested();
                         Users.Add(item);
+                    }
                     break;
 
                 case History.List.PlaylistsHistory:
                     Playlists.Clear();
                     foreach (var item in await _database.GetPlaylistsById(_history.PlaylistsHistory, token))
+                    {
+                        token.ThrowIfCancellationRequested();
                         Playlists.Add(item);
+                    }
                     break;
 
                 default:

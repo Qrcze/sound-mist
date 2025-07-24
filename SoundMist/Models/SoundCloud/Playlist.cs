@@ -139,6 +139,17 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonPropertyName("user_id")]
         public int? UserId { get; set; }
+
+        internal static Playlist CreateDeletedPlaylist(int id)
+        {
+            return new Playlist()
+            {
+                Id = id,
+                Title = $"Deleted Playlist {id}",
+                ArtworkUrl = "",
+                User = User.CreateDeletedUser(-1),
+            };
+        }
     }
 
     public class TrackSimple

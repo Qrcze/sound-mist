@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Threading;
 
 namespace SoundMist
 {
@@ -26,7 +27,7 @@ namespace SoundMist
         /// <param name="notification"></param>
         public static void Show(Notification notification)
         {
-            _manager?.Show(notification);
+            Dispatcher.UIThread.Post(() => _manager?.Show(notification));
         }
     }
 }

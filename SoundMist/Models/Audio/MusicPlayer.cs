@@ -2,6 +2,7 @@
 using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -156,6 +157,11 @@ namespace SoundMist.Models.Audio
             }
             catch (TaskCanceledException)
             { }
+            catch (Exception ex)
+            {
+                ErrorCallback?.Invoke($"Failed loading queue: {ex}");
+                PlayStateUpdated?.Invoke(PlayState.Error, "Failed loading the track queue");
+            }
         }
 
         public async Task PlayNext()

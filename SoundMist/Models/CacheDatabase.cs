@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 
 namespace SoundMist.Models
 {
-    public class CacheDatabase(IHttpManager httpManager, ProgramSettings settings, SoundCloudQueries queries) : IDatabase
+    public class CacheDatabase(SoundCloudQueries queries, ILogger logger) : IDatabase
     {
-        private readonly IHttpManager _httpManager = httpManager;
-        private readonly ProgramSettings _settings = settings;
         private readonly SoundCloudQueries _queries = queries;
+        private readonly ILogger _logger = logger;
 
         private readonly Dictionary<int, Track> _tracks = [];
         private readonly Dictionary<int, User> _users = [];
@@ -32,7 +31,9 @@ namespace SoundMist.Models
         }
 
         public async Task<Track> GetTrackById(int id, CancellationToken token) => (await GetTracksById([id], token)).Single();
+
         public async Task<User> GetUserById(int id, CancellationToken token) => (await GetUsersById([id], token)).Single();
+
         public async Task<Playlist> GetPlaylistById(int id, CancellationToken token) => (await GetPlaylistsById([id], token)).Single();
 
         /// <summary>
@@ -49,17 +50,26 @@ namespace SoundMist.Models
                 var tracks = await _queries.GetTracksById(missingItems, false, token);
 
                 foreach (var track in tracks)
+                {
+                    if (token.IsCancellationRequested)
+                        return [];
+
                     _tracks.Add(track.Id, track);
+                }
             }
 
-            return ids.Select(id => _tracks[id]);
+            //since there's an API for getting batch tracks, this requires a bit of a backwards deleted-track check
+            return ids.Select(id =>
+            {
+                if (_tracks.TryGetValue(id, out var track))
+                    return track;
+                return Track.CreateRemovedTrack(id);
+            });
         }
 
         /// <summary>
         /// Grabs the users data from cache, downloading the missing ones, and returns in the same order as the IDs.
         /// </summary>
-        /// <exception cref="HttpRequestException" />
-        /// <exception cref="TaskCanceledException" />
         public async Task<IEnumerable<User>> GetUsersById(IEnumerable<int> ids, CancellationToken token)
         {
             var missingItems = ids.Except(_users.Keys);
@@ -68,9 +78,18 @@ namespace SoundMist.Models
             {
                 foreach (var item in missingItems)
                 {
-                    var user = await _queries.GetUserInfo(item, token);
+                    var (user, errorMessage) = await _queries.GetUserInfo(item, token);
 
-                    _users.Add(user.Id, user);
+                    if (token.IsCancellationRequested)
+                        return [];
+
+                    if (user == null)
+                    {
+                        _logger.Warn($"Cache failed retrieving user <{item}>: {errorMessage}");
+                        _users.Add(item, User.CreateDeletedUser(item));
+                    }
+                    else
+                        _users.Add(user.Id, user);
                 }
             }
 
@@ -80,8 +99,6 @@ namespace SoundMist.Models
         /// <summary>
         /// Grabs the tracks data from cache, downloading the missing ones, and returns in the same order as the IDs.
         /// </summary>
-        /// <exception cref="HttpRequestException" />
-        /// <exception cref="TaskCanceledException" />
         public async Task<IEnumerable<Playlist>> GetPlaylistsById(IEnumerable<int> ids, CancellationToken token)
         {
             var missingItems = ids.Except(_playlists.Keys);
@@ -90,9 +107,18 @@ namespace SoundMist.Models
             {
                 foreach (var item in missingItems)
                 {
-                    var playlist = await _queries.GetPlaylistInfo(item, token);
+                    var (playlist, errorMessage) = await _queries.GetPlaylistInfo(item, token);
 
-                    _playlists.Add(playlist.Id, playlist);
+                    if (token.IsCancellationRequested)
+                        return [];
+
+                    if (playlist == null)
+                    {
+                        _logger.Warn($"Cache failed retrieving playlist <{item}>: {errorMessage}");
+                        _playlists.Add(item, Playlist.CreateDeletedPlaylist(item));
+                    }
+                    else
+                        _playlists.Add(playlist.Id, playlist);
                 }
             }
 

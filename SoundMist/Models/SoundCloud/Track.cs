@@ -60,6 +60,17 @@ namespace SoundMist.Models.SoundCloud
 
         public override string ToString() => FullLabel;
 
+        internal static Track CreateRemovedTrack(int id)
+        {
+            return new()
+            {
+                Id = id,
+                Title = $"Deleted Track {id}",
+                ArtworkUrl = "",
+                User = User.CreateDeletedUser(-1)
+            };
+        }
+
         [JsonIgnore] public string FullLabel => $"{PublisherMetadata?.Artist ?? User.Username} - {Title}";
         [JsonIgnore] public string ArtistName => PublisherMetadata?.Artist ?? User.Username;
         [JsonIgnore] public string LocalFilePath => $"{Globals.LocalDownloadsPath}/{FullLabel}.mp3"; //todo check for invalid characters in label

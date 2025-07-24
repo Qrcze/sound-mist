@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -179,7 +178,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         {
             _loadingComments = false;
             _logger.Error(error);
-            Dispatcher.UIThread.Post(() => NotificationManager.Show(new("Failed retrieving comments", "Please check logs for more information.", NotificationType.Error)));
+            NotificationManager.Show(new("Failed retrieving comments", "Please check logs for more information.", NotificationType.Error));
         }
 
         _commentsNextHref = response!.NextHref;
@@ -275,52 +274,46 @@ public partial class TrackInfoViewModel : ViewModelBase
 
         Task.Run(async () =>
         {
-            try
+            if (_httpManager.AuthorizedClient.IsAuthorized)
             {
-                if (_httpManager.AuthorizedClient.IsAuthorized)
+                var (response, errorMessage) = await _soundCloudQueries.GetUsersLikedTracksIds(token);
+                if (token.IsCancellationRequested)
+                    return;
+
+                if (response is not null)
+                    TrackLiked = response.Collection.Contains(Track.Id);
+                else
                 {
-                    var (response, message) = await _soundCloudQueries.GetUsersLikedTracksIds(token);
-                    if (token.IsCancellationRequested)
-                        return;
-
-                    if (response is not null)
-                        TrackLiked = response.Collection.Contains(Track.Id);
-                    else
-                    {
-                        _logger.Error($"Failed retrieving liked tracks: {message}");
-                        Dispatcher.UIThread.Post(() => NotificationManager.Show(new("Failed retrieving liked list", "Please check the logs", NotificationType.Warning, TimeSpan.FromSeconds(10))));
-                    }
-                }
-
-                if (Track.WaveformUrl is not null)
-                {
-                    var e = await _soundCloudQueries.GetTrackWaveform(Track.WaveformUrl, token);
-                    if (token.IsCancellationRequested)
-                        return;
-
-                    Samples = e.Samples;
+                    _logger.Error($"Failed retrieving liked tracks: {errorMessage}");
+                    NotificationManager.Show(new("Failed retrieving liked list", "Please check the logs", NotificationType.Warning, TimeSpan.FromSeconds(10)));
                 }
             }
-            catch (HttpRequestException ex)
+
+            if (!string.IsNullOrEmpty(Track.WaveformUrl))
             {
-                _logger.Error($"Request for track waveform failed: {ex.Message}");
-            }
-            catch (TaskCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Faulure while loading track waveform: {ex.Message}");
+                var (waveform, errorMessage) = await _soundCloudQueries.GetTrackWaveform(Track.WaveformUrl, token);
+                if (token.IsCancellationRequested)
+                    return;
+
+                if (waveform is not null)
+                    Samples = waveform.Samples;
+                else
+                {
+                    _logger.Warn(errorMessage!);
+                    NotificationManager.Show(new("Failed retrieving waveform data", "Please check the logs", NotificationType.Warning, TimeSpan.FromSeconds(10)));
+                }
             }
 
             LoadingView = false;
 
             var (commentsAll, error) = await _soundCloudQueries.GetTrackCommentsAhead(null, Track.Id, token);
+            if (token.IsCancellationRequested)
+                return;
 
             if (!string.IsNullOrEmpty(error))
             {
                 _logger.Error(error);
-                Dispatcher.UIThread.Post(() => NotificationManager.Show(new("Failed retrieving comments", "Please check logs for more information.", NotificationType.Error)));
+                NotificationManager.Show(new("Failed retrieving comments", "Please check logs for more information.", NotificationType.Error));
             }
             else
             {

@@ -118,7 +118,7 @@ namespace SoundMist.ViewModels
                         if (response is null)
                         {
                             _logger.Error($"Failed getting liked playlists list: {message}");
-                            Dispatcher.UIThread.Post(() => NotificationManager.Show(new("Failed getting liked playlists", message, Avalonia.Controls.Notifications.NotificationType.Warning)));
+                            NotificationManager.Show(new("Failed getting liked playlists", message, Avalonia.Controls.Notifications.NotificationType.Warning));
                         }
                         else
                         {

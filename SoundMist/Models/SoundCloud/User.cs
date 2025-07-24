@@ -173,6 +173,16 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonPropertyName("website_title")]
         public string? WebsiteTitle { get; set; }
+
+        internal static User CreateDeletedUser(int id)
+        {
+            return new()
+            {
+                Id = id,
+                Username = $"Missing User {id}",
+                AvatarUrl = "",
+            };
+        }
     }
 
     public class CreatorSubscription

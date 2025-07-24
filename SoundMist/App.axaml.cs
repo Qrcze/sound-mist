@@ -3,7 +3,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
@@ -63,10 +62,7 @@ public partial class App : Application
 
             musicPlayer.ErrorCallback += error =>
             {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    NotificationManager.Show(new Notification("Player error", error, NotificationType.Error, TimeSpan.Zero));
-                });
+                NotificationManager.Show(new Notification("Player error", error, NotificationType.Error, TimeSpan.Zero));
             };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
