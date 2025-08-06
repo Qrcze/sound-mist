@@ -7,44 +7,49 @@ using SoundMist.ViewModels;
 
 namespace SCPlayerTests
 {
-    public class IntegrationTests
+    public class SoundcloudConnections
     {
-        private static readonly IDatabase _database = new DummyDatabase();
-        private static readonly ILogger _logger = new DummyLogger();
-        private static readonly ProgramSettings _settings = new();
-        private static readonly HttpManager _httpManager = new(_settings);
-        private static readonly IMusicPlayer _musicPlayer = new MockMusicPlayer();
-        private readonly SoundCloudQueries _queries;
-        private readonly SoundCloudDownloader _downloader;
+        public IDatabase Database { get; } = new DummyDatabase();
+        public ILogger Logger { get; } = new DummyLogger();
+        public ProgramSettings Settings { get; } = new();
+        public HttpManager HttpManager { get; }
+        public IMusicPlayer MusicPlayer { get; } = new MockMusicPlayer();
+        public SoundCloudQueries Queries { get; }
+        public SoundCloudDownloader Downloader { get; }
 
-        public IntegrationTests()
+        public SoundcloudConnections()
         {
-            var manager = new HttpManager(_settings);
-            _queries = new SoundCloudQueries(manager, _settings);
-            _downloader = new SoundCloudDownloader(manager, _settings, _queries);
-            var initializer = new SoundcloudDataInitializer(_settings, manager, _queries, _logger, null!);
+            HttpManager = new HttpManager(Settings);
+            Queries = new SoundCloudQueries(HttpManager, Settings);
+            Downloader = new SoundCloudDownloader(HttpManager, Settings, Queries);
+            var initializer = new SoundcloudDataInitializer(Settings, HttpManager, Queries, Logger, null!);
 
-            _settings.AppVersion = initializer.GetAppVersion().Result;
-            (_settings.ClientId, _settings.AnonymousUserId) = initializer.GetClientAndAnonymousUserIds().Result;
+            Settings.AppVersion = initializer.GetAppVersion().Result;
+            (Settings.ClientId, Settings.AnonymousUserId) = initializer.GetClientAndAnonymousUserIds().Result;
         }
+    }
+
+    public class IntegrationTests(SoundcloudConnections connections) : IClassFixture<SoundcloudConnections>
+    {
+        SoundcloudConnections Connections { get; } = connections;
 
         [Fact]
         public void ClientIdIsValid()
         {
-            Assert.False(string.IsNullOrEmpty(_settings.ClientId), "Failed getting client id");
+            Assert.False(string.IsNullOrEmpty(Connections.Settings.ClientId), "Failed getting client id");
         }
 
         [Fact]
         public void AnonymousUserIdIsValid()
         {
-            Assert.False(string.IsNullOrEmpty(_settings.AnonymousUserId), "Failed getting anonymous user id");
+            Assert.False(string.IsNullOrEmpty(Connections.Settings.AnonymousUserId), "Failed getting anonymous user id");
         }
 
         [Fact]
         public async Task Search_All()
         {
             //all of the queries are going to be moved to a separate static helper class with querioes only
-            var vm = new SearchViewModel(_httpManager, _queries, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
             vm.SelectedFilter = "All";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -58,7 +63,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Tracks()
         {
-            var vm = new SearchViewModel(_httpManager, _queries, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
             vm.SelectedFilter = "Tracks";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -73,7 +78,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_People()
         {
-            var vm = new SearchViewModel(_httpManager, _queries, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
             vm.SelectedFilter = "People";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -88,7 +93,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Albums()
         {
-            var vm = new SearchViewModel(_httpManager, _queries, _database, _settings, _musicPlayer, _logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
             vm.SelectedFilter = "Albums";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -104,7 +109,7 @@ namespace SCPlayerTests
         public async Task Get_TracksById()
         {
             //tracks with id 2 and 17 are the oldest available tracks i could find, rather unlikely they'll get deleted lol
-            var tracks = await _queries.GetTracksById([2, 17]);
+            var tracks = await Connections.Queries.GetTracksById([2, 17]);
 
             Assert.True(tracks.Count == 2, $"Failed downloading all of the tracks; got: {tracks.Count}");
 
@@ -115,37 +120,37 @@ namespace SCPlayerTests
         [Fact]
         public async Task Get_Waveform()
         {
-            var tracks = await _queries.GetTracksById([2]);
+            var tracks = await Connections.Queries.GetTracksById([2]);
             Assert.True(tracks.Count == 1, "Tracks download malfunction");
 
-            (var wave, var error) = await _queries.GetTrackWaveform(tracks[0].WaveformUrl!, CancellationToken.None);
+            (var wave, var error) = await Connections.Queries.GetTrackWaveform(tracks[0].WaveformUrl!, CancellationToken.None);
 
-            Assert.True(wave is not null, "Retrieved waveform is null");
+            Assert.True(wave != null, $"Retrieved waveform is null: {error}");
         }
 
         [Fact]
         public async Task Get_Comments()
         {
-            var (response, error) = await _queries.GetTrackComments(null, [], 2, CancellationToken.None);
+            var (response, error) = await Connections.Queries.GetTrackComments(null, [], 2, CancellationToken.None);
 
             Assert.True(string.IsNullOrEmpty(error));
             Assert.True(response != null && response.Collection.Count > 0);
             Assert.False(string.IsNullOrEmpty(response.NextHref));
 
-            var (response2, error2) = await _queries.GetTrackComments(response.NextHref, [], 2, CancellationToken.None);
+            var (response2, error2) = await Connections.Queries.GetTrackComments(response.NextHref, [], 2, CancellationToken.None);
 
             Assert.True(string.IsNullOrEmpty(error2));
             Assert.True(response2 != null && response2.Collection.Count > 0);
             Assert.True(response.Collection[0].Id != response2.Collection[0].Id, "Comments NextHref returned the same set of comments");
-            Assert.True(!string.IsNullOrEmpty(response2.NextHref));
+            Assert.False(string.IsNullOrEmpty(response2.NextHref));
         }
 
         [Fact]
         public async Task Get_Autoplay()
         {
-            var track = (await _queries.GetTracksById([2])).Single();
-            var response = await _downloader.GetRelatedTracks(track);
-            
+            var track = (await Connections.Queries.GetTracksById([2])).Single();
+            var response = await Connections.Downloader.GetRelatedTracks(track);
+
             Assert.True(response.tracks != null, $"failed getting related tracks: {response.error}");
             Assert.NotEmpty(response.tracks.Collection);
         }
