@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace SoundMist.Models
@@ -19,6 +20,10 @@ namespace SoundMist.Models
 
     public class ProgramSettings
     {
+        public const int SettingsVersion = 1;
+
+        public int Version { get; } = SettingsVersion;
+
         private bool _settingsInitialized; // a guard, otherwise json uses property to SetPropertyAndSave and it can break stuff
 
         private string? _authToken;
@@ -48,7 +53,21 @@ namespace SoundMist.Models
 
                 try
                 {
-                    settings = JsonSerializer.Deserialize<ProgramSettings>(json);
+
+                    var jsonNode = JsonNode.Parse(json)!.AsObject();
+
+                    int version = 0;
+                    do
+                    {
+                        jsonNode = version switch
+                        {
+                            0 => UpdateFromVersion0(jsonNode),
+                            _ => throw new NotImplementedException(),
+                        };
+                        version = (int)jsonNode[nameof(Version)]!;
+                    } while (version != SettingsVersion);
+
+                    settings = jsonNode.Deserialize<ProgramSettings>();
                 }
                 catch (Exception ex)
                 {
@@ -67,6 +86,27 @@ namespace SoundMist.Models
             settings._settingsInitialized = true;
 
             return settings;
+        }
+
+        private static JsonObject UpdateFromVersion0(JsonObject jsonObject)
+        {
+            FileLogger.Instance.Info("Updating ProgramSettings from version 0");
+
+            var users = jsonObject["BlockedUsers"].Deserialize<HashSet<BlockedEntry>>()!;
+            var tracks = jsonObject["BlockedTracks"].Deserialize<HashSet<BlockedEntry>>()!;
+
+            var newUsers = new Dictionary<long, string>();
+            foreach (var user in users)
+                newUsers.Add(user.Id, user.Title);
+            var newTracks = new Dictionary<long, string>();
+            foreach (var track in tracks)
+                newTracks.Add(track.Id, track.Title);
+
+            jsonObject["BlockedUsers"]!.ReplaceWith(newUsers);
+            jsonObject["BlockedTracks"]!.ReplaceWith(newTracks);
+
+            jsonObject["Version"] = 1;
+            return jsonObject;
         }
 
         [JsonIgnore] public string ClientId { get; set; } = string.Empty;
@@ -129,48 +169,48 @@ namespace SoundMist.Models
         /// Do not modify directly; use <see cref="AddBlockedUser(User)"/> instead
         /// </summary>
         [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-        public HashSet<BlockedEntry> BlockedUsers { get; } = [];
+        public Dictionary<long, string> BlockedUsers { get; } = [];
 
         /// <summary>
         /// Do not modify directly; use <see cref="AddBlockedTrack(Track)"/> instead
         /// </summary>
         [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-        public HashSet<BlockedEntry> BlockedTracks { get; } = [];
+        public Dictionary<long, string> BlockedTracks { get; } = [];
 
         public void AddBlockedUser(User user)
         {
-            if (BlockedUsers.Add(new(user.Id, user.Username)))
+            if (BlockedUsers.TryAdd(user.Id, user.Username))
                 SaveSettingsFile();
         }
 
         public bool IsBlockedUser(Track track)
         {
-            if (track.User is null || !track.UserId.HasValue)
+            if (!track.UserId.HasValue)
                 return false;
 
-            return BlockedUsers.Contains(new(track.UserId.Value, track.User.Username));
+            return BlockedUsers.ContainsKey(track.UserId.Value);
         }
 
-        public void RemoveBlockedUser(BlockedEntry entry)
+        public void RemoveBlockedUser(long userId)
         {
-            if (BlockedUsers.Remove(entry))
+            if (BlockedUsers.Remove(userId))
                 SaveSettingsFile();
         }
 
         public void AddBlockedTrack(Track track)
         {
-            if (BlockedTracks.Add(new(track.Id, track.FullLabel)))
+            if (BlockedTracks.TryAdd(track.Id, track.FullLabel))
                 SaveSettingsFile();
         }
 
         public bool IsBlockedTrack(Track track)
         {
-            return BlockedTracks.Contains(new(track.Id, track.FullLabel));
+            return BlockedTracks.ContainsKey(track.Id);
         }
 
-        public void RemoveBlockedTrack(BlockedEntry entry)
+        public void RemoveBlockedTrack(long trackId)
         {
-            if (BlockedTracks.Remove(entry))
+            if (BlockedTracks.Remove(trackId))
                 SaveSettingsFile();
         }
 

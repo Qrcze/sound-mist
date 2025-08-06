@@ -83,9 +83,9 @@ public partial class SettingsViewModel : ViewModelBase
         BlockedTracks.Clear();
 
         foreach (var item in _settings.BlockedTracks)
-            BlockedTracks.Add(item);
+            BlockedTracks.Add(new(item.Key, item.Value));
         foreach (var item in _settings.BlockedUsers)
-            BlockedUsers.Add(item);
+            BlockedUsers.Add(new(item.Key, item.Value));
     }
 
     private void SetProxySettings()
@@ -109,12 +109,12 @@ public partial class SettingsViewModel : ViewModelBase
     public void RemoveBlockedTrack(BlockedEntry entry)
     {
         BlockedTracks.Remove(entry);
-        _settings.RemoveBlockedTrack(entry);
+        _settings.RemoveBlockedTrack(entry.Id);
     }
 
     public void RemoveBlockedUser(BlockedEntry entry)
     {
         BlockedUsers.Remove(entry);
-        _settings.RemoveBlockedUser(entry);
+        _settings.RemoveBlockedUser(entry.Id);
     }
 }
