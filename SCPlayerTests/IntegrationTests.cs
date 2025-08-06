@@ -15,11 +15,13 @@ namespace SCPlayerTests
         private static readonly HttpManager _httpManager = new(_settings);
         private static readonly IMusicPlayer _musicPlayer = new MockMusicPlayer();
         private readonly SoundCloudQueries _queries;
+        private readonly SoundCloudDownloader _downloader;
 
         public IntegrationTests()
         {
             var manager = new HttpManager(_settings);
             _queries = new SoundCloudQueries(manager, _settings);
+            _downloader = new SoundCloudDownloader(manager, _settings, _queries);
             var initializer = new SoundcloudDataInitializer(_settings, manager, _queries, _logger, null!);
 
             _settings.AppVersion = initializer.GetAppVersion().Result;
@@ -116,7 +118,7 @@ namespace SCPlayerTests
             var tracks = await _queries.GetTracksById([2]);
             Assert.True(tracks.Count == 1, "Tracks download malfunction");
 
-            var wave = await _queries.GetTrackWaveform(tracks[0].WaveformUrl!, CancellationToken.None);
+            (var wave, var error) = await _queries.GetTrackWaveform(tracks[0].WaveformUrl!, CancellationToken.None);
 
             Assert.True(wave is not null, "Retrieved waveform is null");
         }
@@ -136,6 +138,16 @@ namespace SCPlayerTests
             Assert.True(response2 != null && response2.Collection.Count > 0);
             Assert.True(response.Collection[0].Id != response2.Collection[0].Id, "Comments NextHref returned the same set of comments");
             Assert.True(!string.IsNullOrEmpty(response2.NextHref));
+        }
+
+        [Fact]
+        public async Task Get_Autoplay()
+        {
+            var track = (await _queries.GetTracksById([2])).Single();
+            var response = await _downloader.GetRelatedTracks(track);
+            
+            Assert.True(response.tracks != null, $"failed getting related tracks: {response.error}");
+            Assert.NotEmpty(response.tracks.Collection);
         }
     }
 }

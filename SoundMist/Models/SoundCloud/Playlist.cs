@@ -63,7 +63,7 @@ namespace SoundMist.Models.SoundCloud
         public string? Genre { get; set; }
 
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [JsonPropertyName("is_album")]
         public bool IsAlbum { get; set; }
@@ -138,9 +138,9 @@ namespace SoundMist.Models.SoundCloud
         public User User { get; set; }
 
         [JsonPropertyName("user_id")]
-        public int? UserId { get; set; }
+        public long? UserId { get; set; }
 
-        internal static Playlist CreateDeletedPlaylist(int id)
+        internal static Playlist CreateDeletedPlaylist(long id)
         {
             return new Playlist()
             {
@@ -150,20 +150,5 @@ namespace SoundMist.Models.SoundCloud
                 User = User.CreateDeletedUser(-1),
             };
         }
-    }
-
-    public class TrackSimple
-    {
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
-
-        [JsonPropertyName("kind")]
-        public string? Kind { get; set; }
-
-        [JsonPropertyName("monetization_model")]
-        public string? MonetizationModel { get; set; }
-
-        [JsonPropertyName("policy")]
-        public string? Policy { get; set; }
     }
 }

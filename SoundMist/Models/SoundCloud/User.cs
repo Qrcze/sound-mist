@@ -53,7 +53,7 @@ namespace SoundMist.Models.SoundCloud
         public string? FullName { get; set; }
 
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [JsonPropertyName("kind")]
         public string? Kind { get; set; }
@@ -174,7 +174,7 @@ namespace SoundMist.Models.SoundCloud
         [JsonPropertyName("website_title")]
         public string? WebsiteTitle { get; set; }
 
-        internal static User CreateDeletedUser(int id)
+        internal static User CreateDeletedUser(long id)
         {
             return new()
             {

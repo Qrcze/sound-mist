@@ -9,7 +9,7 @@ namespace SoundMist.Helpers
         private readonly IHttpManager _httpManager = httpManager;
         private readonly ProgramSettings _settings = settings;
 
-        public async Task<(bool success, string message)> ToggleLikedDisliked(bool liked, int trackId)
+        public async Task<(bool success, string message)> ToggleLikedDisliked(bool liked, long trackId)
         {
             if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (false, "User not logged-in");

@@ -28,10 +28,10 @@ namespace SoundMist.Models.SoundCloud
         public int Timestamp { get; set; }
 
         [JsonPropertyName("track_id")]
-        public int TrackId { get; set; }
+        public long TrackId { get; set; }
 
         [JsonPropertyName("user_id")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [JsonPropertyName("self")]
         public CommentSelf Self { get; set; }

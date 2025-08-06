@@ -18,8 +18,8 @@ namespace SoundMist.Helpers
         private readonly IHttpManager _httpManager = httpManager;
         private readonly ProgramSettings _settings = settings;
 
-        /// <inheritdoc cref="GetTracksById(IEnumerable{int}, bool, CancellationToken)"/>
-        public async Task<List<Track>> GetTracksById(IEnumerable<int> tracksIds, bool forceProxy = false)
+        /// <inheritdoc cref="GetTracksById(IEnumerable{long}, bool, CancellationToken)"/>
+        public async Task<List<Track>> GetTracksById(IEnumerable<long> tracksIds, bool forceProxy = false)
             => await GetTracksById(tracksIds, forceProxy, CancellationToken.None);
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace SoundMist.Helpers
         /// <returns></returns>
         /// <exception cref="HttpRequestException" />
         /// <exception cref="TaskCanceledException" />
-        public async Task<List<Track>> GetTracksById(IEnumerable<int> tracksIds, bool forceProxy, CancellationToken token)
+        public async Task<List<Track>> GetTracksById(IEnumerable<long> tracksIds, bool forceProxy, CancellationToken token)
         {
             int skip = 0;
             var fullTracks = new List<Track>();
@@ -70,7 +70,7 @@ namespace SoundMist.Helpers
             }
         }
 
-        internal async Task<(User? user, string? errorMessage)> GetUserInfo(int userId, CancellationToken token)
+        internal async Task<(User? user, string? errorMessage)> GetUserInfo(long userId, CancellationToken token)
         {
             try
             {
@@ -85,7 +85,7 @@ namespace SoundMist.Helpers
             }
         }
 
-        internal async Task<(Playlist? playlist, string? errorMessage)> GetPlaylistInfo(int playlistId, CancellationToken token)
+        internal async Task<(Playlist? playlist, string? errorMessage)> GetPlaylistInfo(long playlistId, CancellationToken token)
         {
             try
             {
@@ -100,9 +100,9 @@ namespace SoundMist.Helpers
             }
         }
 
-        /// <inheritdoc cref="SimpleGet{T}(HttpClient, string, string, int, CancellationToken)"/>
+        /// <inheritdoc cref="SimpleGet{T}(HttpClient, string, string, long, CancellationToken)"/>
         async Task<(QueryResponse<T>? items, string? errorMessage)> SimpleGet<T>(HttpClient httpClient, string href, string errorMessageTemplate, CancellationToken token)
-            => await SimpleGet<T>(httpClient, href, errorMessageTemplate, int.MinValue, token);
+            => await SimpleGet<T>(httpClient, href, errorMessageTemplate, long.MinValue, token);
 
         /// <summary>
         ///
@@ -111,10 +111,10 @@ namespace SoundMist.Helpers
         /// <param name="httpClient"></param>
         /// <param name="href"></param>
         /// <param name="errorMessageTemplate"> will be formatted, {0} - exception message, {1} additional parameter </param>
-        /// <param name="extraParameter"> if equal <see cref="int.MinValue"/>; will be ignored </param>
+        /// <param name="extraParameter"> if equal <see cref="long.MinValue"/>; will be ignored </param>
         /// <param name="token"></param>
         /// <returns></returns>
-        async Task<(QueryResponse<T>? items, string? errorMessage)> SimpleGet<T>(HttpClient httpClient, string href, string errorMessageTemplate, int extraParameter, CancellationToken token)
+        async Task<(QueryResponse<T>? items, string? errorMessage)> SimpleGet<T>(HttpClient httpClient, string href, string errorMessageTemplate, long extraParameter, CancellationToken token)
         {
             try
             {
@@ -128,7 +128,7 @@ namespace SoundMist.Helpers
             }
             catch (HttpRequestException ex)
             {
-                if (extraParameter == int.MinValue)
+                if (extraParameter == long.MinValue)
                     return (null, string.Format(errorMessageTemplate, ex.Message));
                 return (null, string.Format(errorMessageTemplate, ex.Message, extraParameter));
             }
@@ -139,34 +139,34 @@ namespace SoundMist.Helpers
         }
 
         /// <exception cref="TaskCanceledException" />
-        public async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedTracksIds(CancellationToken token)
+        public async Task<(QueryResponse<long>? ids, string? errorMessage)> GetUsersLikedTracksIds(CancellationToken token)
         {
             if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
             string href = $"https://api-v2.soundcloud.com/me/track_likes/ids?limit=200&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
-            return await SimpleGet<int>(_httpManager.AuthorizedClient, href, "Failed get liked tracks request: {0}", token);
+            return await SimpleGet<long>(_httpManager.AuthorizedClient, href, "Failed get liked tracks request: {0}", token);
         }
 
         /// <exception cref="TaskCanceledException" />
-        public async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedUsersIds(CancellationToken token)
+        public async Task<(QueryResponse<long>? ids, string? errorMessage)> GetUsersLikedUsersIds(CancellationToken token)
         {
             if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
             string href = $"https://api-v2.soundcloud.com/me/user_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
-            return await SimpleGet<int>(_httpManager.AuthorizedClient, href, "Failed get liked users request: {0}", token);
+            return await SimpleGet<long>(_httpManager.AuthorizedClient, href, "Failed get liked users request: {0}", token);
         }
 
         /// <exception cref="TaskCanceledException" />
-        public async Task<(QueryResponse<int>? ids, string? errorMessage)> GetUsersLikedPlaylistsIds(CancellationToken token)
+        public async Task<(QueryResponse<long>? ids, string? errorMessage)> GetUsersLikedPlaylistsIds(CancellationToken token)
         {
             if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
             string href = $"https://api-v2.soundcloud.com/me/playlist_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
-            return await SimpleGet<int>(_httpManager.AuthorizedClient, href, "Failed get liked playlists request: {0}", token);
+            return await SimpleGet<long>(_httpManager.AuthorizedClient, href, "Failed get liked playlists request: {0}", token);
         }
 
         /// <exception cref="TaskCanceledException" />
@@ -186,7 +186,7 @@ namespace SoundMist.Helpers
         /// <summary>
         /// Grabs a much larger chunk of comments, but doesn't include the comments posted as replies
         /// </summary>
-        public async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackCommentsAhead(string? href, int trackId, CancellationToken token)
+        public async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackCommentsAhead(string? href, long trackId, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
                 href = $"tracks/{trackId}/comments?threaded=0&client_id={_settings.ClientId}&limit=200&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
@@ -197,14 +197,14 @@ namespace SoundMist.Helpers
         }
 
         /// <summary>
-        /// Gets all of the comments, and will mark the comments as InThread if they're not int the <paramref name="nonThreadedComments"/>.
+        /// Gets all the comments, and will mark the comments as InThread if they're not int the <paramref name="nonThreadedComments"/>.
         /// </summary>
         /// <param name="href"></param>
         /// <param name="nonThreadedComments"></param>
         /// <param name="trackId"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackComments(string? href, HashSet<long> nonThreadedComments, int trackId, CancellationToken token)
+        public async Task<(QueryResponse<Comment>? comments, string? errorMessage)> GetTrackComments(string? href, HashSet<long> nonThreadedComments, long trackId, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
                 href = $"tracks/{trackId}/comments?sort=newest&threaded=1&client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
@@ -219,7 +219,7 @@ namespace SoundMist.Helpers
             return result;
         }
 
-        public async Task<(QueryResponse<Track>? tracks, string? errorMessage)> GetUserTracks(int userId, string? href, CancellationToken token)
+        public async Task<(QueryResponse<Track>? tracks, string? errorMessage)> GetUserTracks(long userId, string? href, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
                 href = $"https://api-v2.soundcloud.com/users/{userId}/tracks?representation=&client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";

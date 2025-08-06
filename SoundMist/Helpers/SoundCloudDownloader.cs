@@ -159,10 +159,9 @@ namespace SoundMist.Helpers
                 response.EnsureSuccessStatusCode();
                 tracks = await response.Content.ReadFromJsonAsync<QueryResponse<Track>>();
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
                 return (null, $"Failed retrieving related tracks for {track.Title}: {ex.Message}");
-                throw;
             }
 
             if (tracks == null)

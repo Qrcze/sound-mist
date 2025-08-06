@@ -63,12 +63,12 @@ namespace SCPlayerTests
             throw new NotImplementedException();
         }
 
-        public Task SkipUser(int id)
+        public Task SkipUser(long id)
         {
             throw new NotImplementedException();
         }
 
-        public Task SkipTrack(int id)
+        public Task SkipTrack(long id)
         {
             throw new NotImplementedException();
         }

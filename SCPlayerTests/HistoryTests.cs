@@ -39,7 +39,7 @@ namespace SCPlayerTests
             var settings = new ProgramSettings() { HistoryLimit = 3 };
             var history = new History(settings);
 
-            int? newId = null;
+            long? newId = null;
 
             history.HistoryChanged += (s, e) =>
             {
@@ -94,7 +94,7 @@ namespace SCPlayerTests
             history.AddPlayedHistory(new() { Id = 3 });
             history.AddPlayedHistory(new() { Id = 2 });
 
-            List<int> items = history.PlayHistory.ToList();
+            List<long> items = history.PlayHistory.ToList();
 
             Assert.True(items.Count == 3, $"Playlist didn't have correct number of items: {items.Count}");
 
@@ -109,7 +109,7 @@ namespace SCPlayerTests
             var settings = new ProgramSettings() { HistoryLimit = 3 };
             var history = new History(settings);
 
-            int? removedId = null;
+            long? removedId = null;
 
             history.HistoryChanged += (s, e) =>
             {

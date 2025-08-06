@@ -11,11 +11,11 @@ namespace SoundMist.Models;
 public class HistoryChangedEventArgs : EventArgs
 {
     public History.List List { get; }
-    public int NewId { get; }
-    public int? RemovedId { get; }
+    public long NewId { get; }
+    public long? RemovedId { get; }
     public object NewObject { get; }
 
-    public HistoryChangedEventArgs(History.List list, int newId, int? removedId, object newObject)
+    public HistoryChangedEventArgs(History.List list, long newId, long? removedId, object newObject)
     {
         List = list;
         NewId = newId;
@@ -35,30 +35,30 @@ public class History
         PlaylistsHistory,
     }
 
-    [JsonIgnore] public IReadOnlyCollection<int> PlayHistory => _playHistory;
-    [JsonIgnore] public IReadOnlyCollection<int> TracksHistory => _tracksHistory;
-    [JsonIgnore] public IReadOnlyCollection<int> UsersHistory => _usersHistory;
-    [JsonIgnore] public IReadOnlyCollection<int> PlaylistsHistory => _playlistsHistory;
+    [JsonIgnore] public IReadOnlyCollection<long> PlayHistory => _playHistory;
+    [JsonIgnore] public IReadOnlyCollection<long> TracksHistory => _tracksHistory;
+    [JsonIgnore] public IReadOnlyCollection<long> UsersHistory => _usersHistory;
+    [JsonIgnore] public IReadOnlyCollection<long> PlaylistsHistory => _playlistsHistory;
 
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     [JsonPropertyName(nameof(PlayHistory))]
     [JsonInclude]
-    private readonly LinkedList<int> _playHistory = [];
+    private readonly LinkedList<long> _playHistory = [];
 
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     [JsonPropertyName(nameof(TracksHistory))]
     [JsonInclude]
-    private readonly LinkedList<int> _tracksHistory = [];
+    private readonly LinkedList<long> _tracksHistory = [];
 
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     [JsonPropertyName(nameof(UsersHistory))]
     [JsonInclude]
-    private readonly LinkedList<int> _usersHistory = [];
+    private readonly LinkedList<long> _usersHistory = [];
 
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     [JsonPropertyName(nameof(PlaylistsHistory))]
     [JsonInclude]
-    private readonly LinkedList<int> _playlistsHistory = [];
+    private readonly LinkedList<long> _playlistsHistory = [];
 
     public event EventHandler<HistoryChangedEventArgs>? HistoryChanged;
 
@@ -112,7 +112,7 @@ public class History
 
     public void AddPlaylistInfoHistory(Playlist playlist) => PushToLimitAndSave(_playlistsHistory, List.PlaylistsHistory, playlist.Id, playlist);
 
-    void PushToLimitAndSave(LinkedList<int> list, List listId, int id, object addedObject)
+    void PushToLimitAndSave(LinkedList<long> list, List listId, long id, object addedObject)
     {
         if (list.First?.Value == id)
             return;
@@ -121,7 +121,7 @@ public class History
 
         list.AddFirst(id);
 
-        int? removed = null;
+        long? removed = null;
         if (list.Count > _settings.HistoryLimit)
         {
             removed = list.Last?.Value;

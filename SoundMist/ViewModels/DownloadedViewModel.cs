@@ -46,7 +46,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             return;
 
         string[] idFiles = Directory.GetFiles(Globals.LocalDownloadsPath, "*.id");
-        List<(int id, string label)> ids = new(idFiles.Length);
+        List<(long id, string label)> ids = new(idFiles.Length);
 
         foreach (var idPath in idFiles)
         {
@@ -62,7 +62,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             }
 
             string idString = File.ReadAllText(idPath);
-            if (int.TryParse(idString, out int id))
+            if (long.TryParse(idString, out long id))
                 ids.Add((id, trackLabel));
             else
             {
@@ -76,7 +76,7 @@ internal partial class DownloadedViewModel : ViewModelBase
         foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3"))
         {
             string trackLabel = Path.GetFileNameWithoutExtension(filePath);
-            (int trackId, _) = ids.FirstOrDefault(x => x.label == trackLabel);
+            (long trackId, _) = ids.FirstOrDefault(x => x.label == trackLabel);
 
             var trackData = tracksData.FirstOrDefault(x => x.FullLabel == trackLabel);
             if (trackData is not null)

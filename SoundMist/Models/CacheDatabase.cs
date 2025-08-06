@@ -13,9 +13,9 @@ namespace SoundMist.Models
         private readonly SoundCloudQueries _queries = queries;
         private readonly ILogger _logger = logger;
 
-        private readonly Dictionary<int, Track> _tracks = [];
-        private readonly Dictionary<int, User> _users = [];
-        private readonly Dictionary<int, Playlist> _playlists = [];
+        private readonly Dictionary<long, Track> _tracks = [];
+        private readonly Dictionary<long, User> _users = [];
+        private readonly Dictionary<long, Playlist> _playlists = [];
 
         public void AddTrack(Track track) => _tracks[track.Id] = track;
 
@@ -30,18 +30,18 @@ namespace SoundMist.Models
             _playlists.Clear();
         }
 
-        public async Task<Track> GetTrackById(int id, CancellationToken token) => (await GetTracksById([id], token)).Single();
+        public async Task<Track> GetTrackById(long id, CancellationToken token) => (await GetTracksById([id], token)).Single();
 
-        public async Task<User> GetUserById(int id, CancellationToken token) => (await GetUsersById([id], token)).Single();
+        public async Task<User> GetUserById(long id, CancellationToken token) => (await GetUsersById([id], token)).Single();
 
-        public async Task<Playlist> GetPlaylistById(int id, CancellationToken token) => (await GetPlaylistsById([id], token)).Single();
+        public async Task<Playlist> GetPlaylistById(long id, CancellationToken token) => (await GetPlaylistsById([id], token)).Single();
 
         /// <summary>
         /// Grabs the tracks data from cache, downloading the missing ones, and returns in the same order as the IDs.
         /// </summary>
         /// <exception cref="HttpRequestException" />
         /// <exception cref="TaskCanceledException" />
-        public async Task<IEnumerable<Track>> GetTracksById(IEnumerable<int> ids, CancellationToken token)
+        public async Task<IEnumerable<Track>> GetTracksById(IEnumerable<long> ids, CancellationToken token)
         {
             var missingItems = ids.Except(_tracks.Keys);
 
@@ -70,7 +70,7 @@ namespace SoundMist.Models
         /// <summary>
         /// Grabs the users data from cache, downloading the missing ones, and returns in the same order as the IDs.
         /// </summary>
-        public async Task<IEnumerable<User>> GetUsersById(IEnumerable<int> ids, CancellationToken token)
+        public async Task<IEnumerable<User>> GetUsersById(IEnumerable<long> ids, CancellationToken token)
         {
             var missingItems = ids.Except(_users.Keys);
 
@@ -99,7 +99,7 @@ namespace SoundMist.Models
         /// <summary>
         /// Grabs the tracks data from cache, downloading the missing ones, and returns in the same order as the IDs.
         /// </summary>
-        public async Task<IEnumerable<Playlist>> GetPlaylistsById(IEnumerable<int> ids, CancellationToken token)
+        public async Task<IEnumerable<Playlist>> GetPlaylistsById(IEnumerable<long> ids, CancellationToken token)
         {
             var missingItems = ids.Except(_playlists.Keys);
 

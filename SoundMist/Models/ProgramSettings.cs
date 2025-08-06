@@ -25,7 +25,7 @@ namespace SoundMist.Models
         private float _volume = 1;
         private bool _autoplayStationOnLastTrack = true;
         private bool _shuffle;
-        private int? _lastTrackId;
+        private long? _lastTrackId;
         private MainViewTab _startingTabIndex = MainViewTab.LikedTracks;
         private bool _startPlayingOnLaunch;
         private AppColorTheme _appColorTheme;
@@ -76,13 +76,13 @@ namespace SoundMist.Models
 
         [JsonIgnore] public int AppVersion { get; set; }
 
-        [JsonIgnore] public int? UserId { get; set; }
+        [JsonIgnore] public long? UserId { get; set; }
 
         public string? AuthToken { get => _authToken; set => SetPropertyAndSave(ref _authToken, value); }
         public float Volume { get => _volume; set => SetPropertyAndSave(ref _volume, value); }
         public bool AutoplayStationOnLastTrack { get => _autoplayStationOnLastTrack; set => SetPropertyAndSave(ref _autoplayStationOnLastTrack, value); }
         public bool Shuffle { get => _shuffle; set => SetPropertyAndSave(ref _shuffle, value); }
-        public int? LastTrackId { get => _lastTrackId; set => SetPropertyAndSave(ref _lastTrackId, value); }
+        public long? LastTrackId { get => _lastTrackId; set => SetPropertyAndSave(ref _lastTrackId, value); }
         public MainViewTab StartingTabIndex { get => _startingTabIndex; set => SetPropertyAndSave(ref _startingTabIndex, value); }
         public bool StartPlayingOnLaunch { get => _startPlayingOnLaunch; set => SetPropertyAndSave(ref _startPlayingOnLaunch, value); }
         public int HistoryLimit { get => _historyLimit; set => SetPropertyAndSave(ref _historyLimit, value); }

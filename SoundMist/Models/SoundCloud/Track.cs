@@ -6,46 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace SoundMist.Models.SoundCloud
 {
-    public class QueryResponse<T>
-    {
-        [JsonPropertyName("collection")]
-        public List<T> Collection { get; set; } = [];
-
-        [JsonPropertyName("next_href")]
-        public string? NextHref { get; set; }
-
-        [JsonPropertyName("query_urn")]
-        public string? QueryUrn { get; set; }
-    }
-
-    public class LikedTrack
-    {
-        public override string ToString() => Track.FullLabel;
-
-        [JsonPropertyName("created_at")]
-        public DateTime? CreatedAt { get; set; }
-
-        [JsonPropertyName("kind")]
-        public string Kind { get; set; } = "like";
-
-        [JsonPropertyName("track")]
-        public Track Track { get; set; } = null!;
-    }
-
-    public class HistoryTrack
-    {
-        [JsonPropertyName("played_at")]
-        public long? PlayedAtEpochMs { get; set; }
-
-        public DateTime? PlayedAt => PlayedAtEpochMs.HasValue ? new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(PlayedAtEpochMs.Value) : null;
-
-        [JsonPropertyName("track_id")]
-        public int TrackId { get; set; }
-
-        [JsonPropertyName("track")]
-        public Track? Track { get; set; }
-    }
-
     public class Track
     {
         public static Track CreatePlaceholderTrack(string author = "Empty", string title = "Track", string imageUrl = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_vector.svg")
@@ -60,7 +20,7 @@ namespace SoundMist.Models.SoundCloud
 
         public override string ToString() => FullLabel;
 
-        internal static Track CreateRemovedTrack(int id)
+        internal static Track CreateRemovedTrack(long id)
         {
             return new()
             {
@@ -213,7 +173,7 @@ namespace SoundMist.Models.SoundCloud
         public bool? HasDownloadsLeft { get; set; }
 
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [JsonPropertyName("kind")]
         public string? Kind { get; set; }
@@ -306,132 +266,12 @@ namespace SoundMist.Models.SoundCloud
         public User? User { get; set; } = null!;
 
         [JsonPropertyName("user_id")]
-        public int? UserId { get; set; }
+        public long? UserId { get; set; }
 
         [JsonPropertyName("visuals")]
         public Visuals? Visuals { get; set; }
 
         [JsonPropertyName("waveform_url")]
         public string? WaveformUrl { get; set; }
-    }
-
-    public class Visuals
-    {
-        [JsonPropertyName("enabled")]
-        public bool Enabled { get; set; }
-
-        [JsonPropertyName("tracking")]
-        public object? Tracking { get; set; }
-
-        [JsonPropertyName("urn")]
-        public string Urn { get; set; } = string.Empty;
-
-        [JsonPropertyName("visuals")]
-        public List<VisualItem> Items { get; set; } = [];
-    }
-
-    public class VisualItem
-    {
-        [JsonPropertyName("entry_time")]
-        public int EntryTime { get; set; }
-
-        [JsonPropertyName("urn")]
-        public string Urn { get; set; } = string.Empty;
-
-        [JsonPropertyName("visual_url")]
-        public string VisualUrl { get; set; } = string.Empty;
-    }
-
-    public class Badges
-    {
-        [JsonPropertyName("creator_mid_tier")]
-        public bool? CreatorMidTier { get; set; }
-
-        [JsonPropertyName("pro")]
-        public bool? Pro { get; set; }
-
-        [JsonPropertyName("pro_unlimited")]
-        public bool? ProUnlimited { get; set; }
-
-        [JsonPropertyName("verified")]
-        public bool? Verified { get; set; }
-    }
-
-    public class Format
-    {
-        [JsonPropertyName("mime_type")]
-        public string? MimeType { get; set; }
-
-        [JsonPropertyName("protocol")]
-        public string? Protocol { get; set; }
-    }
-
-    public class Media
-    {
-        [JsonPropertyName("transcodings")]
-        public List<Transcoding> Transcodings { get; set; } = null!;
-    }
-
-    public class PublisherMetadata
-    {
-        [JsonPropertyName("album_title")]
-        public string? AlbumTitle { get; set; }
-
-        [JsonPropertyName("artist")]
-        public string? Artist { get; set; }
-
-        [JsonPropertyName("contains_music")]
-        public bool? ContainsMusic { get; set; }
-
-        [JsonPropertyName("explicit")]
-        public bool? Explicit { get; set; }
-
-        [JsonPropertyName("id")]
-        public int? Id { get; set; }
-
-        [JsonPropertyName("isrc")]
-        public string? Isrc { get; set; }
-
-        [JsonPropertyName("p_line")]
-        public string? PLine { get; set; }
-
-        [JsonPropertyName("p_line_for_display")]
-        public string? PLineForDisplay { get; set; }
-
-        [JsonPropertyName("publisher")]
-        public string? Publisher { get; set; }
-
-        [JsonPropertyName("release_title")]
-        public string? ReleaseTitle { get; set; }
-
-        [JsonPropertyName("urn")]
-        public string? Urn { get; set; }
-
-        [JsonPropertyName("writer_composer")]
-        public string? WriterComposer { get; set; }
-    }
-
-    public class Transcoding
-    {
-        [JsonPropertyName("duration")]
-        public int? Duration { get; set; }
-
-        [JsonPropertyName("format")]
-        public Format Format { get; set; } = null!;
-
-        [JsonPropertyName("is_legacy_transcoding")]
-        public bool? IsLegacyTranscoding { get; set; }
-
-        [JsonPropertyName("preset")]
-        public string? Preset { get; set; }
-
-        [JsonPropertyName("quality")]
-        public string? Quality { get; set; }
-
-        [JsonPropertyName("snipped")]
-        public bool? Snipped { get; set; }
-
-        [JsonPropertyName("url")]
-        public string Url { get; set; } = string.Empty;
     }
 }

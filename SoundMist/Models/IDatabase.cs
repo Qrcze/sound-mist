@@ -15,15 +15,15 @@ public interface IDatabase
 
     void Clear();
 
-    Task<Track> GetTrackById(int id, CancellationToken token);
+    Task<Track> GetTrackById(long id, CancellationToken token);
 
-    Task<User> GetUserById(int id, CancellationToken token);
+    Task<User> GetUserById(long id, CancellationToken token);
 
-    Task<Playlist> GetPlaylistById(int id, CancellationToken token);
+    Task<Playlist> GetPlaylistById(long id, CancellationToken token);
 
-    Task<IEnumerable<Track>> GetTracksById(IEnumerable<int> ids, CancellationToken token);
+    Task<IEnumerable<Track>> GetTracksById(IEnumerable<long> ids, CancellationToken token);
 
-    Task<IEnumerable<User>> GetUsersById(IEnumerable<int> ids, CancellationToken token);
+    Task<IEnumerable<User>> GetUsersById(IEnumerable<long> ids, CancellationToken token);
 
-    Task<IEnumerable<Playlist>> GetPlaylistsById(IEnumerable<int> ids, CancellationToken token);
+    Task<IEnumerable<Playlist>> GetPlaylistsById(IEnumerable<long> ids, CancellationToken token);
 }

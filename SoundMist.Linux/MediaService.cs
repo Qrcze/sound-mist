@@ -238,7 +238,7 @@ public enum PlaybackStatus
 
 public static class MediaServiceExtensions
 {
-    public static void SetMetadata(this IPlayerExtra player, int trackId, long lengthMicroseconds, string title,
+    public static void SetMetadata(this IPlayerExtra player, long trackId, long lengthMicroseconds, string title,
         string artist, string albumImageUrl)
     {
         player.PlayerProperties.Metadata = new Dictionary<string, object>
