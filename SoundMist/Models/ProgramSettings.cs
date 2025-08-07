@@ -53,26 +53,15 @@ namespace SoundMist.Models
 
                 try
                 {
-
-                    var jsonNode = JsonNode.Parse(json)!.AsObject();
-
-                    int version = 0;
-                    do
-                    {
-                        jsonNode = version switch
-                        {
-                            0 => UpdateFromVersion0(jsonNode),
-                            _ => throw new NotImplementedException(),
-                        };
-                        version = (int)jsonNode[nameof(Version)]!;
-                    } while (version != SettingsVersion);
-
-                    settings = jsonNode.Deserialize<ProgramSettings>();
+                    settings = GetUpdatedSettings(json);
                 }
                 catch (Exception ex)
                 {
                     FileLogger.Instance.Error($"Failed reading settings json: {ex.Message}");
                     File.Copy(Globals.SettingsFilePath, Globals.SettingsFilePath + ".old", overwrite: true);
+                    NotificationManager.Show(new("Failed loading settings",
+                        "Program has failed loading the settings file, please check the logs for further info.",
+                        Avalonia.Controls.Notifications.NotificationType.Error, TimeSpan.Zero));
                 }
             }
 
@@ -86,6 +75,32 @@ namespace SoundMist.Models
             settings._settingsInitialized = true;
 
             return settings;
+        }
+
+        public static ProgramSettings? GetUpdatedSettings(string json)
+        {
+            var jsonNode = JsonNode.Parse(json)!.AsObject();
+
+            int version = 0;
+
+            var v = jsonNode[nameof(Version)];
+            if (v is not null)
+                version = (int)v;
+
+            if (version != SettingsVersion)
+            {
+                do
+                {
+                    jsonNode = version switch
+                    {
+                        0 => UpdateFromVersion0(jsonNode),
+                        _ => throw new NotImplementedException(),
+                    };
+                    version = (int)jsonNode[nameof(Version)]!;
+                } while (version != SettingsVersion);
+            }
+
+            return jsonNode.Deserialize<ProgramSettings>();
         }
 
         private static JsonObject UpdateFromVersion0(JsonObject jsonObject)
