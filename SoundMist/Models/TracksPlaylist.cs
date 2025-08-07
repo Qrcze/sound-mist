@@ -55,7 +55,10 @@ namespace SoundMist.Models
         public void Add(Track track)
         {
             lock (listLock)
+            {
                 _items.Add(track);
+                _originalQueue.Add(track);
+            }
 
             ListChanged?.Invoke(Changetype.Added, [track]);
         }
