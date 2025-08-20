@@ -43,7 +43,7 @@ namespace SoundMist.Helpers
 
                 skip += 50;
 
-                string url = $"https://api-v2.soundcloud.com/tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+                string url = $"tracks?ids={HttpUtility.UrlEncode(Ids)}&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
                 using var response = await client.GetAsync(url, token);
                 response.EnsureSuccessStatusCode();
@@ -74,7 +74,7 @@ namespace SoundMist.Helpers
         {
             try
             {
-                using var response = await _httpManager.DefaultClient.GetAsync($"https://api-v2.soundcloud.com/users/{userId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
+                using var response = await _httpManager.DefaultClient.GetAsync($"users/{userId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
                 response.EnsureSuccessStatusCode();
 
                 return (await response.Content.ReadFromJsonAsync<User>(token), null);
@@ -89,7 +89,7 @@ namespace SoundMist.Helpers
         {
             try
             {
-                using var response = await _httpManager.DefaultClient.GetAsync($"https://api-v2.soundcloud.com/playlists/{playlistId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
+                using var response = await _httpManager.DefaultClient.GetAsync($"playlists/{playlistId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", token);
                 response.EnsureSuccessStatusCode();
 
                 return (await response.Content.ReadFromJsonAsync<Playlist>(token), null);
@@ -144,7 +144,7 @@ namespace SoundMist.Helpers
             if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
-            string href = $"https://api-v2.soundcloud.com/me/track_likes/ids?limit=200&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+            string href = $"me/track_likes/ids?limit=200&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
             return await SimpleGet<long>(_httpManager.AuthorizedClient, href, "Failed get liked tracks request: {0}", token);
         }
@@ -155,7 +155,7 @@ namespace SoundMist.Helpers
             if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
-            string href = $"https://api-v2.soundcloud.com/me/user_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+            string href = $"me/user_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
             return await SimpleGet<long>(_httpManager.AuthorizedClient, href, "Failed get liked users request: {0}", token);
         }
 
@@ -165,7 +165,7 @@ namespace SoundMist.Helpers
             if (!_httpManager.AuthorizedClient.IsAuthorized)
                 return (null, "User not logged-in");
 
-            string href = $"https://api-v2.soundcloud.com/me/playlist_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+            string href = $"me/playlist_likes/ids?limit=5000&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
             return await SimpleGet<long>(_httpManager.AuthorizedClient, href, "Failed get liked playlists request: {0}", token);
         }
 
@@ -176,7 +176,7 @@ namespace SoundMist.Helpers
                 return (null, "User not logged-in");
 
             if (string.IsNullOrEmpty(href))
-                href = $"https://api-v2.soundcloud.com/me/play-history/tracks?client_id={_settings.ClientId}&limit=25&offset={offset}&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+                href = $"me/play-history/tracks?client_id={_settings.ClientId}&limit=25&offset={offset}&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             else
                 href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
@@ -219,14 +219,64 @@ namespace SoundMist.Helpers
             return result;
         }
 
+        public async Task<(QueryResponse<object>? tracks, string? errorMessage)> GetUserAll(long userId, string? href, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(href))
+                href = $"stream/users/{userId}?client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            else
+                href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+
+            return await SimpleGet<object>(_httpManager.DefaultClient, href, "Failed retrieving all items from user <{1}>: {0}", userId, token);
+        }
+
+        public async Task<(QueryResponse<Track>? tracks, string? errorMessage)> GetUserTopTracks(long userId, string? href, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(href))
+                href = $"users/{userId}/toptracks?client_id={_settings.ClientId}&limit=10&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            else
+                href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+
+            return await SimpleGet<Track>(_httpManager.DefaultClient, href, "Failed retrieving top tracks from user <{1}>: {0}", userId, token);
+        }
+
         public async Task<(QueryResponse<Track>? tracks, string? errorMessage)> GetUserTracks(long userId, string? href, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
-                href = $"https://api-v2.soundcloud.com/users/{userId}/tracks?representation=&client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+                href = $"users/{userId}/tracks?representation=&client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             else
                 href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
             return await SimpleGet<Track>(_httpManager.DefaultClient, href, "Failed retrieving tracks from user <{1}>: {0}", userId, token);
+        }
+
+        public async Task<(QueryResponse<Playlist>? tracks, string? errorMessage)> GetUserAlbums(long userId, string? href, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(href))
+                href = $"users/{userId}/albums?client_id={_settings.ClientId}&limit=10&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            else
+                href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+
+            return await SimpleGet<Playlist>(_httpManager.DefaultClient, href, "Failed retrieving albums from user <{1}>: {0}", userId, token);
+        }
+
+        public async Task<(QueryResponse<Playlist>? tracks, string? errorMessage)> GetUserPlaylists(long userId, string? href, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(href))
+                href = $"users/{userId}/playlists_without_albums?client_id={_settings.ClientId}&limit=10&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            else
+                href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+
+            return await SimpleGet<Playlist>(_httpManager.DefaultClient, href, "Failed retrieving playlists from user <{1}>: {0}", userId, token);
+        }
+
+        public async Task<(QueryResponse<object>? tracks, string? errorMessage)> GetUserReposts(long userId, string? href, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(href))
+                href = $"stream/users/{userId}/reposts?client_id={_settings.ClientId}&limit=10&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            else
+                href += $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+
+            return await SimpleGet<object>(_httpManager.DefaultClient, href, "Failed retrieving reposts from user <{1}>: {0}", userId, token);
         }
     }
 }
