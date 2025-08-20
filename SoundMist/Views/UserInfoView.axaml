@@ -3,12 +3,40 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:SoundMist.ViewModels"
+			 xmlns:model="clr-namespace:SoundMist.Models.SoundCloud"
 			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 			 xmlns:li="using:LoadingIndicators.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SoundMist.Views.UserInfoView"
 			 x:DataType="vm:UserInfoViewModel">
-	<Grid>
+	<UserControl.DataTemplates>
+		<DataTemplate DataType="{x:Type model:User}">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="{Binding Username}" />
+			</StackPanel>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type model:Track}">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="{Binding FullLabel}" />
+			</StackPanel>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type model:Playlist}">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Playlist..." />
+				<TextBlock Text="{Binding Author}" />
+			</StackPanel>
+		</DataTemplate>
+	</UserControl.DataTemplates>
+
+	<UserControl.Styles>
+		<Style Selector="TabControl WrapPanel">
+			<Setter Property="ItemHeight" Value="40" />
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="FontSize" Value="18" />
+		</Style>
+	</UserControl.Styles>
+	<Grid RowDefinitions="auto,*">
 		<StackPanel>
 			<Grid>
 				<Image asyncImageLoader:ImageLoader.Source="{Binding User.BackgroundVisual}" VerticalAlignment="Top" />
@@ -29,6 +57,27 @@
 				<Button Content="Open In Browser" Margin="5" Command="{Binding OpenInBrowserCommand}" />
 			</StackPanel>
 		</StackPanel>
+
+		<TabControl x:Name="TabsControl" Grid.Row="1" SelectedIndex="{Binding OpenedTabIndex}">
+			<TabItem Header="All" >
+				<ListBox x:Name="AllList" Tag="All" ItemsSource="{Binding All.Items}" />
+			</TabItem>
+			<TabItem Header="Popular tracks" >
+				<ListBox x:Name="PopularTracksList" Tag="PopularTracks" ItemsSource="{Binding PopularTracks.Items}" />
+			</TabItem>
+			<TabItem Header="Tracks" >
+				<ListBox x:Name="TracksList" Tag="Tracks" ItemsSource="{Binding Tracks.Items}" />
+			</TabItem>
+			<TabItem Header="Albums" >
+				<ListBox x:Name="AlbumsList" Tag="Albums" ItemsSource="{Binding Albums.Items}" />
+			</TabItem>
+			<TabItem Header="Playlists" >
+				<ListBox x:Name="PlaylistsList" Tag="Playlists" ItemsSource="{Binding Playlists.Items}" />
+			</TabItem>
+			<TabItem Header="Reposts" >
+				<ListBox x:Name="RepostsList" Tag="Reposts" ItemsSource="{Binding Reposts.Items}" />
+			</TabItem>
+		</TabControl>
 
 		<Panel Background="#9333" IsVisible="{Binding LoadingView}">
 			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />

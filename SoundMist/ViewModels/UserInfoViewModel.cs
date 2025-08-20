@@ -5,11 +5,40 @@ using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
 using System;
+using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SoundMist.ViewModels;
+
+public enum UserTab
+{
+    All,
+    PopularTracks,
+    Tracks,
+    Albums,
+    Playlists,
+    Reposts,
+}
+
+public class UserTabData<T> : ObservableObject
+{
+    private bool _loading;
+
+    public ObservableCollection<T> Items { get; } = [];
+    public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
+    public string? NextHref { get; set; }
+    public bool ReachedEnd { get; set; }
+
+    internal void Clear()
+    {
+        Items.Clear();
+        Loading = false;
+        NextHref = null;
+        ReachedEnd = false;
+    }
+}
 
 public partial class UserInfoViewModel : ViewModelBase
 {
@@ -17,20 +46,45 @@ public partial class UserInfoViewModel : ViewModelBase
     [ObservableProperty] private bool _loadingView;
     [ObservableProperty] private bool _showFullImage;
 
+    private int _openedTabIndex;
+
+    public int OpenedTabIndex
+    {
+        get => _openedTabIndex;
+        set
+        {
+            SetProperty(ref _openedTabIndex, value);
+
+            if (_tokenSource == null)
+                return;
+
+            Task.Run(() => LoadTab());
+        }
+    }
+
     private readonly IDatabase _database;
+    private readonly SoundCloudQueries _soundCloudQueries;
     private readonly ILogger _logger;
     private readonly History _history;
 
     private CancellationTokenSource? _tokenSource;
 
+    public UserTabData<object> All { get; } = new();
+    public UserTabData<Track> PopularTracks { get; } = new();
+    public UserTabData<Track> Tracks { get; } = new();
+    public UserTabData<Playlist> Albums { get; } = new();
+    public UserTabData<Playlist> Playlists { get; } = new();
+    public UserTabData<object> Reposts { get; } = new();
+
     public IRelayCommand OpenInBrowserCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
 
-    public UserInfoViewModel(IDatabase database, ILogger logger, History history)
+    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, ILogger logger, History history)
     {
         Mediator.Default.Register(MediatorEvent.OpenUserInfo, OpenUser);
 
         _database = database;
+        _soundCloudQueries = soundCloudQueries;
         _logger = logger;
         _history = history;
         OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
@@ -45,11 +99,79 @@ public partial class UserInfoViewModel : ViewModelBase
         SystemHelpers.OpenInBrowser(User.PermalinkUrl);
     }
 
+    public async Task LoadTab()
+    {
+        if (_tokenSource is null || User is null)
+            return;
+
+        var token = _tokenSource.Token;
+        var tab = (UserTab)OpenedTabIndex;
+
+        switch (tab)
+        {
+            case UserTab.All:
+                await LoadObjectsTab(All, _soundCloudQueries.GetUserAll, token);
+                break;
+
+            case UserTab.PopularTracks:
+                await LoadObjectsTab(PopularTracks, _soundCloudQueries.GetUserTopTracks, token);
+                break;
+
+            case UserTab.Tracks:
+                await LoadObjectsTab(Tracks, _soundCloudQueries.GetUserTracks, token);
+                break;
+
+            case UserTab.Albums:
+                await LoadObjectsTab(Albums, _soundCloudQueries.GetUserAlbums, token);
+                break;
+
+            case UserTab.Playlists:
+                await LoadObjectsTab(Playlists, _soundCloudQueries.GetUserPlaylists, token);
+                break;
+
+            case UserTab.Reposts:
+                await LoadObjectsTab(Reposts, _soundCloudQueries.GetUserReposts, token);
+                break;
+
+            default:
+                _logger.Error($"Tried opening a tab that is not defined by enum: {tab}");
+                break;
+        }
+    }
+
+    private async Task LoadObjectsTab<T>(UserTabData<T> tabData, Func<long, string?, CancellationToken, Task<(QueryResponse<T>? tracks, string? errorMessage)>> getObjects, CancellationToken token)
+    {
+        if (tabData.Loading || tabData.ReachedEnd)
+            return;
+        tabData.Loading = true;
+
+        var (response, errorMessage) = await getObjects(User!.Id, tabData.NextHref, token);
+        if (response == null)
+        {
+            _logger.Error(errorMessage!);
+            return;
+        }
+
+        foreach (var track in response.Collection)
+            tabData.Items.Add(track);
+        tabData.NextHref = response.NextHref;
+        tabData.ReachedEnd = string.IsNullOrEmpty(response.NextHref);
+
+        tabData.Loading = false;
+    }
+
     private void OpenUser(object? obj)
     {
         LoadingView = true;
         User = null;
         ShowFullImage = false;
+
+        All.Clear();
+        PopularTracks.Clear();
+        Tracks.Clear();
+        Albums.Clear();
+        Playlists.Clear();
+        Reposts.Clear();
 
         if (obj is not User userWithIdOnly)
             return;
@@ -88,6 +210,9 @@ public partial class UserInfoViewModel : ViewModelBase
             }
 
             LoadingView = false;
+
+            SetProperty(ref _openedTabIndex, (int)UserTab.All, nameof(OpenedTabIndex));
+            await LoadTab(); //todo make it a setting to load the default user tab
         }, token);
     }
 }
