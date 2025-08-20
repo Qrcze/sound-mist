@@ -1,11 +1,11 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System;
-using static SoundMist.ViewModels.SearchViewModel;
 
 namespace SoundMist.Views;
 
@@ -18,14 +18,18 @@ public partial class SearchView : UserControl
         InitializeComponent();
         DataContext = _vm = App.GetService<SearchViewModel>();
 
-        ResultsList.Loaded += (s, e) =>
-        {
-            var scrollViewer = ResultsList.FindDescendantOfType<ScrollViewer>();
-            if (scrollViewer != null)
-                scrollViewer.ScrollChanged += OnScrollChangedAsync;
-            else
-                FileLogger.Instance.Warn("Failed getting the ScrollViewer for Liked ListBox!");
-        };
+        ResultsList.Loaded += StartObservingScrollViewer;
+    }
+
+    private void StartObservingScrollViewer(object? sender, RoutedEventArgs e)
+    {
+        ResultsList.Loaded -= StartObservingScrollViewer;
+
+        var scrollViewer = ResultsList.FindDescendantOfType<ScrollViewer>();
+        if (scrollViewer != null)
+            scrollViewer.ScrollChanged += OnScrollChangedAsync;
+        else
+            FileLogger.Instance.Warn("Failed getting the ScrollViewer for Liked ListBox!");
     }
 
     private async void OnScrollChangedAsync(object? sender, ScrollChangedEventArgs e)
