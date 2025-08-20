@@ -13,7 +13,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
@@ -104,13 +103,13 @@ public partial class SearchViewModel : ViewModelBase
 
         string url = $"https://api-v2.soundcloud.com/search/queries?q={SearchFilter}&client_id={_settings.ClientId}&limit=10&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
 
-        SearchQueryCollection? q;
+        QueryResponse<SearchQuery>? q;
         try
         {
             using var response = await _httpManager.DefaultClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
-            q = await response.Content.ReadFromJsonAsync<SearchQueryCollection>();
+            q = await response.Content.ReadFromJsonAsync<QueryResponse<SearchQuery>>();
         }
         catch (HttpRequestException ex)
         {
@@ -293,93 +292,5 @@ public partial class SearchViewModel : ViewModelBase
 
         if (tracks.Any())
             await _musicPlayer.LoadNewQueue(tracks.Skip(selectedIndex));
-    }
-
-    public class ScObjectConverter : JsonConverter<object>
-    {
-        public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            using JsonDocument doc = JsonDocument.ParseValue(ref reader);
-            JsonElement root = doc.RootElement;
-
-            string raw = root.GetRawText();
-            if (root.TryGetProperty("kind", out JsonElement typeProperty))
-            {
-                string type = typeProperty.GetString()!;
-                return type switch
-                {
-                    "track" => JsonSerializer.Deserialize<Track>(root.GetRawText(), options),
-                    "user" => JsonSerializer.Deserialize<User>(root.GetRawText(), options),
-                    "playlist" => JsonSerializer.Deserialize<Playlist>(root.GetRawText(), options),
-                    _ => $"unhandled type: {type}...",
-                };
-            }
-            else
-            {
-                throw new JsonException($"Missing 'kind' property while reading json object: {raw}.");
-            }
-        }
-
-        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
-        {
-            JsonSerializer.Serialize(value, value.GetType(), options);
-        }
-    }
-
-    public class SearchCollection
-    {
-        [JsonPropertyName("collection")]
-        public List<object> Collection { get; set; } = [];
-
-        [JsonPropertyName("next_href")]
-        public string? NextHref { get; set; } = null!;
-
-        [JsonPropertyName("query_urn")]
-        public string QueryUrn { get; set; } = null!;
-
-        [JsonPropertyName("total_results")]
-        public int TotalResults { get; set; }
-
-        [JsonPropertyName("facets")]
-        public List<Facet> Facets { get; set; } = [];
-    }
-
-    public class Facet
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("facets")]
-        public List<Facet> Facets { get; set; } = [];
-
-        [JsonPropertyName("value")]
-        public string Value { get; set; } = string.Empty;
-
-        [JsonPropertyName("count")]
-        public int Count { get; set; }
-
-        [JsonPropertyName("filter")]
-        public string Filter { get; set; } = string.Empty;
-    }
-
-    private class SearchQueryCollection
-    {
-        [JsonPropertyName("collection")]
-        public List<SearchQuery> Collection { get; set; } = [];
-
-        [JsonPropertyName("next_href")]
-        public string? NextHref { get; set; } = null!;
-
-        [JsonPropertyName("query_urn")]
-        public string QueryUrn { get; set; } = null!;
-    }
-
-    public class SearchQuery
-    {
-        [JsonPropertyName("output")]
-        public string Output { get; set; } = string.Empty;
-
-        [JsonPropertyName("query")]
-        public string Query { get; set; } = string.Empty;
     }
 }
