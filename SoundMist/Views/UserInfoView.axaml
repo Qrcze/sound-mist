@@ -15,11 +15,6 @@
 				<TextBlock Text="{Binding Username}" />
 			</StackPanel>
 		</DataTemplate>
-		<DataTemplate DataType="{x:Type model:Track}">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="{Binding FullLabel}" />
-			</StackPanel>
-		</DataTemplate>
 		<DataTemplate DataType="{x:Type model:Playlist}">
 			<StackPanel Orientation="Horizontal">
 				<TextBlock Text="Playlist..." />

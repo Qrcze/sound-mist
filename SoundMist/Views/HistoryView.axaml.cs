@@ -1,12 +1,14 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System;
 
 namespace SoundMist.Views;
 
-public partial class HistoryView : UserControl
+public partial class HistoryView : UserControl, ISCDataTemplatesController
 {
     private readonly HistoryViewModel _vm;
 
@@ -24,19 +26,19 @@ public partial class HistoryView : UserControl
             await _vm.GetMoreOnlineHistory();
     }
 
-    private void HistoryView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void HistoryView_Loaded(object? sender, RoutedEventArgs e)
     {
         _vm.TabChanged();
     }
 
-    private void OpenAboutPage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void OpenAboutPage(object? sender, RoutedEventArgs e)
     {
         var c = sender as Control;
         var item = c.FindLogicalAncestorOfType<ListBoxItem>();
         _vm.OpenAboutPage(item?.DataContext!);
     }
 
-    private void TrackItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void TrackItem_AboutUser(object? sender, RoutedEventArgs e)
     {
         var c = sender as Control;
         var item = c.FindLogicalAncestorOfType<ListBoxItem>();
@@ -44,7 +46,7 @@ public partial class HistoryView : UserControl
             _vm.OpenAboutPage(track.User!);
     }
 
-    private void PlaylistItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void PlaylistItem_AboutUser(object? sender, RoutedEventArgs e)
     {
         var c = sender as Control;
         var item = c.FindLogicalAncestorOfType<ListBoxItem>();
@@ -52,7 +54,7 @@ public partial class HistoryView : UserControl
             _vm.OpenAboutPage(playlist.User);
     }
 
-    private void Playlist_ViewMore(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void Playlist_ViewMore(object? sender, RoutedEventArgs e)
     {
         var c = sender as Control;
         var item = c.FindLogicalAncestorOfType<ListBoxItem>()?.DataContext as Playlist ?? throw new InvalidCastException($"expected a {nameof(Playlist)} in the ListBoxItem's DataContext");
@@ -60,25 +62,25 @@ public partial class HistoryView : UserControl
         Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, item);
     }
 
-    private void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
+    public void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
     {
     }
 
-    private void PlaySelectedTrack(object? sender, Avalonia.Input.TappedEventArgs e)
+    public void PlaySelectedTrack(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         var box = (ListBox)sender!;
         var track = box.SelectedItem as Track ?? throw new InvalidCastException($"{nameof(PlaySelectedTrack)} can should be only called on lists with items of type {nameof(Track)}");
         _vm.PlayTrack(track);
     }
 
-    private void OpenSelectedUser(object? sender, Avalonia.Input.TappedEventArgs e)
+    public void OpenSelectedUser(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         var box = (ListBox)sender!;
         var user = box.SelectedItem as User ?? throw new InvalidCastException($"{nameof(OpenSelectedUser)} can should be only called on lists with items of type {nameof(User)}");
         Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, user);
     }
 
-    private void OpenSelectedPlaylist(object? sender, Avalonia.Input.TappedEventArgs e)
+    public void OpenSelectedPlaylist(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         var box = (ListBox)sender!;
         var playlist = box.SelectedItem as Playlist ?? throw new InvalidCastException($"{nameof(OpenSelectedPlaylist)} can should be only called on lists with items of type {nameof(Playlist)}");

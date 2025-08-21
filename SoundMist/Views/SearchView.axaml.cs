@@ -9,7 +9,7 @@ using System;
 
 namespace SoundMist.Views;
 
-public partial class SearchView : UserControl
+public partial class SearchView : UserControl, ISCDataTemplatesController
 {
     private readonly SearchViewModel _vm;
 
@@ -53,7 +53,7 @@ public partial class SearchView : UserControl
         await _vm.RunSelectedItem();
     }
 
-    private async void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
+    public async void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         e.Handled = true; // to prevent the parent ListBox from triggering DoubleTapped
 
@@ -67,18 +67,18 @@ public partial class SearchView : UserControl
         await _vm.PlayFromPlaylist(playlist, listBox.SelectedIndex);
     }
 
-    private void OpenAboutPage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void OpenAboutPage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         _vm.OpenAboutPage();
     }
 
-    private void TrackItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void TrackItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (_vm.SelectedItem is Track track)
             _vm.OpenAboutPage(track.User);
     }
 
-    private void PlaylistItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void PlaylistItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var c = sender as Control;
         var item = c.FindLogicalAncestorOfType<ListBoxItem>();
@@ -96,7 +96,7 @@ public partial class SearchView : UserControl
         await _vm.RunSearch();
     }
 
-    private void Playlist_ViewMore(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    public void Playlist_ViewMore(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var c = sender as Control;
         var item = c.FindLogicalAncestorOfType<ListBoxItem>()?.DataContext as Playlist ?? throw new InvalidCastException($"expected a {nameof(Playlist)} in the ListBoxItem's DataContext");
