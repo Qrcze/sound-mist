@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -18,7 +17,6 @@ namespace SoundMist.Helpers
 
         private readonly IHttpManager _httpManager = httpManager;
         private readonly ProgramSettings _settings = settings;
-        private readonly JsonSerializerOptions _convertJsonScObjects = new() { Converters = { new ScObjectConverter("type") } };
         private string DefaultHrefSuffix => $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
 
         /// <inheritdoc cref="GetTracksById(IEnumerable{long}, bool, CancellationToken)"/>
@@ -105,11 +103,7 @@ namespace SoundMist.Helpers
 
         /// <inheritdoc cref="SimpleGet{T}(HttpClient, string, string, long, CancellationToken)"/>
         async Task<(QueryResponse<T>? items, string? errorMessage)> SimpleGet<T>(HttpClient httpClient, string href, string errorMessageTemplate, CancellationToken token)
-            => await SimpleGet<T>(httpClient, href, errorMessageTemplate, long.MinValue, null, token);
-
-        /// <inheritdoc cref="SimpleGet{T}(HttpClient, string, string, long, CancellationToken)"/>
-        async Task<(QueryResponse<T>? items, string? errorMessage)> SimpleGet<T>(HttpClient httpClient, string href, string errorMessageTemplate, long extraParameter, CancellationToken token)
-            => await SimpleGet<T>(httpClient, href, errorMessageTemplate, extraParameter, null, token);
+            => await SimpleGet<T>(httpClient, href, errorMessageTemplate, long.MinValue, token);
 
         /// <summary>
         ///
@@ -121,7 +115,7 @@ namespace SoundMist.Helpers
         /// <param name="extraParameter"> if equal <see cref="long.MinValue"/>; will be ignored </param>
         /// <param name="token"></param>
         /// <returns></returns>
-        async Task<(QueryResponse<T>? items, string? errorMessage)> SimpleGet<T>(HttpClient httpClient, string href, string errorMessageTemplate, long extraParameter, JsonSerializerOptions? converter, CancellationToken token)
+        async Task<(QueryResponse<T>? items, string? errorMessage)> SimpleGet<T>(HttpClient httpClient, string href, string errorMessageTemplate, long extraParameter, CancellationToken token)
         {
             try
             {
@@ -129,7 +123,7 @@ namespace SoundMist.Helpers
 
                 response.EnsureSuccessStatusCode();
 
-                var c = await response.Content.ReadFromJsonAsync<QueryResponse<T>>(converter, token);
+                var c = await response.Content.ReadFromJsonAsync<QueryResponse<T>>(token);
 
                 return (c, null);
             }
@@ -226,14 +220,14 @@ namespace SoundMist.Helpers
             return result;
         }
 
-        public async Task<(QueryResponse<object>? tracks, string? errorMessage)> GetUserAll(long userId, string? href, CancellationToken token)
+        public async Task<(QueryResponse<UserEntry>? tracks, string? errorMessage)> GetUserAll(long userId, string? href, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
                 href = $"stream/users/{userId}?client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             else
                 href += DefaultHrefSuffix;
 
-            return await SimpleGet<object>(_httpManager.DefaultClient, href, "Failed retrieving all items from user <{1}>: {0}", userId, _convertJsonScObjects, token);
+            return await SimpleGet<UserEntry>(_httpManager.DefaultClient, href, "Failed retrieving all items from user <{1}>: {0}", userId, token);
         }
 
         public async Task<(QueryResponse<Track>? tracks, string? errorMessage)> GetUserTopTracks(long userId, string? href, CancellationToken token)
@@ -276,15 +270,14 @@ namespace SoundMist.Helpers
             return await SimpleGet<Playlist>(_httpManager.DefaultClient, href, "Failed retrieving playlists from user <{1}>: {0}", userId, token);
         }
 
-
-        public async Task<(QueryResponse<object>? tracks, string? errorMessage)> GetUserReposts(long userId, string? href, CancellationToken token)
+        public async Task<(QueryResponse<Repost>? tracks, string? errorMessage)> GetUserReposts(long userId, string? href, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
                 href = $"stream/users/{userId}/reposts?client_id={_settings.ClientId}&limit=10&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             else
                 href += DefaultHrefSuffix;
 
-            return await SimpleGet<object>(_httpManager.DefaultClient, href, "Failed retrieving reposts from user <{1}>: {0}", userId, _convertJsonScObjects, token);
+            return await SimpleGet<Repost>(_httpManager.DefaultClient, href, "Failed retrieving reposts from user <{1}>: {0}", userId, token);
         }
     }
 }

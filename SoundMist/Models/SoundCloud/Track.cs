@@ -130,6 +130,10 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public bool HasTags => !string.IsNullOrEmpty(TagList);
 
+        [JsonIgnore] public bool IsRepost => RepostingUser is not null;
+        [JsonIgnore] public User? RepostingUser { get; set; }
+
+
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }
 

@@ -6,12 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace SoundMist.Models.SoundCloud
 {
-    //public class PlaylistCollection
-    //{
-    //    [JsonPropertyName("collection")]
-    //    public List<Playlist> Collection { get; set; }
-    //}
-
     public class Playlist
     {
         [JsonIgnore] public string Author => User.Username;
@@ -40,6 +34,9 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public string? ArtworkOrFirstTrackArtwork => ArtworkUrl ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
         [JsonIgnore] public string? ArtworkOrFirstTrackArtworkOriginal => ArtworkUrl?.Replace("large", "original") ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
+
+        [JsonIgnore] public bool IsRepost => RepostedByUser is not null;
+        [JsonIgnore] public User? RepostedByUser { get; set; }
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }

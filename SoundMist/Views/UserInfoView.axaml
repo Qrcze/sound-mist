@@ -9,20 +9,6 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SoundMist.Views.UserInfoView"
 			 x:DataType="vm:UserInfoViewModel">
-	<UserControl.DataTemplates>
-		<DataTemplate DataType="{x:Type model:User}">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="{Binding Username}" />
-			</StackPanel>
-		</DataTemplate>
-		<DataTemplate DataType="{x:Type model:Playlist}">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="Playlist..." />
-				<TextBlock Text="{Binding Author}" />
-			</StackPanel>
-		</DataTemplate>
-	</UserControl.DataTemplates>
-
 	<UserControl.Styles>
 		<Style Selector="TabControl WrapPanel">
 			<Setter Property="ItemHeight" Value="40" />
@@ -30,49 +16,94 @@
 		<Style Selector="TabItem">
 			<Setter Property="FontSize" Value="18" />
 		</Style>
+
+		<Style Selector="Button.over-background">
+			<Setter Property="Background" Value="#8333" />
+			<Setter Property="Foreground" Value="White" />
+
+			<Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="#5333" />
+				<Setter Property="Foreground" Value="White" />
+			</Style>
+
+			<Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+				<Setter Property="Background" Value="#a333" />
+				<Setter Property="Foreground" Value="White" />
+			</Style>
+
+			<Style Selector="^:pointerover > StackPanel > TextBlock">
+				<Setter Property="Foreground" Value="White" />
+			</Style>
+
+			<Style Selector="^:pressed > StackPanel > TextBlock">
+				<Setter Property="Foreground" Value="White" />
+			</Style>
+		</Style>
 	</UserControl.Styles>
-	<Grid RowDefinitions="auto,*">
-		<StackPanel>
-			<Grid>
-				<Image asyncImageLoader:ImageLoader.Source="{Binding User.BackgroundVisual}" VerticalAlignment="Top" />
-				<Grid Margin="10" ColumnDefinitions="120 *">
+	<Grid>
+		<Grid RowDefinitions="auto *">
+			<Image asyncImageLoader:ImageLoader.Source="{Binding User.BackgroundVisual}" VerticalAlignment="Top" />
+			<Grid Margin="10" ColumnDefinitions="120 * auto">
+				<Grid>
 					<Button CornerRadius="60" Width="120" Height="120" VerticalAlignment="Top" Padding="0" Command="{Binding ToggleFullImageCommand}">
 						<Border CornerRadius="60" Padding="0" ClipToBounds="True">
 							<Image asyncImageLoader:ImageLoader.Source="{Binding User.AvatarUrl}" Stretch="Fill" />
 						</Border>
 					</Button>
-					<StackPanel Grid.Column="1">
-						<TextBlock Margin="5" Classes="WhiteOnBlack" FontSize="25" Text="{Binding User.Username}" />
-						<TextBlock Margin="5" Classes="WhiteOnBlack" Foreground="LightGray" IsVisible="{Binding User.HasFullName}" Text="{Binding User.FullName}" />
-						<TextBlock Margin="5" Classes="WhiteOnBlack" Foreground="LightGray" IsVisible="{Binding User.HasCityOrCountry}" Text="{Binding User.CityAndCountry}" />
+					<StackPanel VerticalAlignment="Bottom" Orientation="Horizontal" Margin="5">
+						<Button Classes="over-background" Content="Open In Browser" Margin="5" Command="{Binding OpenInBrowserCommand}" />
 					</StackPanel>
 				</Grid>
-			</Grid>
-			<StackPanel Orientation="Horizontal" Margin="5">
-				<Button Content="Open In Browser" Margin="5" Command="{Binding OpenInBrowserCommand}" />
-			</StackPanel>
-		</StackPanel>
+				
+				<StackPanel Grid.Column="1">
+					<TextBlock Margin="5" Classes="WhiteOnBlack" FontSize="25" Text="{Binding User.Username}" />
+					<TextBlock Margin="5" Classes="WhiteOnBlack" Foreground="LightGray" IsVisible="{Binding User.HasFullName}" Text="{Binding User.FullName}" />
+					<TextBlock Margin="5" Classes="WhiteOnBlack" Foreground="LightGray" IsVisible="{Binding User.HasCityOrCountry}" Text="{Binding User.CityAndCountry}" />
+				</StackPanel>
 
-		<TabControl x:Name="TabsControl" Grid.Row="1" SelectedIndex="{Binding OpenedTabIndex}">
-			<TabItem Header="All" >
-				<ListBox x:Name="AllList" Tag="All" ItemsSource="{Binding All.Items}" />
-			</TabItem>
-			<TabItem Header="Popular tracks" >
-				<ListBox x:Name="PopularTracksList" Tag="PopularTracks" ItemsSource="{Binding PopularTracks.Items}" />
-			</TabItem>
-			<TabItem Header="Tracks" >
-				<ListBox x:Name="TracksList" Tag="Tracks" ItemsSource="{Binding Tracks.Items}" />
-			</TabItem>
-			<TabItem Header="Albums" >
-				<ListBox x:Name="AlbumsList" Tag="Albums" ItemsSource="{Binding Albums.Items}" />
-			</TabItem>
-			<TabItem Header="Playlists" >
-				<ListBox x:Name="PlaylistsList" Tag="Playlists" ItemsSource="{Binding Playlists.Items}" />
-			</TabItem>
-			<TabItem Header="Reposts" >
-				<ListBox x:Name="RepostsList" Tag="Reposts" ItemsSource="{Binding Reposts.Items}" />
-			</TabItem>
-		</TabControl>
+				<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="5" Spacing="10">
+					<Button Classes="over-background">
+						<StackPanel>
+							<TextBlock Text="Followers" Opacity="0.60" />
+							<TextBlock Text="{Binding User.FormattedFollowersCount}" FontSize="25" />
+						</StackPanel>
+					</Button>
+					<Button Classes="over-background">
+						<StackPanel>
+							<TextBlock Text="Following" Opacity="0.60" />
+							<TextBlock Text="{Binding User.FormattedFollowingsCount}" FontSize="25" />
+						</StackPanel>
+					</Button>
+					<Button Classes="over-background">
+						<StackPanel>
+							<TextBlock Text="Tracks" Opacity="0.60" />
+							<TextBlock Text="{Binding User.FormattedTrackCount}" FontSize="25" />
+						</StackPanel>
+					</Button>
+				</StackPanel>
+			</Grid>
+
+			<TabControl x:Name="TabsControl" Grid.Row="1" SelectedIndex="{Binding OpenedTabIndex}">
+				<TabItem Header="All">
+					<ListBox x:Name="AllList" Tag="All" ItemsSource="{Binding All.Items}" />
+				</TabItem>
+				<TabItem Header="Popular tracks">
+					<ListBox x:Name="PopularTracksList" Tag="PopularTracks" ItemsSource="{Binding PopularTracks.Items}" />
+				</TabItem>
+				<TabItem Header="Tracks">
+					<ListBox x:Name="TracksList" Tag="Tracks" ItemsSource="{Binding Tracks.Items}" />
+				</TabItem>
+				<TabItem Header="Albums">
+					<ListBox x:Name="AlbumsList" Tag="Albums" ItemsSource="{Binding Albums.Items}" />
+				</TabItem>
+				<TabItem Header="Playlists">
+					<ListBox x:Name="PlaylistsList" Tag="Playlists" ItemsSource="{Binding Playlists.Items}" />
+				</TabItem>
+				<TabItem Header="Reposts">
+					<ListBox x:Name="RepostsList" Tag="Reposts" ItemsSource="{Binding Reposts.Items}" />
+				</TabItem>
+			</TabControl>
+		</Grid>
 
 		<Panel Background="#9333" IsVisible="{Binding LoadingView}">
 			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />

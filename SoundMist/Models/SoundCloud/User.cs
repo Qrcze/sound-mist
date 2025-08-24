@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoundMist.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -10,7 +11,8 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public string? BackgroundVisual => Visuals?.Items.FirstOrDefault()?.VisualUrl;
 
         //CountryCode comes in a form like "GB" instead of "United Kingdom" and such, so not very verbose, but it'll have to do for now
-        [JsonIgnore] public string? CityAndCountry
+        [JsonIgnore]
+        public string? CityAndCountry
         {
             get
             {
@@ -29,6 +31,10 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public string? AvatarUrlSmall => AvatarUrl?.Replace("large", "small");
         [JsonIgnore] public string? AvatarUrlLarge => AvatarUrl;
         [JsonIgnore] public string? AvatarUrlOriginal => AvatarUrl?.Replace("large", "original");
+
+        [JsonIgnore] public string FormattedFollowersCount => FollowersCount.HasValue ? StringHelpers.ShortenedNumber(FollowersCount.Value) : "#";
+        [JsonIgnore] public string FormattedFollowingsCount => FollowingsCount.HasValue ? StringHelpers.ShortenedNumber(FollowingsCount.Value) : "#";
+        [JsonIgnore] public string FormattedTrackCount => TrackCount.HasValue ? StringHelpers.ShortenedNumber(TrackCount.Value) : "0";
 
 
         [JsonPropertyName("avatar_url")]
@@ -121,7 +127,7 @@ namespace SoundMist.Models.SoundCloud
         public int? PlaylistLikesCount { get; set; }
 
         [JsonPropertyName("reposts_count")]
-        public object? RepostsCount { get; set; }
+        public int? RepostsCount { get; set; }
 
         [JsonPropertyName("track_count")]
         public int? TrackCount { get; set; }

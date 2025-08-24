@@ -55,8 +55,13 @@
 				<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" Width="120" Height="120" />
 
 				<StackPanel Grid.Column="1" Margin="5">
-					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding ArtistName}" Padding="5 2" HorizontalAlignment="Left" Background="Black" Foreground="White" Margin="5" />
-					<TextBlock Text="{Binding Title}" Padding="5 2" HorizontalAlignment="Left" Background="Black" Foreground="White" Margin="5" />
+					<StackPanel Opacity="0.70" Margin="5" Spacing="3" Orientation="Horizontal">
+						<Button Click="TrackItem_AboutUser" FontSize="12" Content="{Binding ArtistName}" Background="Transparent" Padding="2" />
+						<Image IsVisible="{Binding IsRepost}" Source="/Assets/repeat.png" Width="18" />
+						<Button IsVisible="{Binding IsRepost}" FontSize="12" Content="{Binding RepostingUser.Username}" Background="Transparent" Padding="2" />
+					</StackPanel>
+					
+					<TextBlock Text="{Binding Title}" HorizontalAlignment="Left" Margin="5" />
 					<TextBlock Text="{Binding DurationFormatted}" IsVisible="{Binding !RegionBlocked}" Margin="15 2" />
 					<TextBlock Text="Not available in your country" IsVisible="{Binding RegionBlocked}" FontSize="18" Opacity="0.5" Margin="5" />
 					<TextBlock Text="Not available in your country (snipped)" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="5" />

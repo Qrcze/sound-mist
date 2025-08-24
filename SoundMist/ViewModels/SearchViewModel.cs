@@ -46,7 +46,7 @@ public partial class SearchViewModel : ViewModelBase
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
     private readonly ILogger _logger;
-    private readonly JsonSerializerOptions _convertJsonScObjects = new() { Converters = { new ScObjectConverter() } };
+    private readonly JsonSerializerOptions _convertJsonScObjects = new() { Converters = { new SearchObjectConverter() } };
 
     public IRelayCommand ClearFilterCommand { get; }
     public IAsyncRelayCommand RunSearchCommand { get; }

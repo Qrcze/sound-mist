@@ -4,32 +4,30 @@ using System.Text.Json.Serialization;
 
 namespace SoundMist.Models.SoundCloud
 {
-    public class ScObjectConverter(string typePropertyName = "kind") : JsonConverter<object>
+    public class SearchObjectConverter() : JsonConverter<object>
     {
-        private readonly string _typePropertyName = typePropertyName;
-
         public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             using JsonDocument doc = JsonDocument.ParseValue(ref reader);
             JsonElement root = doc.RootElement;
 
             string raw = root.GetRawText();
-            if (root.TryGetProperty(_typePropertyName, out JsonElement typeProperty))
+            if (root.TryGetProperty("kind", out JsonElement typeProperty))
             {
                 string type = typeProperty.GetString()!;
                 return type switch
                 {
                     "track" => JsonSerializer.Deserialize<Track>(root.GetRawText(), options),
-                    "track-repost" => JsonSerializer.Deserialize<Track>(root.GetRawText(), options),
+                    "track-repost" => JsonSerializer.Deserialize<UserEntry>(root.GetRawText(), options),
                     "user" => JsonSerializer.Deserialize<User>(root.GetRawText(), options),
                     "playlist" => JsonSerializer.Deserialize<Playlist>(root.GetRawText(), options),
-                    "playlist-repost" => JsonSerializer.Deserialize<Playlist>(root.GetRawText(), options),
+                    "playlist-repost" => JsonSerializer.Deserialize<UserEntry>(root.GetRawText(), options),
                     _ => $"unhandled type: {type}...",
                 };
             }
             else
             {
-                throw new JsonException($"Missing '{_typePropertyName}' property while reading json object: {raw}.");
+                throw new JsonException($"Missing 'kind' property while reading json object: {raw}.");
             }
         }
 

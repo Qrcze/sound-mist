@@ -38,6 +38,9 @@ public partial class UserInfoView : UserControl, ISCDataTemplatesController
 
     private async void ScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
+        if (_vm.LoadingView)
+            return;
+
         var sv = (ScrollViewer)sender!;
         if (sv.Offset.Y + sv.Viewport.Height >= sv.Extent.Height - 100)
             await _vm.LoadTab();
