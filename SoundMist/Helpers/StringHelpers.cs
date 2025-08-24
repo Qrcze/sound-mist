@@ -35,10 +35,12 @@ namespace SoundMist.Helpers
 
         public static string ShortenedNumber(int num)
         {
-            if (num > 1_000_000)
+            if (num >= 1_000_000)
                 return $"{(float)num / 1_000_000:0.##}M";
-            if (num > 10_000)
-                return $"{(float)num / 1_000:0.##}K";
+            if (num >= 100_000)
+                return $"{(float)num / 1_000:0}K";
+            if (num >= 10_000)
+                return $"{(float)num / 1_000:0.#}K";
             return num.ToString();
         }
 
