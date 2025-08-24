@@ -60,13 +60,13 @@ namespace SoundMist.Models
 
         public void Error(string message)
         {
-            WriteToFile($"{DateTime.Now}\t[ERROR]: {message} Stack Trace: {new StackTrace().ToString().Trim()}");
+            WriteToFile($"{DateTime.Now}\t[ERROR]: {message}\n\tStack Trace: {new StackTrace().ToString().Trim()}");
             Debug.Print($"Error: {message}");
         }
 
         public void Fatal(string message)
         {
-            WriteToFile($"{DateTime.Now}\t[FATAL]: {message} Stack Trace: {new StackTrace().ToString().Trim()}");
+            WriteToFile($"{DateTime.Now}\t[FATAL]: {message}\n\tStack Trace: {new StackTrace().ToString().Trim()}");
             Debug.Print($"Fatal: {message}");
         }
     }
