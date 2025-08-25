@@ -58,7 +58,7 @@
 					<StackPanel Opacity="0.70" Margin="5" Spacing="3" Orientation="Horizontal">
 						<Button Click="TrackItem_AboutUser" FontSize="12" Content="{Binding ArtistName}" Background="Transparent" Padding="2" />
 						<Image IsVisible="{Binding IsRepost}" Source="/Assets/repeat.png" Width="18" />
-						<Button IsVisible="{Binding IsRepost}" FontSize="12" Content="{Binding RepostingUser.Username}" Background="Transparent" Padding="2" />
+						<Button IsVisible="{Binding IsRepost}" FontSize="12" Content="{Binding RepostingUserUsername}" Background="Transparent" Padding="2" />
 					</StackPanel>
 					
 					<TextBlock Text="{Binding Title}" HorizontalAlignment="Left" Margin="5" />
@@ -104,7 +104,11 @@
 				<Image VerticalAlignment="Top" Grid.RowSpan="3" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrFirstTrackArtwork}" Width="120" Height="120" />
 
 				<StackPanel Grid.Column="1" Margin="5">
-					<TextBlock Opacity="0.5" FontSize="12" Text="{Binding Author}" Margin="2" />
+					<StackPanel Opacity="0.70" Margin="5" Spacing="3" Orientation="Horizontal">
+						<Button FontSize="12" Content="{Binding Author}" Padding="2" Click="PlaylistItem_AboutUser" />
+						<Image IsVisible="{Binding IsRepost}" Source="/Assets/repeat.png" Width="18" />
+						<Button IsVisible="{Binding IsRepost}" FontSize="12" Content="{Binding RepostingUserUsername}" Background="Transparent" Padding="2" />
+					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock Text="{Binding Title}" Margin="2" />
 						<StackPanel Orientation="Horizontal" IsVisible="{Binding IsAlbum}" VerticalAlignment="Center">

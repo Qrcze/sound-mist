@@ -132,7 +132,7 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public bool IsRepost => RepostingUser is not null;
         [JsonIgnore] public User? RepostingUser { get; set; }
-
+        [JsonIgnore] public string RepostingUserUsername => RepostingUser?.Username ?? string.Empty;
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }

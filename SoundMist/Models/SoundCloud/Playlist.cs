@@ -31,12 +31,12 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public string DurationFormatted => Duration.HasValue ? StringHelpers.DurationFormatted(Duration.Value) : string.Empty;
 
-
         [JsonIgnore] public string? ArtworkOrFirstTrackArtwork => ArtworkUrl ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
         [JsonIgnore] public string? ArtworkOrFirstTrackArtworkOriginal => ArtworkUrl?.Replace("large", "original") ?? (Tracks.Count > 0 ? Tracks[0].ArtworkOrAvatarUrl : User.AvatarUrl);
 
-        [JsonIgnore] public bool IsRepost => RepostedByUser is not null;
-        [JsonIgnore] public User? RepostedByUser { get; set; }
+        [JsonIgnore] public bool IsRepost => RepostingUser is not null;
+        [JsonIgnore] public User? RepostingUser { get; set; }
+        [JsonIgnore] public string RepostingUserUsername => RepostingUser?.Username ?? string.Empty;
 
         [JsonPropertyName("artwork_url")]
         public string? ArtworkUrl { get; set; }

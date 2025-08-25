@@ -9,6 +9,6 @@ public class Repost : UserEntry, IJsonOnDeserialized
         if (Track is not null)
             Track.RepostingUser = User;
         if (Playlist is not null)
-            Playlist.RepostedByUser = User;
+            Playlist.RepostingUser = User;
     }
 }
