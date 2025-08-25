@@ -147,25 +147,6 @@ public partial class HistoryViewModel : ViewModelBase
         }
     }
 
-    public void OpenAboutPage(object item)
-    {
-        if (item is User user)
-        {
-            _database.AddUser(user);
-            Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, user);
-        }
-        else if (item is Track track)
-        {
-            _database.AddTrack(track);
-            Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, track);
-        }
-        else if (item is Playlist playlist)
-        {
-            _database.AddPlaylist(playlist);
-            Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, playlist);
-        }
-    }
-
     internal async Task GetMoreOnlineHistory(bool refresh = false)
     {
         Debug.Print("getting more online history");

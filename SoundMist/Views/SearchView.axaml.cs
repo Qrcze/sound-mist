@@ -1,15 +1,13 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
-using System;
 
 namespace SoundMist.Views;
 
-public partial class SearchView : UserControl, ISCDataTemplatesController
+public partial class SearchView : UserControl
 {
     private readonly SearchViewModel _vm;
 
@@ -53,39 +51,6 @@ public partial class SearchView : UserControl, ISCDataTemplatesController
         await _vm.RunSelectedItem();
     }
 
-    public async void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
-    {
-        e.Handled = true; // to prevent the parent ListBox from triggering DoubleTapped
-
-        if (sender is not ListBox listBox)
-            return;
-
-        var parent = listBox.FindAncestorOfType<ListBoxItem>() ?? throw new NullReferenceException("Couldn't find the playlist track's parent ListBoxItem");
-        if (parent.DataContext is not Playlist playlist)
-            throw new ArgumentException("Clicked item in playlist is not actually within a playlist ListBox");
-
-        await _vm.PlayFromPlaylist(playlist, listBox.SelectedIndex);
-    }
-
-    public void OpenAboutPage(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        _vm.OpenAboutPage();
-    }
-
-    public void TrackItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        if (_vm.SelectedItem is Track track)
-            _vm.OpenAboutPage(track.User);
-    }
-
-    public void PlaylistItem_AboutUser(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        var c = sender as Control;
-        var item = c.FindLogicalAncestorOfType<ListBoxItem>();
-        if (item?.DataContext is Playlist playlist)
-            _vm.OpenAboutPage(playlist.User);
-    }
-
     private async void UseQueryResult(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         if (QueriesFlyout.SelectedItem is not SearchQuery query)
@@ -94,13 +59,5 @@ public partial class SearchView : UserControl, ISCDataTemplatesController
         _vm.SearchFilter = query.Output;
         SearchBox.CaretIndex = SearchBox.Text?.Length ?? 0;
         await _vm.RunSearch();
-    }
-
-    public void Playlist_ViewMore(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        var c = sender as Control;
-        var item = c.FindLogicalAncestorOfType<ListBoxItem>()?.DataContext as Playlist ?? throw new InvalidCastException($"expected a {nameof(Playlist)} in the ListBoxItem's DataContext");
-
-        Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, item);
     }
 }

@@ -50,7 +50,6 @@ public partial class SearchViewModel : ViewModelBase
 
     public IRelayCommand ClearFilterCommand { get; }
     public IAsyncRelayCommand RunSearchCommand { get; }
-    public IRelayCommand OpenAboutPageCommand { get; }
 
     public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
     {
@@ -66,7 +65,6 @@ public partial class SearchViewModel : ViewModelBase
 
         ClearFilterCommand = new RelayCommand(ClearFilter);
         RunSearchCommand = new AsyncRelayCommand(async () => await RunSearch());
-        OpenAboutPageCommand = new RelayCommand(() => OpenAboutPage());
     }
 
     private void ClearFilter()
@@ -225,29 +223,6 @@ public partial class SearchViewModel : ViewModelBase
         return result;
     }
 
-    public void OpenAboutPage(object? specificItem = null)
-    {
-        var item = specificItem ?? SelectedItem;
-        if (item is null)
-            return;
-
-        if (item is User user)
-        {
-            _database.AddUser(user);
-            Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, user);
-        }
-        else if (item is Track track)
-        {
-            _database.AddTrack(track);
-            Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, track);
-        }
-        else if (item is Playlist playlist)
-        {
-            _database.AddPlaylist(playlist);
-            Mediator.Default.Invoke(MediatorEvent.OpenPlaylistInfo, playlist);
-        }
-    }
-
     internal async Task RunSelectedItem()
     {
         if (SelectedItem is null)
@@ -272,25 +247,5 @@ public partial class SearchViewModel : ViewModelBase
         //await PlayFromPlaylist(playlist, 0);
     }
 
-    internal async Task PlayFromPlaylist(Playlist playlist, int selectedIndex)
-    {
-        IEnumerable<Track> tracks = playlist.FirstFiveTracks;
-        if (playlist.Tracks.Count > 5)
-        {
-            try
-            {
-                var trackIds = playlist.Tracks.Except(tracks).Where(x => x.User is null).Select(x => x.Id);
-                var restOfTracks = await _queries.GetTracksById(trackIds);
-                if (restOfTracks != null && restOfTracks.Count != 0)
-                    tracks = tracks.Concat(restOfTracks);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed retrieving the tracks from IDs, {ex.Message}");
-            }
-        }
-
-        if (tracks.Any())
-            await _musicPlayer.LoadNewQueue(tracks.Skip(selectedIndex));
-    }
+    
 }

@@ -1,14 +1,13 @@
 ﻿using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
+using SoundMist.ViewModels;
 using SoundMist.Views;
 using System;
 
@@ -81,17 +80,31 @@ public partial class App : Application
 
     #region Data templates click methods
 
-    private static ISCDataTemplatesController? GetController(object? sender) => (sender as Control)?.FindLogicalAncestorOfType<ISCDataTemplatesController>();
+    private void PlaylistItem_AboutUser(object? sender, RoutedEventArgs e)
+    {
+        ScObjectHelpers.PlaylistItem_AboutUser(sender);
+    }
 
-    private void PlaylistItem_AboutUser(object? sender, RoutedEventArgs e) => GetController(sender)?.PlaylistItem_AboutUser(sender, e);
+    private void OpenAboutPage(object? sender, RoutedEventArgs e)
+    {
+        ScObjectHelpers.OpenAboutPage(sender);
+    }
 
-    private void OpenAboutPage(object? sender, RoutedEventArgs e) => GetController(sender)?.OpenAboutPage(sender, e);
+    private void Playlist_ViewMore(object? sender, RoutedEventArgs e)
+    {
+        ScObjectHelpers.Playlist_ViewMore(sender);
+    }
 
-    private void Playlist_ViewMore(object? sender, RoutedEventArgs e) => GetController(sender)?.Playlist_ViewMore(sender, e);
+    private void TrackItem_AboutUser(object? sender, RoutedEventArgs e)
+    {
+        ScObjectHelpers.TrackItem_AboutUser(sender);
+    }
 
-    private void TrackItem_AboutUser(object? sender, RoutedEventArgs e) => GetController(sender)?.TrackItem_AboutUser(sender, e);
-
-    private void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e) => GetController(sender)?.ListBox_DoubleTapped_PlaylistItem(sender, e);
+    private async void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        e.Handled = true; // to prevent the parent ListBox from triggering DoubleTapped
+        await ScObjectHelpers.ListBox_DoubleTapped_PlaylistItem(sender);
+    }
 
     #endregion Data templates click methods
 }
