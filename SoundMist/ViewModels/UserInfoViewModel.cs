@@ -22,11 +22,11 @@ public enum UserTab
     Reposts,
 }
 
-public class UserTabData<T> : ObservableObject
+public class UserTabData : ObservableObject
 {
     private bool _loading;
 
-    public ObservableCollection<T> Items { get; } = [];
+    public ObservableCollection<object> Items { get; } = [];
     public bool Loading { get => _loading; set => SetProperty(ref _loading, value); }
     public string? NextHref { get; set; }
     public bool ReachedEnd { get; set; }
@@ -55,10 +55,7 @@ public partial class UserInfoViewModel : ViewModelBase
         {
             SetProperty(ref _openedTabIndex, value);
 
-            if (_tokenSource == null)
-                return;
-
-            Task.Run(LoadTab);
+            Task.Run(() => LoadTab());
         }
     }
 
@@ -69,12 +66,12 @@ public partial class UserInfoViewModel : ViewModelBase
 
     private CancellationTokenSource? _tokenSource;
 
-    public UserTabData<object> All { get; } = new();
-    public UserTabData<object> PopularTracks { get; } = new();
-    public UserTabData<object> Tracks { get; } = new();
-    public UserTabData<object> Albums { get; } = new();
-    public UserTabData<object> Playlists { get; } = new();
-    public UserTabData<object> Reposts { get; } = new();
+    public UserTabData All { get; } = new();
+    public UserTabData PopularTracks { get; } = new();
+    public UserTabData Tracks { get; } = new();
+    public UserTabData Albums { get; } = new();
+    public UserTabData Playlists { get; } = new();
+    public UserTabData Reposts { get; } = new();
 
     public IRelayCommand OpenInBrowserCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
@@ -99,7 +96,7 @@ public partial class UserInfoViewModel : ViewModelBase
         SystemHelpers.OpenInBrowser(User.PermalinkUrl);
     }
 
-    public async Task LoadTab()
+    public async Task LoadTab(bool force = false)
     {
         if (_tokenSource is null || User is null)
             return;
@@ -110,33 +107,27 @@ public partial class UserInfoViewModel : ViewModelBase
         switch (tab)
         {
             case UserTab.All:
-                await LoadObjectsTab(All, _soundCloudQueries.GetUserAll, token);
-                AddTextIfEmpty(All, $"{User.Username} hasn't uploaded anything yet.");
+                await LoadTab(force, All, _soundCloudQueries.GetUserAll, "hasn't uploaded anything yet.", token);
                 break;
 
             case UserTab.PopularTracks:
-                await LoadObjectsTab(PopularTracks, _soundCloudQueries.GetUserTopTracks, token);
-                AddTextIfEmpty(PopularTracks, $"{User.Username} hasn't uploaded anything yet.");
+                await LoadTab(force, PopularTracks, _soundCloudQueries.GetUserTopTracks, "hasn't uploaded anything yet.", token);
                 break;
 
             case UserTab.Tracks:
-                await LoadObjectsTab(Tracks, _soundCloudQueries.GetUserTracks, token);
-                AddTextIfEmpty(Tracks, $"{User.Username} hasn't uploaded any tracks yet.");
+                await LoadTab(force, Tracks, _soundCloudQueries.GetUserTracks, "hasn't uploaded any tracks yet.", token);
                 break;
 
             case UserTab.Albums:
-                await LoadObjectsTab(Albums, _soundCloudQueries.GetUserAlbums, token);
-                AddTextIfEmpty(Albums, $"{User.Username} hasn't created any albums yet.");
+                await LoadTab(force, Albums, _soundCloudQueries.GetUserAlbums, "hasn't created any albums yet.", token);
                 break;
 
             case UserTab.Playlists:
-                await LoadObjectsTab(Playlists, _soundCloudQueries.GetUserPlaylists, token);
-                AddTextIfEmpty(Playlists, $"{User.Username} hasn't created any playlists yet.");
+                await LoadTab(force, Playlists, _soundCloudQueries.GetUserPlaylists, "hasn't created any playlists yet.", token);
                 break;
 
             case UserTab.Reposts:
-                await LoadObjectsTab(Reposts, _soundCloudQueries.GetUserReposts, token);
-                AddTextIfEmpty(Reposts, $"{User.Username} hasn't reposted any sounds yet.");
+                await LoadTab(force, Reposts, _soundCloudQueries.GetUserReposts, "hasn't reposted any sounds yet.", token);
                 break;
 
             default:
@@ -145,18 +136,28 @@ public partial class UserInfoViewModel : ViewModelBase
         }
     }
 
-    private void AddTextIfEmpty(UserTabData<object> tabData, string emptyMessage)
-    {
-        if (tabData.Items.Count == 0)
-            tabData.Items.Add(emptyMessage);
-    }
+    private delegate Task<(QueryResponse<T>? tracks, string? errorMessage)> TabQuery<T>(long i1, string? i2, CancellationToken token);
 
-    private async Task LoadObjectsTab<T>(UserTabData<object> tabData, Func<long, string?, CancellationToken, Task<(QueryResponse<T>? tracks, string? errorMessage)>> getObjects, CancellationToken token)
+    private async Task LoadTab<T>(bool force, UserTabData tabData, TabQuery<T> getObjects, string emptyMessage, CancellationToken token)
     {
         if (tabData.Loading || tabData.ReachedEnd)
             return;
+
         tabData.Loading = true;
 
+        if (!force && tabData.Items.Count > 0)
+            return;
+
+        await LoadTabItems(tabData, getObjects, token);
+
+        if (tabData.Items.Count == 0)
+            tabData.Items.Add($"{User?.Username} {emptyMessage}");
+
+        tabData.Loading = false;
+    }
+
+    private async Task LoadTabItems<T>(UserTabData tabData, TabQuery<T> getObjects, CancellationToken token)
+    {
         var (response, errorMessage) = await getObjects(User!.Id, tabData.NextHref, token);
         if (response == null)
         {
@@ -194,12 +195,15 @@ public partial class UserInfoViewModel : ViewModelBase
 
         tabData.NextHref = response.NextHref;
         tabData.ReachedEnd = string.IsNullOrEmpty(response.NextHref);
-
-        tabData.Loading = false;
     }
 
     private void OpenUser(object? obj)
     {
+        if (obj is not User userWithIdOnly)
+            return;
+        if (userWithIdOnly.Id == User?.Id)
+            return;
+
         LoadingView = true;
         User = null;
         ShowFullImage = false;
@@ -210,12 +214,6 @@ public partial class UserInfoViewModel : ViewModelBase
         Albums.Clear();
         Playlists.Clear();
         Reposts.Clear();
-
-        if (obj is not User userWithIdOnly)
-            return;
-
-        if (userWithIdOnly.Id == User?.Id)
-            return;
 
         _history.AddUserInfoHistory(userWithIdOnly);
 
@@ -248,7 +246,7 @@ public partial class UserInfoViewModel : ViewModelBase
             }
 
             SetProperty(ref _openedTabIndex, (int)UserTab.All, nameof(OpenedTabIndex));
-            await LoadTab(); //todo make it a setting to load the default user tab
+            await LoadTab(true); //todo make it a setting to load the default user tab
             LoadingView = false;
         }, token);
     }

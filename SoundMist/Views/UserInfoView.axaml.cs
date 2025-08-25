@@ -41,7 +41,7 @@ public partial class UserInfoView : UserControl
 
         var sv = (ScrollViewer)sender!;
         if (sv.Offset.Y + sv.Viewport.Height >= sv.Extent.Height - 100)
-            await _vm.LoadTab();
+            await _vm.LoadTab(true);
     }
 
     private void TogglePreview(object? sender, TappedEventArgs e)
