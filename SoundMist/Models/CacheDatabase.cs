@@ -72,28 +72,46 @@ namespace SoundMist.Models
         /// </summary>
         public async Task<IEnumerable<User>> GetUsersById(IEnumerable<long> ids, CancellationToken token)
         {
-            var missingItems = ids.Except(_users.Keys);
-
-            if (missingItems.Any())
+            List<User> users = new(ids.Count());
+            foreach (var id in ids)
             {
-                foreach (var item in missingItems)
+                try
                 {
-                    var (user, errorMessage) = await _queries.GetUserInfo(item, token);
-
-                    if (token.IsCancellationRequested)
-                        return [];
-
-                    if (user == null)
-                    {
-                        _logger.Warn($"Cache failed retrieving user <{item}>: {errorMessage}");
-                        _users.Add(item, User.CreateDeletedUser(item));
-                    }
+                    if (_users.TryGetValue(id, out var existingUser) && (existingUser.IsFullInfo || existingUser.IsDeleted))
+                        users.Add(existingUser);
                     else
-                        _users.Add(user.Id, user);
+                    {
+                        var user = await FetchUserById(id, token);
+                        _users[id] = user;
+                        users.Add(user);
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    return [];
                 }
             }
+            return users;
+        }
 
-            return ids.Select(id => _users[id]);
+        /// <summary>
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="TaskCanceledException" />
+        async Task<User> FetchUserById(long id, CancellationToken token)
+        {
+            var (user, errorMessage) = await _queries.GetUserInfo(id, token);
+
+            token.ThrowIfCancellationRequested();
+
+            if (user == null)
+            {
+                _logger.Info($"Cache failed retrieving user with id <{id}>: {errorMessage}");
+                return User.CreateDeletedUser(id);
+            }
+            return user;
         }
 
         /// <summary>

@@ -36,6 +36,10 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public string FormattedFollowingsCount => FollowingsCount.HasValue ? StringHelpers.ShortenedNumber(FollowingsCount.Value) : "#";
         [JsonIgnore] public string FormattedTrackCount => TrackCount.HasValue ? StringHelpers.ShortenedNumber(TrackCount.Value) : "0";
 
+        //A bit of a guess work, but seems like one of the fields, that the snipped user data doesn't contain, is TrackCount
+        [JsonIgnore] public bool IsFullInfo => TrackCount.HasValue;
+
+        [JsonIgnore] public bool IsDeleted { get; set; }
 
         [JsonPropertyName("avatar_url")]
         public string AvatarUrl { get; set; } = null!;
@@ -187,6 +191,7 @@ namespace SoundMist.Models.SoundCloud
                 Id = id,
                 Username = $"Missing User {id}",
                 AvatarUrl = "",
+                IsDeleted = true,
             };
         }
     }
