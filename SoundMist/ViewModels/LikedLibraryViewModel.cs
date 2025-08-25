@@ -221,6 +221,7 @@ namespace SoundMist.ViewModels
                 notif.Expiration = TimeSpan.Zero;
                 notif.Title = $"Failed downloading {SelectedTrack.FullLabel}";
                 notif.Message = errorMessage;
+                _logger.Error($"Failed downloading a track: {errorMessage}");
             }
         }
 
