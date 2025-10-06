@@ -21,6 +21,10 @@ public partial class PlayerViewModel : ViewModelBase
     [ObservableProperty] private string _trackAuthor = string.Empty;
     [ObservableProperty] private string? _trackThumbnail = string.Empty;
     [ObservableProperty] private Track? _trackSelectedInQueue;
+    [ObservableProperty] private bool _volumeHigh;
+    [ObservableProperty] private bool _volumeMid;
+    [ObservableProperty] private bool _volumeLow;
+    [ObservableProperty] private bool _volumeMuted;
 
     private readonly IMusicPlayer _musicPlayer;
     private readonly ProgramSettings _settings;
@@ -32,7 +36,15 @@ public partial class PlayerViewModel : ViewModelBase
 
     public ObservableCollection<Track> TracksQueue { get; } = [];
 
-    public float DesiredVolume { get => _musicPlayer.DesiredVolume; set => _musicPlayer.DesiredVolume = value; }
+    public float DesiredVolume
+    {
+        get => _musicPlayer.DesiredVolume;
+        set
+        {
+            _musicPlayer.DesiredVolume = value;
+            UpdateVolumeMode();
+        }
+    }
 
     public bool Shuffle
     {
@@ -73,6 +85,7 @@ public partial class PlayerViewModel : ViewModelBase
     public IRelayCommand OpenUserInfoCommand { get; }
     public IRelayCommand OpenTrackInfoCommand { get; }
     public IRelayCommand TogglePlaylistCommand { get; }
+    public IRelayCommand MuteVolumeCommand { get; }
 
     public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, ILogger logger, History history)
     {
@@ -95,6 +108,7 @@ public partial class PlayerViewModel : ViewModelBase
         OpenUserInfoCommand = new RelayCommand(OpenUserInfo);
         OpenTrackInfoCommand = new RelayCommand(OpenTrackInfo);
         TogglePlaylistCommand = new RelayCommand(() => ShowingPlaylist = !ShowingPlaylist);
+        MuteVolumeCommand = new RelayCommand(ToggleMute);
 
         //when the music player got initialized before this view
         if (_musicPlayer.CurrentTrack != null)
@@ -103,6 +117,38 @@ public partial class PlayerViewModel : ViewModelBase
             TracksQueue.Add(_musicPlayer.CurrentTrack);
             if (_musicPlayer.PlayerReady)
                 PlayStateUpdated(PlayState.Loaded, string.Empty);
+        }
+
+        UpdateVolumeMode();
+    }
+
+    private void ToggleMute()
+    {
+        _musicPlayer.Mute = VolumeMuted = !_musicPlayer.Mute;
+    }
+
+    private void UpdateVolumeMode()
+    {
+        VolumeMuted = false;
+        switch (_musicPlayer.DesiredVolume)
+        {
+            case < 0.33f:
+                VolumeHigh = false;
+                VolumeMid = false;
+                VolumeLow = true;
+                break;
+
+            case < 0.66f:
+                VolumeHigh = false;
+                VolumeMid = true;
+                VolumeLow = false;
+                break;
+
+            default:
+                VolumeHigh = true;
+                VolumeMid = false;
+                VolumeLow = false;
+                break;
         }
     }
 

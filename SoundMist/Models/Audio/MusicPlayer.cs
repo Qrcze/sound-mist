@@ -35,6 +35,8 @@ namespace SoundMist.Models.Audio
             }
         }
 
+        public bool Mute { get => _audioController.Mute; set => _audioController.Mute = value; }
+
         double Volume { get => _audioController.Volume; set => _audioController.Volume = value; }
 
         public bool PlayerReady => _audioController.ChannelInitialized;
@@ -254,13 +256,12 @@ namespace SoundMist.Models.Audio
                 try
                 {
                     trackProx = (await _soundCloudQueries.GetTracksById([track.Id], true, token)).Single();
-                } 
-                catch(HttpRequestException ex)
+                }
+                catch (HttpRequestException ex)
                 {
                     PlayStateUpdated?.Invoke(PlayState.Error, ex.Message);
                     return false;
                 }
-
 
                 if (trackProx is null || trackProx.Policy == "BLOCK")
                 {

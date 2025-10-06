@@ -8,6 +8,7 @@ namespace SoundMist.Models.Audio
         double TimeInSeconds { get; set; }
         double Volume { get; set; }
         bool IsPlaying { get; }
+        bool Mute { get; set; }
 
         event Action? OnTrackEnded;
 

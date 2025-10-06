@@ -14,6 +14,8 @@ namespace SoundMist.Models.Audio
         private readonly FileProcedures _procedures;
         private BufferProvider? _bufferProvider;
         private int _musicChannel;
+        private bool _mute;
+        private double _muteVolume;
 
         public event Action? OnTrackEnded;
 
@@ -57,7 +59,29 @@ namespace SoundMist.Models.Audio
             }
             set
             {
+                _mute = false;
                 Bass.ChannelSetAttribute(_musicChannel, ChannelAttribute.Volume, Math.Clamp(value, 0, 1));
+            }
+        }
+
+        public bool Mute
+        {
+            get => _mute;
+            set
+            {
+                if (_musicChannel == 0)
+                    return;
+
+                _mute = value;
+                if (_mute)
+                {
+                    _muteVolume = Bass.ChannelGetAttribute(_musicChannel, ChannelAttribute.Volume);
+                    Bass.ChannelSetAttribute(_musicChannel, ChannelAttribute.Volume, 0);
+                }
+                else
+                {
+                    Volume = _muteVolume;
+                }
             }
         }
 

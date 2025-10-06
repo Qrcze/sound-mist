@@ -59,6 +59,8 @@ namespace SCPlayerTests
         {
             IsStreamCompleted = true;
         }
+
+        public bool Mute { get; set; }
     }
 
     public class MockHttpManager : IHttpManager

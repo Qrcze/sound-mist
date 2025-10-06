@@ -19,6 +19,7 @@ namespace SoundMist.Models.Audio
     {
         Track? CurrentTrack { get; }
         float DesiredVolume { get; set; }
+        bool Mute { get; set; }
         bool PlayerReady { get; }
         bool IsPlaying { get; }
         TracksPlaylist TracksPlaylist { get; }

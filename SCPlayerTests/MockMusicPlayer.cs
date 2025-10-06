@@ -92,5 +92,7 @@ namespace SCPlayerTests
         {
             throw new NotImplementedException();
         }
+
+        public bool Mute { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }
