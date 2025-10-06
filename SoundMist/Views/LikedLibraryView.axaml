@@ -9,14 +9,14 @@
              x:Class="SoundMist.Views.LikedLibraryView">
 	<Grid RowDefinitions="auto,*">
 		<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
-			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5" >
+			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5">
 				<TextBox.InnerRightContent>
 					<Button IsVisible="{Binding TracksFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Command="{Binding ClearFilterCommand}" Classes="textbox-clear">
 						<Image Source="/Assets/close.png" />
 					</Button>
 				</TextBox.InnerRightContent>
 			</TextBox>
-			<Button ToolTip.Tip="Refresh List" Command="{Binding RefreshListCommand}" Padding="0" Margin="0 0 5 0" Width="30" Background="Transparent" >
+			<Button ToolTip.Tip="Refresh List" Command="{Binding RefreshListCommand}" Padding="0" Margin="0 0 5 0" Width="30" Background="Transparent">
 				<Image Source="/Assets/refresh.png" />
 			</Button>
 		</StackPanel>
@@ -30,12 +30,16 @@
 			</ListBox.ItemsPanel>
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid Height="120" ColumnDefinitions="120,200" RowDefinitions="auto,auto" >
-							<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrAvatarUrl}" />
-							<TextBlock Margin="3" FontSize="15" TextWrapping="Wrap" Grid.Column="1" Grid.Row="0" Text="{Binding Title}" />
-							<TextBlock Margin="3" FontSize="13" Foreground="AliceBlue" TextWrapping="Wrap" Grid.Column="1" Grid.Row="1" Text="{Binding ArtistName}" />
-							<TextBlock Margin="3" FontSize="11" HorizontalAlignment="Right" Foreground="Gray" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="1" Text="{Binding DurationFormatted}" />
-						</Grid>
+					<Grid RowDefinitions="auto,auto,auto" Width="200">
+						<Border Height="200" Width="200" CornerRadius="10" ClipToBounds="True">
+							<Image asyncImageLoader:ImageLoader.Source="{Binding LikedThumbnail}" />
+						</Border>
+						<Border Opacity=".75" Background="Black" VerticalAlignment="Bottom" HorizontalAlignment="Right" CornerRadius="5" Margin="5">
+							<TextBlock Padding="3 0" Margin="3" FontSize="11" Foreground="White" Text="{Binding DurationFormatted}" />
+						</Border>
+						<TextBlock Grid.Row="1" Margin="5 1" HorizontalAlignment="Stretch" FontSize="15" Text="{Binding Title}" ToolTip.Tip="{Binding Title}" />
+						<TextBlock Grid.Row="2" Margin="5 1" HorizontalAlignment="Stretch" FontSize="13" Text="{Binding ArtistName}" Opacity="0.75" ToolTip.Tip="{Binding ArtistName}" />
+					</Grid>
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 			<ListBox.ContextMenu>

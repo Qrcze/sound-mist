@@ -37,6 +37,7 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public string DurationFormatted => StringHelpers.DurationFormatted(FullDuration);
 
+        [JsonIgnore] public string? LikedThumbnail => ArtworkUrl?.Replace("large", "t200x200") ?? User?.AvatarUrl.Replace("large", "t200x200");
         [JsonIgnore] public string? ArtworkOrAvatarUrl => ArtworkUrl ?? User?.AvatarUrl;
         [JsonIgnore] public string? ArtworkOrAvatarUrlOriginal => ArtworkUrl?.Replace("large", "original") ?? User?.AvatarUrl?.Replace("large", "original");
 
