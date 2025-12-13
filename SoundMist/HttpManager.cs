@@ -8,6 +8,7 @@ namespace SoundMist;
 public class HttpManager : IHttpManager
 {
     private readonly ProgramSettings _programSettings;
+    private readonly string _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 OPR/124.0.0.0";
 
     private HttpClient _httpClient;
     private HttpClient _proxiedClient;
@@ -21,16 +22,27 @@ public class HttpManager : IHttpManager
     {
         _programSettings = settings;
 
-        _httpClient = new HttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) };
-        _authorizedClient = new AuthorizedHttpClient() { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) };
-
         _webProxy = new WebProxy();
-        var handler = new HttpClientHandler() { Proxy = _webProxy, AutomaticDecompression = DecompressionMethods.All };
-        _proxiedClient = new HttpClient(handler) { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) };
-
         _authorizedProxy = new WebProxy();
+
+        var handler = new HttpClientHandler() { Proxy = _webProxy, AutomaticDecompression = DecompressionMethods.All };
         var authorizedHandler = new HttpClientHandler() { Proxy = _webProxy, AutomaticDecompression = DecompressionMethods.All };
-        _proxiedAuthorizedClient = new AuthorizedHttpClient(authorizedHandler) { BaseAddress = new Uri(Globals.SoundCloudBaseUrl) };
+
+        _httpClient = new HttpClient();
+        _authorizedClient = new AuthorizedHttpClient();
+        _proxiedClient = new HttpClient(handler);
+        _proxiedAuthorizedClient = new AuthorizedHttpClient(authorizedHandler);
+
+        ConfigureHttpClient(_httpClient);
+        ConfigureHttpClient(_authorizedClient);
+        ConfigureHttpClient(_proxiedClient);
+        ConfigureHttpClient(_proxiedAuthorizedClient);
+    }
+
+    void ConfigureHttpClient(HttpClient client)
+    {
+        client.BaseAddress = new Uri(Globals.SoundCloudBaseUrl);
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(_userAgent);
     }
 
     public HttpClient DefaultClient
