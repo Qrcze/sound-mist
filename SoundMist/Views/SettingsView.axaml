@@ -84,6 +84,8 @@
 										<CheckBox IsChecked="{Binding AlternativeMediaKeys}" />
 									</c:SettingsOption>
 
+									<Button Content="Reset Window Size" Margin="0 15 0 0" Command="{Binding ResetWindowSizeCommand}" />
+
 									<Separator Margin="15" />
 									<TextBlock Text="Proxy settings" FontSize="16" FontWeight="Medium" />
 

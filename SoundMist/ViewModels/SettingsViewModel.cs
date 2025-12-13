@@ -51,7 +51,8 @@ public partial class SettingsViewModel : ViewModelBase
     public ObservableCollection<BlockedEntry> BlockedUsers { get; } = [];
     public ObservableCollection<BlockedEntry> BlockedTracks { get; } = [];
 
-    public IRelayCommand CloseCommand { get; }
+    public RelayCommand CloseCommand { get; }
+    public RelayCommand ResetWindowSizeCommand { get; }
 
     private readonly ProgramSettings _settings;
 
@@ -69,6 +70,10 @@ public partial class SettingsViewModel : ViewModelBase
         Mediator.Default.Register(MediatorEvent.OpenSettings, _ => IsVisible = true);
 
         CloseCommand = new RelayCommand(() => IsVisible = false);
+        ResetWindowSizeCommand = new RelayCommand(_settings.ResetWindowSize);
+
+        if (Avalonia.Controls.Design.IsDesignMode)
+            IsVisible = true;
     }
 
     partial void OnIsVisibleChanged(bool value)

@@ -22,6 +22,8 @@ namespace SoundMist.Models
     {
         public const int SettingsVersion = 1;
 
+        private static readonly Size DefaultWindowSize = new(1150, 800);
+
         public int Version { get; } = SettingsVersion;
 
         private bool _settingsInitialized; // a guard, otherwise json uses property to SetPropertyAndSave and it can break stuff
@@ -41,6 +43,7 @@ namespace SoundMist.Models
         private string _proxyHost;
         private int _proxyPort;
         private bool _alternativeWindowsMediaKeysHandling;
+        private Size _windowSize = DefaultWindowSize;
 
         public static ProgramSettings Load()
         {
@@ -133,6 +136,8 @@ namespace SoundMist.Models
 
         [JsonIgnore] public long? UserId { get; set; }
 
+        public event Action<Size>? WindowSizeReset;
+
         public string? AuthToken { get => _authToken; set => SetPropertyAndSave(ref _authToken, value); }
         public float Volume { get => _volume; set => SetPropertyAndSave(ref _volume, value); }
         public bool AutoplayStationOnLastTrack { get => _autoplayStationOnLastTrack; set => SetPropertyAndSave(ref _autoplayStationOnLastTrack, value); }
@@ -146,6 +151,9 @@ namespace SoundMist.Models
         public string ProxyHost { get => _proxyHost; set => SetPropertyAndSave(ref _proxyHost, value); }
         public int ProxyPort { get => _proxyPort; set => SetPropertyAndSave(ref _proxyPort, value); }
         public bool AlternativeWindowsMediaKeysHandling { get => _alternativeWindowsMediaKeysHandling; set => SetPropertyAndSave(ref _alternativeWindowsMediaKeysHandling, value); }
+
+        [JsonConverter(typeof(SizeConverter))]
+        public Size WindowSize { get => _windowSize; set => SetPropertyAndSave(ref _windowSize, value); }
 
         public AppColorTheme AppColorTheme
         {
@@ -259,6 +267,26 @@ namespace SoundMist.Models
         {
             var json = JsonSerializer.Serialize(this);
             File.WriteAllText(Globals.SettingsFilePath, json);
+        }
+
+        internal void ResetWindowSize()
+        {
+            WindowSize = DefaultWindowSize;
+            WindowSizeReset?.Invoke(WindowSize);
+        }
+
+        private class SizeConverter : JsonConverter<Size>
+        {
+            public override Size Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                string[] v = (reader.GetString()?.Split(',')) ?? throw new Exception();
+                return new Size(double.Parse(v[0]), double.Parse(v[1]));
+            }
+
+            public override void Write(Utf8JsonWriter writer, Size value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue($"{value.Width},{value.Height}");
+            }
         }
     }
 }
