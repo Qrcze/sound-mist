@@ -15,6 +15,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string _trackTitle = "SoundCloud Player";
     [ObservableProperty] private double _width;
     [ObservableProperty] private double _height;
+    [ObservableProperty] private PixelPoint _position;
 
     private readonly IMusicPlayer _musicPlayer;
     private readonly ProgramSettings _settings;
@@ -29,9 +30,10 @@ public partial class MainWindowViewModel : ViewModelBase
             TrackTitle = $"{t.Title} by {t.ArtistName}";
         };
 
-        _width = settings.WindowSize.Width;
-        _height = settings.WindowSize.Height;
-        _settings.WindowSizeReset += size =>
+        _width = settings.WindowPos.Width;
+        _height = settings.WindowPos.Height;
+        _position = new((int)settings.WindowPos.Position.X, (int)settings.WindowPos.Position.Y);
+        _settings.WindowPosReset += size =>
         {
             SetProperty(ref _width, size.Width, nameof(Width));
             SetProperty(ref _height, size.Height, nameof(Height));
@@ -39,7 +41,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         _windowSizeSaveTimer = new Timer
         {
-            Interval = 3_000,
+            Interval = 2_000,
             AutoReset = false,
         };
         _windowSizeSaveTimer.Elapsed += SaveWindowSize;
@@ -72,10 +74,11 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void SaveWindowSize(object? sender, ElapsedEventArgs e)
     {
-        Size newSize = new(Width, Height);
-        if (newSize.NearlyEquals(_settings.WindowSize))
+        Rect newSize = new(Position.X, Position.Y, Width, Height);
+        if (newSize.Position.NearlyEquals(_settings.WindowPos.Position) && newSize.Size.NearlyEquals(_settings.WindowPos.Size))
             return;
-        _settings.WindowSize = newSize;
+
+        _settings.WindowPos = newSize;
     }
 
     partial void OnWidthChanged(double value)
@@ -85,6 +88,12 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     partial void OnHeightChanging(double value)
+    {
+        _windowSizeSaveTimer.Stop();
+        _windowSizeSaveTimer.Start();
+    }
+
+    partial void OnPositionChanged(PixelPoint value)
     {
         _windowSizeSaveTimer.Stop();
         _windowSizeSaveTimer.Start();

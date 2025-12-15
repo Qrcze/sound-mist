@@ -11,5 +11,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = _vm = App.GetService<MainWindowViewModel>();
+
+        Position = _vm.Position;
+        PositionChanged += MainWindow_PositionChanged;
+    }
+
+    private void MainWindow_PositionChanged(object? sender, PixelPointEventArgs e)
+    {
+        _vm.Position = e.Point;
     }
 }

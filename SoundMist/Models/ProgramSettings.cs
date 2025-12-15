@@ -22,7 +22,7 @@ namespace SoundMist.Models
     {
         public const int SettingsVersion = 1;
 
-        private static readonly Size DefaultWindowSize = new(1150, 800);
+        private static readonly Rect DefaultWindowPos = new(200, 200, 1150, 800);
 
         public int Version { get; } = SettingsVersion;
 
@@ -43,7 +43,7 @@ namespace SoundMist.Models
         private string _proxyHost;
         private int _proxyPort;
         private bool _alternativeWindowsMediaKeysHandling;
-        private Size _windowSize = DefaultWindowSize;
+        private Rect _windowPos = DefaultWindowPos;
 
         public static ProgramSettings Load()
         {
@@ -136,7 +136,7 @@ namespace SoundMist.Models
 
         [JsonIgnore] public long? UserId { get; set; }
 
-        public event Action<Size>? WindowSizeReset;
+        public event Action<Rect>? WindowPosReset;
 
         public string? AuthToken { get => _authToken; set => SetPropertyAndSave(ref _authToken, value); }
         public float Volume { get => _volume; set => SetPropertyAndSave(ref _volume, value); }
@@ -153,7 +153,7 @@ namespace SoundMist.Models
         public bool AlternativeWindowsMediaKeysHandling { get => _alternativeWindowsMediaKeysHandling; set => SetPropertyAndSave(ref _alternativeWindowsMediaKeysHandling, value); }
 
         [JsonConverter(typeof(SizeConverter))]
-        public Size WindowSize { get => _windowSize; set => SetPropertyAndSave(ref _windowSize, value); }
+        public Rect WindowPos { get => _windowPos; set => SetPropertyAndSave(ref _windowPos, value); }
 
         public AppColorTheme AppColorTheme
         {
@@ -271,21 +271,21 @@ namespace SoundMist.Models
 
         internal void ResetWindowSize()
         {
-            WindowSize = DefaultWindowSize;
-            WindowSizeReset?.Invoke(WindowSize);
+            WindowPos = DefaultWindowPos;
+            WindowPosReset?.Invoke(WindowPos);
         }
 
-        private class SizeConverter : JsonConverter<Size>
+        private class SizeConverter : JsonConverter<Rect>
         {
-            public override Size Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            public override Rect Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
                 string[] v = (reader.GetString()?.Split(',')) ?? throw new Exception();
-                return new Size(double.Parse(v[0]), double.Parse(v[1]));
+                return new Rect(double.Parse(v[0]), double.Parse(v[1]), double.Parse(v[2]), double.Parse(v[3]));
             }
 
-            public override void Write(Utf8JsonWriter writer, Size value, JsonSerializerOptions options)
+            public override void Write(Utf8JsonWriter writer, Rect value, JsonSerializerOptions options)
             {
-                writer.WriteStringValue($"{value.Width},{value.Height}");
+                writer.WriteStringValue($"{value.X},{value.Y},{value.Width},{value.Height}");
             }
         }
     }
