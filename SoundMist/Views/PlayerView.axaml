@@ -29,18 +29,18 @@
 		<Grid ColumnDefinitions="auto,auto,300" HorizontalAlignment="Center">
 			<!-- play controls -->
 			<StackPanel Grid.Column="0" Orientation="Horizontal">
-				<Button Classes="button-medium" Margin="5 0 0 0" IsEnabled="{Binding PlayEnabled}" Command="{Binding PlayPrevTrackCommand}">
+				<Button Classes="button-medium" Margin="5 0 0 0" Command="{Binding PlayPrevTrackCommand}">
 					<Image Source="/Assets/previous.png" />
 				</Button>
 				<Grid>
-					<Button Classes="button-big" Margin="5 0 0 0" Command="{Binding PlayPauseCommand}">
+					<Button Classes="button-big" Margin="5 0 0 0" IsEnabled="{Binding PlayEnabled}" Command="{Binding PlayPauseCommand}">
 						<Panel>
 							<Image Source="/Assets/pause.png" IsVisible="{Binding Playing}" />
 							<Image Source="/Assets/play.png" IsVisible="{Binding !Playing}" />
 						</Panel>
 					</Button>
 				</Grid>
-				<Button Classes="button-medium" Margin="5 0 0 0" IsEnabled="{Binding PlayEnabled}" Command="{Binding PlayNextTrackCommand}">
+				<Button Classes="button-medium" Margin="5 0 0 0" Command="{Binding PlayNextTrackCommand}">
 					<Image Source="/Assets/next.png" />
 				</Button>
 				<ToggleButton Classes="button-small" Margin="5 0 0 0" IsChecked="{Binding Shuffle}" ToolTip.Tip="Shuffle">

@@ -20,6 +20,21 @@ namespace SoundMist.Helpers
         private readonly ProgramSettings _settings = settings;
         private readonly SoundCloudQueries _scQueries = scQueries;
 
+        internal async Task<bool> CheckConnection(bool forceProxy, CancellationToken token)
+        {
+            var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
+            try
+            {
+                using var resonse = await client.GetAsync(string.Empty, token);
+                resonse.EnsureSuccessStatusCode();
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
         public async Task<(List<string>? links, string errorMessage)> GetTrackLinks(Track track, bool forceProxy, CancellationToken token)
         {
             string? url = track.Media.Transcodings.FirstOrDefault(x => x.Format.MimeType == "audio/mpeg" && x.Format.Protocol == "hls")?.Url;

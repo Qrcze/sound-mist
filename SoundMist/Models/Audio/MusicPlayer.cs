@@ -2,7 +2,6 @@
 using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -14,6 +13,13 @@ namespace SoundMist.Models.Audio
 {
     public class MusicPlayer : IMusicPlayer
     {
+        private enum TrackLoadStatus
+        {
+            Ok,
+            Error,
+            Skip
+        }
+
         public TracksPlaylist TracksPlaylist { get; } = new();
 
         public Track? CurrentTrack
@@ -128,7 +134,7 @@ namespace SoundMist.Models.Audio
             _loadTrackTokenSource = new();
             try
             {
-                if (await LoadTrack(track, _loadTrackTokenSource.Token))
+                if (await LoadTrack(track, _loadTrackTokenSource.Token) == TrackLoadStatus.Ok)
                     StartPlaying();
             }
             catch (TaskCanceledException)
@@ -154,7 +160,7 @@ namespace SoundMist.Models.Audio
             _loadTrackTokenSource = new();
             try
             {
-                if (await LoadTrack(currentTrack, _loadTrackTokenSource.Token) && startPlaying)
+                if (await LoadTrack(currentTrack, _loadTrackTokenSource.Token) == TrackLoadStatus.Ok && startPlaying)
                     StartPlaying();
             }
             catch (TaskCanceledException)
@@ -171,12 +177,19 @@ namespace SoundMist.Models.Audio
             _loadTrackTokenSource?.Cancel();
             _loadTrackTokenSource = new();
 
+        try_playing_next:
+
             if (TracksPlaylist.TryMoveForward(out var track))
             {
                 try
                 {
-                    if (await LoadTrack(track, _loadTrackTokenSource.Token))
+                    var loadStatus = await LoadTrack(track, _loadTrackTokenSource.Token);
+                    if (loadStatus == TrackLoadStatus.Ok)
+                    {
                         StartPlaying();
+                    }
+                    else if (loadStatus == TrackLoadStatus.Skip)
+                        goto try_playing_next;
                 }
                 catch (TaskCanceledException)
                 { }
@@ -187,10 +200,16 @@ namespace SoundMist.Models.Audio
 
                 var nextTracks = await _continueDownloader.Invoke();
                 await AddToQueue(nextTracks);
+                if (!TracksPlaylist.TryMoveForward(out var nextTrack))
+                    return;
+
                 try
                 {
-                    if (TracksPlaylist.TryMoveForward(out var nextTrack) && await LoadTrack(nextTrack, _loadTrackTokenSource.Token))
+                    var loadStatus = await LoadTrack(nextTrack, _loadTrackTokenSource.Token);
+                    if (loadStatus == TrackLoadStatus.Ok)
                         StartPlaying();
+                    else if (loadStatus == TrackLoadStatus.Skip)
+                        goto try_playing_next;
                 }
                 catch (TaskCanceledException)
                 { }
@@ -215,12 +234,30 @@ namespace SoundMist.Models.Audio
                 _loadTrackTokenSource = new();
                 try
                 {
-                    if (await LoadTrack(track, _loadTrackTokenSource.Token))
+                    if (await LoadTrack(track, _loadTrackTokenSource.Token) == TrackLoadStatus.Ok)
                         StartPlaying();
                 }
                 catch (TaskCanceledException)
                 { }
             }
+        }
+
+        public async Task ReloadCurrentTrack()
+        {
+            var track = CurrentTrack;
+            if (track is null)
+                return;
+
+            _loadTrackTokenSource?.Cancel();
+            _loadTrackTokenSource = new();
+
+            try
+            {
+                if (await LoadTrack(track, _loadTrackTokenSource.Token) == TrackLoadStatus.Ok)
+                    StartPlaying();
+            }
+            catch (TaskCanceledException)
+            { }
         }
 
         /// <summary>
@@ -229,27 +266,27 @@ namespace SoundMist.Models.Audio
         /// <param name="track"></param>
         /// <returns> true if loaded successfully, false if fail </returns>
         /// <exception cref="TaskCanceledException" />
-        private async Task<bool> LoadTrack(Track track, CancellationToken token)
+        private async Task<TrackLoadStatus> LoadTrack(Track track, CancellationToken token)
         {
             _audioController.Stop();
 
             TrackChanging?.Invoke(track);
             PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
 
-            bool trackLoadInitialized = false;
+            TrackLoadStatus trackLoadStatus = TrackLoadStatus.Error;
 
             if (File.Exists(track.LocalFilePath))
             {
                 PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
                 _audioController.LoadFromFile(track.LocalFilePath);
-                trackLoadInitialized = true;
+                trackLoadStatus = TrackLoadStatus.Ok;
             }
             else if (track.Policy == "BLOCK")
             {
                 if (_settings.ProxyMode != ViewModels.ProxyMode.BypassOnly)
                 {
                     PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked.");
-                    return false;
+                    return TrackLoadStatus.Error;
                 }
 
                 Track trackProx;
@@ -260,63 +297,70 @@ namespace SoundMist.Models.Audio
                 catch (HttpRequestException ex)
                 {
                     PlayStateUpdated?.Invoke(PlayState.Error, ex.Message);
-                    return false;
+                    return TrackLoadStatus.Error;
                 }
 
                 if (trackProx is null || trackProx.Policy == "BLOCK")
                 {
                     PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked.");
-                    return false;
+                    return TrackLoadStatus.Error;
                 }
 
-                trackLoadInitialized = await InitBuffered(true, trackProx, token);
+                trackLoadStatus = await InitBuffered(true, trackProx, token);
             }
             else if (track.Policy == "SNIP")
             {
                 if (_settings.ProxyMode != ViewModels.ProxyMode.BypassOnly)
                 {
                     PlayStateUpdated?.Invoke(PlayState.Error, "Track is region-blocked.");
-                    return false;
+                    return TrackLoadStatus.Error;
                 }
 
-                trackLoadInitialized = await InitBuffered(true, track, token);
+                trackLoadStatus = await InitBuffered(true, track, token);
             }
             else if (track.Policy == "ALLOW" || track.Policy == "MONETIZE")
             {
-                trackLoadInitialized = await InitBuffered(false, track, token);
+                trackLoadStatus = await InitBuffered(false, track, token);
             }
             else
             {
                 PlayStateUpdated?.Invoke(PlayState.Error, $"Unhandled track policy: {track.Policy}, cancelling.");
-                return false;
+                return TrackLoadStatus.Error;
             }
 
-            if (!trackLoadInitialized)
-            {
-                return false;
-            }
+            if (trackLoadStatus != TrackLoadStatus.Ok)
+                return trackLoadStatus;
 
             if (!PlayerReady)
             {
                 PlayStateUpdated?.Invoke(PlayState.Error, $"Sound library failed loading track");
-                return false;
+                return TrackLoadStatus.Error;
             }
 
             Volume = DesiredVolume;
             PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
             TrackChanged?.Invoke(track);
             _settings.LastTrackId = track.Id;
-            return true;
+            return TrackLoadStatus.Ok;
         }
 
-        private async Task<bool> InitBuffered(bool throughProxy, Track track, CancellationToken token)
+        private async Task<TrackLoadStatus> InitBuffered(bool throughProxy, Track track, CancellationToken token)
         {
             (var links, string error) = await _soundCloudDownloader.GetTrackLinks(track, throughProxy, token);
             if (links is null)
             {
-                ErrorCallback?.Invoke(error);
+                var soundCloudAvaiable = await _soundCloudDownloader.CheckConnection(throughProxy, token);
+                if (soundCloudAvaiable)
+                {
+                    ErrorCallback?.Invoke(error);
+
+                    //skip forward
+                    return TrackLoadStatus.Error;
+                }
+
+                ErrorCallback?.Invoke($"Can't connect to SoundCloud services, please check your internet connection.");
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
-                return false;
+                return TrackLoadStatus.Error;
             }
 
             int initialChunks = Math.Min(3, links.Count);
@@ -335,7 +379,7 @@ namespace SoundMist.Models.Audio
             {
                 ErrorCallback?.Invoke($"Error while getting initial chunks for track ID: {track.Id} - {ex.Message}");
                 PlayStateUpdated?.Invoke(PlayState.Error, "Failed loading track");
-                return false;
+                return TrackLoadStatus.Error;
             }
 
             try
@@ -347,12 +391,12 @@ namespace SoundMist.Models.Audio
                 string err = $"Failed initializing buffered channel: {ex.Message}";
                 ErrorCallback?.Invoke(err);
                 PlayStateUpdated?.Invoke(PlayState.Error, err);
-                return false;
+                return TrackLoadStatus.Error;
             }
 
             RunDownloaderTask(throughProxy, links, initialChunks, token);
 
-            return true;
+            return TrackLoadStatus.Ok;
         }
 
         void RunDownloaderTask(bool throughProxy, List<string> links, int startingIndex, CancellationToken token)
@@ -511,24 +555,6 @@ namespace SoundMist.Models.Audio
                 Volume += volumeChange;
                 await Task.Delay(stepDelay);
             }
-        }
-
-        public async Task ReloadCurrentTrack()
-        {
-            var track = CurrentTrack;
-            if (track is null)
-                return;
-
-            _loadTrackTokenSource?.Cancel();
-            _loadTrackTokenSource = new();
-
-            try
-            {
-                if (await LoadTrack(track, _loadTrackTokenSource.Token))
-                    StartPlaying();
-            }
-            catch (TaskCanceledException)
-            { }
         }
     }
 }
