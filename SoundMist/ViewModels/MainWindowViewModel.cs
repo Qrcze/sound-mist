@@ -16,6 +16,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private double _width;
     [ObservableProperty] private double _height;
     [ObservableProperty] private PixelPoint _position;
+    [ObservableProperty] private WindowState _windowState;
 
     private readonly IMusicPlayer _musicPlayer;
     private readonly ProgramSettings _settings;
@@ -41,10 +42,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
         _windowSizeSaveTimer = new Timer
         {
-            Interval = 2_000,
+            Interval = 1_000,
             AutoReset = false,
         };
-        _windowSizeSaveTimer.Elapsed += SaveWindowSize;
+        _windowSizeSaveTimer.Elapsed += (_, _) => SaveWindowSize();
     }
 
     public void OpenInitializationView()
@@ -72,9 +73,13 @@ public partial class MainWindowViewModel : ViewModelBase
         Dispatcher.UIThread.Post(() => { CurrentControl = new InitializationErrorView() { Text = message, MainWindowViewModel = this }; });
     }
 
-    private void SaveWindowSize(object? sender, ElapsedEventArgs e)
+    private void SaveWindowSize()
     {
+        if (WindowState == WindowState.Minimized)
+            return;
+
         Rect newSize = new(Position.X, Position.Y, Width, Height);
+
         if (newSize.Position.NearlyEquals(_settings.WindowPos.Position) && newSize.Size.NearlyEquals(_settings.WindowPos.Size))
             return;
 
@@ -87,7 +92,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _windowSizeSaveTimer.Start();
     }
 
-    partial void OnHeightChanging(double value)
+    partial void OnHeightChanged(double value)
     {
         _windowSizeSaveTimer.Stop();
         _windowSizeSaveTimer.Start();
@@ -97,5 +102,14 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         _windowSizeSaveTimer.Stop();
         _windowSizeSaveTimer.Start();
+    }
+
+    partial void OnWindowStateChanged(WindowState value)
+    {
+        if (value == WindowState.Minimized)
+        {
+            _windowSizeSaveTimer.Stop();
+            SaveWindowSize();
+        }
     }
 }

@@ -5,7 +5,7 @@
         xmlns:views="clr-namespace:SoundMist.Views"
         xmlns:vm="using:SoundMist.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-		Width="{Binding Width, Mode=TwoWay}" Height="{Binding Height, Mode=TwoWay}"
+		Width="{Binding Width, Mode=TwoWay}" Height="{Binding Height, Mode=TwoWay}" WindowState="{Binding WindowState, Mode=TwoWay}"
         x:Class="SoundMist.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/soundmist-logo.ico"
