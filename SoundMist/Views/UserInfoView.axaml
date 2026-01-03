@@ -40,7 +40,7 @@
 			</Style>
 		</Style>
 	</UserControl.Styles>
-	<Grid>
+	<Grid MaxWidth="1200">
 		<Grid RowDefinitions="auto *">
 			<Image asyncImageLoader:ImageLoader.Source="{Binding User.BackgroundVisual}" VerticalAlignment="Top" />
 			<Grid Margin="10" ColumnDefinitions="120 * auto">
@@ -62,6 +62,7 @@
 				</StackPanel>
 
 				<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="5" Spacing="10">
+					<TextBlock Margin="5" Classes="WhiteOnBlack" Text="{Binding User.CreatedAtFormatted}" VerticalAlignment="Bottom" FontSize="12" Opacity=".75" />
 					<Button Classes="over-background">
 						<StackPanel>
 							<TextBlock Text="Followers" Opacity="0.60" />

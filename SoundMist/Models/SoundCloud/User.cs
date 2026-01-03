@@ -38,6 +38,7 @@ namespace SoundMist.Models.SoundCloud
 
         //A bit of a guess work, but seems like one of the fields, that the snipped user data doesn't contain, is TrackCount
         [JsonIgnore] public bool IsFullInfo => TrackCount.HasValue;
+        [JsonIgnore] public string CreatedAtFormatted => CreatedAt.HasValue ? $"Account Created: {CreatedAt.Value.ToShortDateString()}" : string.Empty;
 
         [JsonIgnore] public bool IsDeleted { get; set; }
 
