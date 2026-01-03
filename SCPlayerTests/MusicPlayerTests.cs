@@ -38,7 +38,7 @@ namespace SCPlayerTests
             ChannelInitialized = false;
         }
 
-        public void AppendBytes(byte[] bytes)
+        public void AppendBytes(Span<byte> bytes)
         {
             Assert.False(IsStreamCompleted);
         }

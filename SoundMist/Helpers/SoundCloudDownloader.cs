@@ -2,6 +2,7 @@
 using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -108,6 +109,33 @@ namespace SoundMist.Helpers
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsByteArrayAsync(token);
+        }
+
+        /// <summary>
+        /// The returned byte array is rented by <see cref="ArrayPool{T}.Shared" />, therefore it's expected to be returned later (ArrayPool<byte>.Shared.Return()).
+        /// </summary>
+        /// <param name="link"></param>
+        /// <param name="forceProxy"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException" />
+        /// <exception cref="TaskCanceledException" />
+        internal async Task<(byte[] data, int length)> DownloadTrackChunkPooled(string link, bool forceProxy, CancellationToken token)
+        {
+            var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
+
+            using var response = await client.GetAsync(link, token);
+            response.EnsureSuccessStatusCode();
+            if (!response.Content.Headers.ContentLength.HasValue)
+                throw new NotSupportedException("Track chunk didn't return its length");
+
+            int length = (int)response.Content.Headers.ContentLength;
+
+            var buffer = ArrayPool<byte>.Shared.Rent(length);
+            using var stream = await response.Content.ReadAsStreamAsync(token);
+            await stream.ReadAsync(buffer, token);
+
+            return (buffer, length);
         }
 
         public async Task<(bool success, string error)> SaveTrackLocally(Track track, Action<string> statusCallback)

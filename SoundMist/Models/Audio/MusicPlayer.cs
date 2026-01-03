@@ -1,6 +1,7 @@
 ﻿using SoundMist.Helpers;
 using SoundMist.Models.SoundCloud;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -363,28 +364,56 @@ namespace SoundMist.Models.Audio
                 return TrackLoadStatus.Error;
             }
 
-            int initialChunks = Math.Min(3, links.Count);
-            var initialBytes = new List<byte[]>(initialChunks);
+            int chunksToPreDownload = Math.Min(3, links.Count);
 
+            //first three chunks always seem to be exactly 159241 bytes long
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(159241);
+            int bufferOffset = 0;
             try
             {
-                for (int i = 0; i < initialChunks; i++)
+                //download chunks
+                for (int i = 0; i < chunksToPreDownload; i++)
                 {
-                    byte[] bytes = await _soundCloudDownloader.DownloadTrackChunk(links[i], throughProxy, token);
-                    initialBytes.Add(bytes);
+                    token.ThrowIfCancellationRequested();
+
+                    byte[]? bytes = null;
+                    try
+                    {
+                        (bytes, int downloadLen) = await _soundCloudDownloader.DownloadTrackChunkPooled(links[i], throughProxy, token);
+
+                        //resize array if needed
+                        if (downloadLen + bufferOffset >= buffer.Length)
+                        {
+                            ArrayPool<byte>.Shared.Return(buffer);
+                            buffer = ArrayPool<byte>.Shared.Rent(buffer.Length + downloadLen);
+                        }
+
+                        //copy over the downloaded bytes into buffer
+                        bytes.AsSpan(0, downloadLen).CopyTo(buffer.AsSpan(bufferOffset));
+                        bufferOffset += downloadLen;
+                    }
+                    finally
+                    {
+                        if (bytes is not null)
+                            ArrayPool<byte>.Shared.Return(bytes);
+                    }
+
                     PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
                 }
+
+                //initialize audio buffer
+                //this creates a new array, but the only potential improvement would be using pointers, which would require project to go unsafe
+                _audioController.InitBufferedChannel(buffer[..bufferOffset], track.Duration);
+
+                //download rest of the chunks in the background
+                if (links.Count > 3)
+                    RunDownloaderTask(throughProxy, links, chunksToPreDownload, token);
             }
             catch (HttpRequestException ex)
             {
                 ErrorCallback?.Invoke($"Error while getting initial chunks for track ID: {track.Id} - {ex.Message}");
                 PlayStateUpdated?.Invoke(PlayState.Error, "Failed loading track");
                 return TrackLoadStatus.Error;
-            }
-
-            try
-            {
-                _audioController.InitBufferedChannel(initialBytes.SelectMany(x => x).ToArray(), track.Duration);
             }
             catch (AudioControllerException ex)
             {
@@ -393,8 +422,10 @@ namespace SoundMist.Models.Audio
                 PlayStateUpdated?.Invoke(PlayState.Error, err);
                 return TrackLoadStatus.Error;
             }
-
-            RunDownloaderTask(throughProxy, links, initialChunks, token);
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
 
             return TrackLoadStatus.Ok;
         }
@@ -407,9 +438,20 @@ namespace SoundMist.Models.Audio
                 {
                     for (int i = startingIndex; i < links.Count; i++)
                     {
-                        byte[] bytes = await _soundCloudDownloader.DownloadTrackChunk(links[i], throughProxy, token);
-                        _audioController.AppendBytes(bytes);
-                        PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
+                        token.ThrowIfCancellationRequested();
+
+                        byte[] bytes = null!;
+                        try
+                        {
+                            (bytes, int len) = await _soundCloudDownloader.DownloadTrackChunkPooled(links[i], throughProxy, token);
+                            _audioController.AppendBytes(bytes.AsSpan(0, len));
+                            PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
+                        }
+                        finally
+                        {
+                            if (bytes is not null)
+                                ArrayPool<byte>.Shared.Return(bytes);
+                        }
                     }
                     _audioController.StreamCompleted();
                     PlayStateUpdated?.Invoke(PlayState.Loaded, string.Empty);
@@ -418,9 +460,9 @@ namespace SoundMist.Models.Audio
                 {
                     _audioController.Stop();
                     ErrorCallback?.Invoke($"Error while loading chunks for track ID: {CurrentTrack?.Id} - {ex.Message}");
-                    PlayStateUpdated?.Invoke(PlayState.Error, "Failed bufferring track");
+                    PlayStateUpdated?.Invoke(PlayState.Error, "Failed buffering track");
                 }
-                catch (TaskCanceledException ex)
+                catch (TaskCanceledException)
                 {
                 }
             }, token);

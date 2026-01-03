@@ -7,7 +7,7 @@ namespace SCPlayerTests
         [Fact]
         public void AppendsBytes()
         {
-            var bp = new BufferProvider(100);
+            using var bp = new BufferProvider(100);
 
             Assert.Equal(0, bp.LoadedBytes);
 
@@ -23,26 +23,26 @@ namespace SCPlayerTests
         [Fact]
         public void IncreasesArrayIfNeeded()
         {
-            var bp = new BufferProvider(100);
+            using var bp = new BufferProvider(100);
 
-            Assert.Equal(100, bp.RawBuffer.Length);
+            Assert.True(bp.RawBuffer.Length >= 100); //ArrayPool can assign more bytes than needed
             Assert.Equal(0, bp.LoadedBytes);
 
             bp.AppendBuffer(new byte[50]);
 
-            Assert.Equal(100, bp.RawBuffer.Length);
+            Assert.True(bp.RawBuffer.Length >= 100); //ArrayPool can assign more bytes than needed
             Assert.Equal(50, bp.LoadedBytes);
 
-            bp.AppendBuffer(new byte[55]);
+            bp.AppendBuffer(new byte[155]);
 
-            Assert.Equal(105, bp.RawBuffer.Length);
-            Assert.Equal(105, bp.LoadedBytes);
+            Assert.True(bp.RawBuffer.Length >= 205); //ArrayPool can assign more bytes than needed
+            Assert.Equal(205, bp.LoadedBytes);
         }
 
         [Fact]
         public void ReadsCorrectBytes()
         {
-            var bp = new BufferProvider(100);
+            using var bp = new BufferProvider(100);
 
             byte[] bytesToAppend = Enumerable.Range(0, 80).Select(x => (byte)x).ToArray();
 
@@ -92,7 +92,7 @@ namespace SCPlayerTests
         [Fact]
         public void FillsBufferOnlyIfNotStalled()
         {
-            var bp = new BufferProvider(100);
+            using var bp = new BufferProvider(100);
 
             byte[] bytesToAppend = Enumerable.Range(0, 100).Select(x => (byte)x).ToArray();
 

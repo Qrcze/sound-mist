@@ -18,7 +18,7 @@ namespace SoundMist.Models.Audio
 
         void Stop();
 
-        void AppendBytes(byte[] bytes);
+        void AppendBytes(Span<byte> bytes);
 
         void InitBufferedChannel(byte[] initialBytes, int trackDurationMs);
 

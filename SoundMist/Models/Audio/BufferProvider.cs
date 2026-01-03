@@ -1,31 +1,36 @@
 ﻿using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SoundMist.Models.Audio
 {
-    public class BufferProvider(int estimatedSize)
+    public sealed class BufferProvider(int estimatedSize) : IDisposable
     {
         public byte[] RawBuffer => _buffer;
+        public int BufferExpectedSize { get; private set; } = estimatedSize;
 
-        private byte[] _buffer = new byte[estimatedSize];
+        private byte[] _buffer = ArrayPool<byte>.Shared.Rent(estimatedSize);
 
         public volatile int offset;
+
         public int LoadedBytes { get; private set; }
         public bool FinishedLoading { get; set; }
 
-        public void AppendBuffer(byte[] bytes)
+        public void AppendBuffer(Span<byte> bytes)
         {
             if (LoadedBytes + bytes.Length > _buffer.Length)
             {
                 Debug.Print($"had to increase the track buffer size ({_buffer.Length} + {bytes.Length}bytes needed)");
 
-                var newBuffer = new byte[LoadedBytes + bytes.Length];
+                BufferExpectedSize = LoadedBytes + bytes.Length;
+                var newBuffer = ArrayPool<byte>.Shared.Rent(BufferExpectedSize);
                 Array.Copy(_buffer, newBuffer, _buffer.Length);
+                ArrayPool<byte>.Shared.Return(_buffer);
                 _buffer = newBuffer;
             }
 
-            Array.Copy(bytes, 0, _buffer, LoadedBytes, bytes.Length);
+            bytes.CopyTo(_buffer.AsSpan(LoadedBytes, bytes.Length));
             LoadedBytes += bytes.Length;
         }
 
@@ -49,6 +54,11 @@ namespace SoundMist.Models.Audio
             offset += requestedLen;
 
             return requestedLen;
+        }
+
+        public void Dispose()
+        {
+            ArrayPool<byte>.Shared.Return(_buffer);
         }
     }
 }

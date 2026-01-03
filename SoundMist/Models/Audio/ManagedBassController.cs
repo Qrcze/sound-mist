@@ -116,6 +116,7 @@ namespace SoundMist.Models.Audio
             Bass.StreamFree(_musicChannel);
 
             _musicChannel = 0;
+            _bufferProvider?.Dispose();
             _bufferProvider = null;
         }
 
@@ -127,7 +128,7 @@ namespace SoundMist.Models.Audio
             Bass.ChannelSetAttribute(_musicChannel, ChannelAttribute.Volume, Math.Clamp(volume, 0, 1));
         }
 
-        public void AppendBytes(byte[] bytes)
+        public void AppendBytes(Span<byte> bytes)
         {
             _bufferProvider!.AppendBuffer(bytes);
         }
@@ -151,6 +152,7 @@ namespace SoundMist.Models.Audio
             Bass.StreamFree(decodeChannel);
 
             int estimatedSize = trackDurationMs * (int)bitrate / 8;
+            _bufferProvider?.Dispose();
             _bufferProvider = new(estimatedSize);
             _bufferProvider.AppendBuffer(initialBytes);
 
@@ -182,7 +184,7 @@ namespace SoundMist.Models.Audio
         protected long ProcLength(nint User)
         {
             //return 0;
-            return _bufferProvider!.RawBuffer.Length;
+            return _bufferProvider!.BufferExpectedSize;
         }
 
         protected int ProcRead(nint Buffer, int Length, nint User)
@@ -206,6 +208,7 @@ namespace SoundMist.Models.Audio
         protected void ProcClose(nint User)
         {
             Debug.Print("! Stream closed");
+            _bufferProvider?.Dispose();
             _bufferProvider = null;
             GC.Collect();
         }
