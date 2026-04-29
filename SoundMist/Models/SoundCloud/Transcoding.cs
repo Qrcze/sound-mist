@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace SoundMist.Models.SoundCloud;
 
+[DebuggerDisplay("{Format}, legacy: {IsLegacyTranscoding}, preset: {Preset}")]
 public class Transcoding
 {
     [JsonPropertyName("duration")]

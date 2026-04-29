@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace SoundMist.Models.SoundCloud;
 
+[DebuggerDisplay("{MimeType} {Protocol}")]
 public class Format
 {
     [JsonPropertyName("mime_type")]
