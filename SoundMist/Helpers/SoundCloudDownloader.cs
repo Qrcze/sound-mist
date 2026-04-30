@@ -26,7 +26,7 @@ namespace SoundMist.Helpers
             var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
             try
             {
-                using var resonse = await client.GetAsync(string.Empty, token);
+                using var resonse = await client.GetAsync("https://soundcloud.com", token);
                 resonse.EnsureSuccessStatusCode();
             }
             catch
@@ -148,10 +148,10 @@ namespace SoundMist.Helpers
             {
                 if (track.Policy == "BLOCK")
                 {
-                httpClient = _httpManager.GetProxiedClient();
-                forceProxy = true;
+                    httpClient = _httpManager.GetProxiedClient();
+                    forceProxy = true;
                     track = (await _scQueries.GetTracksById([track.Id])).Single();
-            }
+                }
             }
 
             (var links, string error) = await GetTrackLinks(track, forceProxy, CancellationToken.None);
