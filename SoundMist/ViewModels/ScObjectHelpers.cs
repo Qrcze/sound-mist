@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
@@ -14,15 +15,14 @@ namespace SoundMist.ViewModels
 {
     internal class ScObjectHelpers
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly IDatabase _database = null!;
-        private static readonly ILogger _logger = null!;
         private static readonly IMusicPlayer _musicPlayer = null!;
         private static readonly SoundCloudQueries _queries = null!;
 
         static ScObjectHelpers()
         {
             _database = App.GetService<IDatabase>();
-            _logger = App.GetService<ILogger>();
             _musicPlayer = App.GetService<IMusicPlayer>();
             _queries = App.GetService<SoundCloudQueries>();
         }
@@ -53,7 +53,7 @@ namespace SoundMist.ViewModels
             }
             else
             {
-                _logger.Error($"Tried opening an unhandled SoundCloud object: {item.GetType()}");
+                _logger.Error("Tried opening an unhandled SoundCloud object: {type}", item?.GetType());
                 NotificationManager.Show(new("Unhandled object type", "Please check the logs for further info.", Avalonia.Controls.Notifications.NotificationType.Error));
             }
         }
@@ -108,7 +108,7 @@ namespace SoundMist.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Failed retrieving the tracks from IDs, {ex.Message}");
+                    _logger.Error(ex, "Failed retrieving the tracks from IDs");
                     NotificationManager.Show(new("Failed playing playlist", "Please check the logs for further info.", Avalonia.Controls.Notifications.NotificationType.Error));
                 }
             }

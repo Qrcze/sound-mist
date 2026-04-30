@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NLog;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
@@ -11,6 +12,8 @@ namespace SoundMist.ViewModels;
 
 public partial class PlayerViewModel : ViewModelBase
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     [ObservableProperty] private bool _playing;
     [ObservableProperty] private bool _playEnabled;
     [ObservableProperty] private bool _showingPlaylist;
@@ -28,7 +31,6 @@ public partial class PlayerViewModel : ViewModelBase
 
     private readonly IMusicPlayer _musicPlayer;
     private readonly ProgramSettings _settings;
-    private readonly ILogger _logger;
     private readonly History _history;
     private double _trackTime;
     private double _trackLength;
@@ -87,11 +89,10 @@ public partial class PlayerViewModel : ViewModelBase
     public IRelayCommand TogglePlaylistCommand { get; }
     public IRelayCommand MuteVolumeCommand { get; }
 
-    public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, ILogger logger, History history)
+    public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, History history)
     {
         _musicPlayer = musicPlayer;
         _settings = settings;
-        _logger = logger;
         _history = history;
 
         _musicPlayer.TrackChanging += TrackChanging;
@@ -263,11 +264,11 @@ public partial class PlayerViewModel : ViewModelBase
 
         if (!track.UserId.HasValue || track.User is null)
         {
-            _logger.Warn($"Track with id {track.Id} does not contain user id, failed blocking them.");
+            _logger.Warn("Track with id {id} does not contain user id, failed blocking them.", track.Id);
             return;
         }
 
-        _logger.Info($"Blocking user: {track.UserId}");
+        _logger.Info("Blocking user: {userId}", track.UserId);
 
         _settings.AddBlockedUser(track.User);
         _musicPlayer.TracksPlaylist.RemoveAll(x => x.UserId == track.UserId);
@@ -292,7 +293,7 @@ public partial class PlayerViewModel : ViewModelBase
         if (track == null)
             return;
 
-        _logger.Info($"Blocking track: {track.Id}");
+        _logger.Info("Blocking track: {id}", track.Id);
 
         _settings.AddBlockedTrack(track);
         _musicPlayer.TracksPlaylist.RemoveAll(x => x.Id == track.Id);

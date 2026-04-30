@@ -10,7 +10,6 @@ namespace SCPlayerTests
     public class SoundcloudConnections
     {
         public IDatabase Database { get; } = new DummyDatabase();
-        public ILogger Logger { get; } = new DummyLogger();
         public ProgramSettings Settings { get; } = new();
         public HttpManager HttpManager { get; }
         public IMusicPlayer MusicPlayer { get; } = new MockMusicPlayer();
@@ -22,7 +21,7 @@ namespace SCPlayerTests
             HttpManager = new HttpManager(Settings);
             Queries = new SoundCloudQueries(HttpManager, Settings);
             Downloader = new SoundCloudDownloader(HttpManager, Settings, Queries);
-            var initializer = new SoundcloudDataInitializer(Settings, HttpManager, Queries, Logger, null!);
+            var initializer = new SoundcloudDataInitializer(Settings, HttpManager, Queries, null!);
 
             Settings.AppVersion = initializer.GetAppVersion().Result;
             (Settings.ClientId, Settings.AnonymousUserId) = initializer.GetClientAndAnonymousUserIds().Result;
@@ -49,7 +48,7 @@ namespace SCPlayerTests
         public async Task Search_All()
         {
             //all of the queries are going to be moved to a separate static helper class with querioes only
-            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer);
             vm.SelectedFilter = "All";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -63,7 +62,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Tracks()
         {
-            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer);
             vm.SelectedFilter = "Tracks";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -78,7 +77,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_People()
         {
-            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer);
             vm.SelectedFilter = "People";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();
@@ -93,7 +92,7 @@ namespace SCPlayerTests
         [Fact]
         public async Task Search_Albums()
         {
-            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer, Connections.Logger);
+            var vm = new SearchViewModel(Connections.HttpManager, Connections.Queries, Connections.Database, Connections.Settings, Connections.MusicPlayer);
             vm.SelectedFilter = "Albums";
             vm.SearchFilter = "Love";
             var results = await vm.GetSearchResults();

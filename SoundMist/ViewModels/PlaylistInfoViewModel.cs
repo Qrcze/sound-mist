@@ -1,6 +1,6 @@
-﻿using Avalonia.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
@@ -15,6 +15,8 @@ namespace SoundMist.ViewModels
 {
     public partial class PlaylistInfoViewModel : ViewModelBase
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         [ObservableProperty] private Playlist? _playlist;
         [ObservableProperty] private bool _loadingView;
         [ObservableProperty] private bool _isLiked;
@@ -26,7 +28,6 @@ namespace SoundMist.ViewModels
         private readonly SoundCloudQueries _queries;
         private readonly IDatabase _database;
         private readonly ProgramSettings _settings;
-        private readonly ILogger _logger;
         private readonly IMusicPlayer _musicPlayer;
         private readonly History _history;
 
@@ -38,13 +39,12 @@ namespace SoundMist.ViewModels
         public IRelayCommand OpenUserInfoCommand { get; }
         public IRelayCommand ToggleFullImageCommand { get; }
 
-        public PlaylistInfoViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, ILogger logger, IMusicPlayer musicPlayer, History history)
+        public PlaylistInfoViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, History history)
         {
             _httpManager = httpManager;
             _queries = queries;
             _database = database;
             _settings = settings;
-            _logger = logger;
             _musicPlayer = musicPlayer;
             _history = history;
             Mediator.Default.Register(MediatorEvent.OpenPlaylistInfo, Open);
@@ -117,7 +117,7 @@ namespace SoundMist.ViewModels
                         var (response, message) = await _queries.GetUsersLikedPlaylistsIds(token);
                         if (response is null)
                         {
-                            _logger.Error($"Failed getting liked playlists list: {message}");
+                            _logger.Error("Failed getting liked playlists list: {message}", message);
                             NotificationManager.Show(new("Failed getting liked playlists", message, Avalonia.Controls.Notifications.NotificationType.Warning));
                         }
                         else

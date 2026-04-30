@@ -1,4 +1,5 @@
-﻿using SoundMist.Helpers;
+﻿using NLog;
+using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
@@ -16,19 +17,19 @@ namespace SoundMist;
 
 public partial class SoundcloudDataInitializer
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     private readonly ProgramSettings _settings;
     private readonly IHttpManager _httpManager;
     private readonly SoundCloudQueries _queries;
-    private readonly ILogger _logger;
     private readonly MainWindowViewModel _mainWindowViewModel;
     private bool _mainViewOpened;
 
-    public SoundcloudDataInitializer(ProgramSettings settings, IHttpManager httpManager, SoundCloudQueries queries, ILogger logger, MainWindowViewModel mainWindowViewModel)
+    public SoundcloudDataInitializer(ProgramSettings settings, IHttpManager httpManager, SoundCloudQueries queries, MainWindowViewModel mainWindowViewModel)
     {
         _settings = settings;
         _httpManager = httpManager;
         _queries = queries;
-        _logger = logger;
         _mainWindowViewModel = mainWindowViewModel;
     }
 
@@ -77,7 +78,7 @@ public partial class SoundcloudDataInitializer
             }
             catch (Exception ex)
             {
-                _logger.Error($"Couldn't load last track with id {_settings.LastTrackId}: {ex.Message}");
+                _logger.Error(ex, "Couldn't load last track with id {LastTrackId}", _settings.LastTrackId);
                 NotificationManager.Show(new("Initialization failure", $"Couldn't load last track with id: {_settings.LastTrackId}."));
                 return;
             }
@@ -90,13 +91,13 @@ public partial class SoundcloudDataInitializer
         {
             if (_settings.ProxyMode == ProxyMode.Always)
             {
-                _logger.Error($"{message} while in always-proxy mode: {ex.Message}");
+                _logger.Error(ex, "{message} while in always-proxy mode", message);
                 _mainWindowViewModel.OpenProxyFailView();
                 return;
             }
         }
 
-        _logger.Fatal($"{message}: {ex.Message}");
+        _logger.Fatal(ex, message);
         _mainWindowViewModel.ShowInitializationErrorMessage(message);
     }
 

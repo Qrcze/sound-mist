@@ -1,15 +1,17 @@
-﻿using System;
-using System.Diagnostics;
-using Avalonia;
+﻿using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
-using SoundMist.Models;
+using NLog;
 using SoundMist.Models.Audio;
+using System;
+using System.Diagnostics;
 using Tmds.DBus;
 
 namespace SoundMist.Linux;
 
 internal class Program
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
@@ -22,7 +24,7 @@ internal class Program
             var logger = services.GetRequiredService<ILogger>();
             var musicPlayer = services.GetRequiredService<IMusicPlayer>();
 
-            var media = new MediaService(logger, musicPlayer);
+            var media = new MediaService(musicPlayer);
             media.Register(new Connection(Address.Session));
 
             Debug.Print("Media player connected");
@@ -34,7 +36,7 @@ internal class Program
         }
         catch (Exception ex)
         {
-            FileLogger.Instance.Fatal($"Program crashed unexpectedly: {ex.Message}");
+            _logger.Fatal($"Program crashed unexpectedly: {ex.Message}");
         }
     }
 
@@ -43,5 +45,5 @@ internal class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace();
+            .LogToNLog();
 }

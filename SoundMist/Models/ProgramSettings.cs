@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Styling;
+using NLog;
 using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System;
@@ -20,6 +21,8 @@ namespace SoundMist.Models
 
     public class ProgramSettings
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public const int SettingsVersion = 1;
 
         private static readonly Rect DefaultWindowPos = new(200, 200, 1150, 800);
@@ -60,7 +63,7 @@ namespace SoundMist.Models
                 }
                 catch (Exception ex)
                 {
-                    FileLogger.Instance.Error($"Failed reading settings json: {ex.Message}");
+                    _logger.Error(ex, "Failed reading settings json");
                     File.Copy(Globals.SettingsFilePath, Globals.SettingsFilePath + ".old", overwrite: true);
                     NotificationManager.Show(new("Failed loading settings",
                         "Program has failed loading the settings file, please check the logs for further info.",
@@ -108,7 +111,7 @@ namespace SoundMist.Models
 
         private static JsonObject UpdateFromVersion0(JsonObject jsonObject)
         {
-            FileLogger.Instance.Info("Updating ProgramSettings from version 0");
+            _logger.Info("Updating ProgramSettings from version 0");
 
             var users = jsonObject["BlockedUsers"].Deserialize<HashSet<BlockedEntry>>()!;
             var tracks = jsonObject["BlockedTracks"].Deserialize<HashSet<BlockedEntry>>()!;

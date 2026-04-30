@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
@@ -15,6 +16,8 @@ namespace SoundMist.ViewModels;
 
 public partial class HistoryViewModel : ViewModelBase
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     [ObservableProperty] private bool _loadingView;
     [ObservableProperty] private int _openedTabIndex;
     [ObservableProperty] private bool _userLoggedIn;
@@ -24,7 +27,6 @@ public partial class HistoryViewModel : ViewModelBase
     private readonly SoundCloudQueries _queries;
     private readonly IMusicPlayer _musicPlayer;
     private readonly IDatabase _database;
-    private readonly ILogger _logger;
     private readonly History _history;
 
     private CancellationTokenSource? _loadingTokenSource;
@@ -37,12 +39,11 @@ public partial class HistoryViewModel : ViewModelBase
     public ObservableCollection<User> Users { get; } = [];
     public ObservableCollection<Playlist> Playlists { get; } = [];
 
-    public HistoryViewModel(IHttpManager httpManager, SoundCloudQueries queries, IMusicPlayer musicPlayer, IDatabase database, ILogger logger, History history)
+    public HistoryViewModel(IHttpManager httpManager, SoundCloudQueries queries, IMusicPlayer musicPlayer, IDatabase database, History history)
     {
         _queries = queries;
         _musicPlayer = musicPlayer;
         _database = database;
-        _logger = logger;
         _history = history;
 
         if (httpManager.AuthorizedClient.IsAuthorized)
@@ -125,7 +126,7 @@ public partial class HistoryViewModel : ViewModelBase
         { }
         catch (HttpRequestException ex)
         {
-            _logger.Error($"Failed tracks info request for the history for tab {OpenedTab}: {ex.Message}");
+            _logger.Error(ex, "Failed tracks info request for the history for tab {OpenedTab}", OpenedTab);
 
             NotificationManager.Show(new($"Failed loading {OpenedTab}",
                 "Error while trying to load the history list, please check the logs",
@@ -134,7 +135,7 @@ public partial class HistoryViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _logger.Error($"Unhandled exception getting the history for tab {OpenedTab}: {ex.Message}");
+            _logger.Error(ex, "Unhandled exception getting the history for tab {OpenedTab}", OpenedTab);
 
             NotificationManager.Show(new($"Failed loading {OpenedTab}",
                 "Error while trying to load the history list, please check the logs",
@@ -167,7 +168,7 @@ public partial class HistoryViewModel : ViewModelBase
             var (response, errorMessage) = await _queries.GetPlayHistory(_nextOnlineHistoryHref, PlayedOnline.Count, token);
             if (response is null)
             {
-                _logger.Warn($"Failed getting online history: {errorMessage}");
+                _logger.Warn("Failed getting online history: {errorMessage}", errorMessage);
                 return;
             }
 
@@ -183,7 +184,7 @@ public partial class HistoryViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _logger.Error($"exception while getting online history: {ex.Message}");
+            _logger.Error(ex, "exception while getting online history");
         }
         finally
         {

@@ -2,6 +2,7 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
@@ -19,6 +20,8 @@ namespace SoundMist.ViewModels
 {
     public partial class LikedLibraryViewModel : ViewModelBase
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         [ObservableProperty] private ObservableCollection<Track> _tracksList = [];
 
         private readonly List<Track> _fullTracksList = [];
@@ -43,18 +46,16 @@ namespace SoundMist.ViewModels
         private readonly SoundCloudDownloader _downloader;
         private readonly IDatabase _database;
         private readonly IMusicPlayer _musicPlayer;
-        private readonly ILogger _logger;
         private string? _nextHref;
         private readonly Timer _filterDelay;
 
-        public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer, ILogger logger)
+        public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer)
         {
             _httpManager = httpManager;
             _settings = settings;
             _downloader = downloader;
             _database = database;
             _musicPlayer = musicPlayer;
-            _logger = logger;
             musicPlayer.TrackChanged += (t) => SelectedTrack = t;
 
             _filterDelay = new Timer(500) { AutoReset = false };
@@ -133,7 +134,7 @@ namespace SoundMist.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.Error($"Failed retrieving liked tracks: {ex.Message}");
+                _logger.Error(ex, "Failed retrieving liked tracks");
                 return;
             }
             finally
@@ -221,7 +222,7 @@ namespace SoundMist.ViewModels
                 notif.Expiration = TimeSpan.Zero;
                 notif.Title = $"Failed downloading {SelectedTrack.FullLabel}";
                 notif.Message = errorMessage;
-                _logger.Error($"Failed downloading a track: {errorMessage}");
+                _logger.Error("Failed downloading a track: {errorMessage}", errorMessage);
             }
         }
 

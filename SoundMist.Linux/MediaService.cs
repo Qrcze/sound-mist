@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using NLog;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
 using Tmds.DBus;
@@ -20,10 +21,11 @@ public interface IPlayerExtra : IPlayer
 
 public class MediaService : IPlayerExtra, IMediaPlayerExtra
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     private const string PlayerName = "org.mpris.MediaPlayer2.SoundMist";
     private const string PlayerObjectPath = "/org/mpris/MediaPlayer2";
 
-    private readonly ILogger _logger;
     private readonly IMusicPlayer _musicPlayer;
     private Connection _connection = null!;
 
@@ -36,9 +38,8 @@ public class MediaService : IPlayerExtra, IMediaPlayerExtra
     public IDictionary<string, object> MediaProperties { get; }
     public PlayerProperties PlayerProperties { get; } = new();
 
-    public MediaService(ILogger logger, IMusicPlayer musicPlayer)
+    public MediaService(IMusicPlayer musicPlayer)
     {
-        _logger = logger;
         _musicPlayer = musicPlayer;
 
         AttachMusicPlayerEvents();
@@ -110,7 +111,7 @@ public class MediaService : IPlayerExtra, IMediaPlayerExtra
         }
         catch (Exception ex)
         {
-            _logger.Error($"Failed registering linux media service: {ex.Message}");
+            _logger.Error(ex, "Failed registering linux media service");
         }
     }
 

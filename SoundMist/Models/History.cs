@@ -1,4 +1,5 @@
-﻿using SoundMist.Models.SoundCloud;
+﻿using NLog;
+using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,6 +27,8 @@ public class HistoryChangedEventArgs : EventArgs
 
 public class History
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     public enum List
     {
         PlayHistory,
@@ -88,7 +91,7 @@ public class History
         }
         catch (JsonException ex)
         {
-            FileLogger.Instance.Error($"Failed deserializing the history json: {ex.Message}");
+            _logger.Error(ex, "Failed deserializing the history json");
             string oldFile = $"{Globals.HistoryFilePath}.old";
             File.Delete(oldFile);
             File.Move(Globals.HistoryFilePath, oldFile);
@@ -96,7 +99,7 @@ public class History
         }
         catch (Exception ex)
         {
-            FileLogger.Instance.Error($"Exception while reading the history json: {ex.Message}");
+            _logger.Error(ex, "Exception while reading the history json");
             string oldFile = $"{Globals.HistoryFilePath}.old";
             File.Delete(oldFile);
             File.Move(Globals.HistoryFilePath, oldFile);

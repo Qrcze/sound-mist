@@ -40,11 +40,10 @@ namespace SCPlayerTests
             settings.StartingTabIndex = MainViewTab.LikedTracks;
 
             var musicPlayer = new MockMusicPlayer();
-            var logger = new DummyLogger();
 
             var mv = new MainViewModel(settings);
 
-            var lv = new LikedLibraryViewModel(null, settings, null!, database, musicPlayer, logger);
+            var lv = new LikedLibraryViewModel(null, settings, null!, database, musicPlayer);
             lv.SelectedTrack = new Track() { Id = 5 };
 
             object? track = null;
@@ -70,11 +69,10 @@ namespace SCPlayerTests
             settings.StartingTabIndex = MainViewTab.LikedTracks;
 
             var musicPlayer = new MockMusicPlayer();
-            var logger = new DummyLogger();
 
             var mv = new MainViewModel(settings);
 
-            var lv = new LikedLibraryViewModel(null!, settings, null!, database, musicPlayer, logger);
+            var lv = new LikedLibraryViewModel(null!, settings, null!, database, musicPlayer);
             lv.SelectedTrack = new Track() { Id = 1, User = new User() { Id = 5 } };
 
             object? user = null;
@@ -98,10 +96,9 @@ namespace SCPlayerTests
             var settings = new ProgramSettings { StartingTabIndex = MainViewTab.LikedTracks };
             var history = new History(settings);
             var musicPlayer = new MockMusicPlayer();
-            var logger = new DummyLogger();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null!, null!, null!, settings, musicPlayer, logger, history);
+            var tv = new TrackInfoViewModel(null!, null!, null!, settings, musicPlayer, history);
 
             var track = new Track() { Id = 5 };
 
@@ -126,7 +123,7 @@ namespace SCPlayerTests
             var mv = new MainViewModel(settings);
 
             //it is now grabbing extra data from an http query, so test is not fully valid here
-            //var uv = new UserInfoViewModel(null, settings, logger);
+            //var uv = new UserInfoViewModel(null, settings);
 
             var user = new User() { Id = 5 };
 

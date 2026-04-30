@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NLog;
 using SoundMist.Helpers;
-using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System.Collections.Generic;
@@ -15,6 +15,8 @@ namespace SoundMist.ViewModels;
 
 internal partial class DownloadedViewModel : ViewModelBase
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     [ObservableProperty] private string _tracksFilter = string.Empty;
     [ObservableProperty] private Track? _selectedTrack;
 
@@ -26,13 +28,11 @@ internal partial class DownloadedViewModel : ViewModelBase
 
     private readonly SoundCloudQueries _queries;
     private readonly IMusicPlayer _musicPlayer;
-    private readonly ILogger _logger;
 
-    public DownloadedViewModel(SoundCloudQueries queries, IMusicPlayer musicPlayer, ILogger logger)
+    public DownloadedViewModel(SoundCloudQueries queries, IMusicPlayer musicPlayer)
     {
         _queries = queries;
         _musicPlayer = musicPlayer;
-        _logger = logger;
         AppendToQueueCommand = new AsyncRelayCommand(AppendToQueue);
         PlayStationCommand = new AsyncRelayCommand(PlayStation);
         PrependToQueueCommand = new RelayCommand(PrependToQueue);
@@ -57,7 +57,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             if (!File.Exists(mp3Path))
             {
                 File.Delete(idPath);
-                _logger.Info($"removed unused downloaded id file for track: {trackLabel}");
+                _logger.Info("removed unused downloaded id file for track: {trackLabel}", trackLabel);
                 continue;
             }
 
@@ -66,7 +66,7 @@ internal partial class DownloadedViewModel : ViewModelBase
                 ids.Add((id, trackLabel));
             else
             {
-                _logger.Warn($"failed reading track id for the track {trackLabel}: \"{idString}\"");
+                _logger.Warn("failed reading track id for the track {trackLabel}: \"{idString}\"", trackLabel, idString);
                 File.Delete(idPath);
             }
         }

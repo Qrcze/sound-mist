@@ -1,4 +1,5 @@
-﻿using SoundMist.Helpers;
+﻿using NLog;
+using SoundMist.Helpers;
 using SoundMist.Models.SoundCloud;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace SoundMist.Models
 {
-    public class CacheDatabase(SoundCloudQueries queries, ILogger logger) : IDatabase
+    public class CacheDatabase(SoundCloudQueries queries) : IDatabase
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         private readonly SoundCloudQueries _queries = queries;
-        private readonly ILogger _logger = logger;
 
         private readonly Dictionary<long, Track> _tracks = [];
         private readonly Dictionary<long, User> _users = [];
@@ -108,7 +110,7 @@ namespace SoundMist.Models
 
             if (user == null)
             {
-                _logger.Info($"Cache failed retrieving user with id <{id}>: {errorMessage}");
+                _logger.Warn("Cache failed retrieving user with id <{id}>: {errorMessage}", id, errorMessage);
                 return User.CreateDeletedUser(id);
             }
             return user;
@@ -132,7 +134,7 @@ namespace SoundMist.Models
 
                     if (playlist == null)
                     {
-                        _logger.Warn($"Cache failed retrieving playlist <{item}>: {errorMessage}");
+                        _logger.Warn("Cache failed retrieving playlist <{item}>: {errorMessage}", item, errorMessage);
                         _playlists.Add(item, Playlist.CreateDeletedPlaylist(item));
                     }
                     else

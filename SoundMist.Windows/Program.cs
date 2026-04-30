@@ -1,6 +1,6 @@
 ﻿using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
-using SoundMist.Models;
+using NLog;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
@@ -12,8 +12,9 @@ namespace SoundMist.Windows;
 
 internal class Program
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     private static IMusicPlayer _musicPlayer = null!;
-    private static ILogger _logger = null!;
     private static MediaPlayer _mp = null!;
     private static SystemMediaTransportControls _smtc = null!;
 
@@ -31,14 +32,13 @@ internal class Program
         }
         catch (Exception ex)
         {
-            FileLogger.Instance.Fatal($"Program crashed unexpectedly: {ex.Message}");
+            _logger.Fatal(ex, "Unhandled exception occurred (Bass lib last error: {bassErr}", ManagedBass.Bass.LastError);
         }
     }
 
     private static void SetupWindowsIntegration(ServiceProvider services)
     {
         _musicPlayer = services.GetRequiredService<IMusicPlayer>();
-        _logger = services.GetRequiredService<ILogger>();
 
         _mp = new MediaPlayer();
         _smtc = _mp.SystemMediaTransportControls;
@@ -117,7 +117,7 @@ internal class Program
                 break;
 
             default:
-                _logger.Warn($"Pressed an unhandled button on the windows media controls: {args.Button}");
+                _logger.Warn("Pressed an unhandled button on the windows media controls: {0}", args.Button);
                 break;
         }
     }
@@ -138,5 +138,5 @@ internal class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace();
+            .LogToNLog();
 }

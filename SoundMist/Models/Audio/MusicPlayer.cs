@@ -1,4 +1,5 @@
-﻿using SoundMist.Helpers;
+﻿using NLog;
+using SoundMist.Helpers;
 using SoundMist.Models.SoundCloud;
 using System;
 using System.Buffers;
@@ -14,6 +15,8 @@ namespace SoundMist.Models.Audio
 {
     public class MusicPlayer : IMusicPlayer
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         private enum TrackLoadStatus
         {
             Ok,
@@ -69,7 +72,7 @@ namespace SoundMist.Models.Audio
         private CancellationTokenSource? _playPauseTokenSource;
         private readonly System.Timers.Timer _timeUpdateTimer;
 
-        public MusicPlayer(SoundCloudQueries soundCloudQueries, SoundCloudDownloader soundCloudDownloader, ProgramSettings settings, IAudioController audioController, ILogger logger)
+        public MusicPlayer(SoundCloudQueries soundCloudQueries, SoundCloudDownloader soundCloudDownloader, ProgramSettings settings, IAudioController audioController)
         {
             _soundCloudQueries = soundCloudQueries;
             _soundCloudDownloader = soundCloudDownloader;
@@ -80,10 +83,7 @@ namespace SoundMist.Models.Audio
             _timeUpdateTimer = new(250);
             _timeUpdateTimer.Elapsed += _timeUpdateTimer_Elapsed;
 
-            ErrorCallback += m =>
-            {
-                logger.Error(m);
-            };
+            ErrorCallback += _logger.Error;
         }
 
         public void SetPosition(double value)

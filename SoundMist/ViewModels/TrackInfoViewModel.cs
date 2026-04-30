@@ -2,6 +2,7 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
@@ -17,6 +18,8 @@ namespace SoundMist.ViewModels;
 
 public partial class TrackInfoViewModel : ViewModelBase
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     [ObservableProperty] private Track? _track;
     [ObservableProperty] private bool _isPlaying;
     [ObservableProperty] private bool _isCurrentTrack;
@@ -51,7 +54,6 @@ public partial class TrackInfoViewModel : ViewModelBase
     private readonly SoundCloudCommands _soundCloudCommands;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
-    private readonly ILogger _logger;
     private readonly History _history;
 
     public IRelayCommand OpenUrlInBrowserCommand { get; }
@@ -60,7 +62,7 @@ public partial class TrackInfoViewModel : ViewModelBase
     public IRelayCommand ToggleFullImageCommand { get; }
     public IRelayCommand OpenArtistProfileCommand { get; }
 
-    public TrackInfoViewModel(IHttpManager httpManager, SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger, History history)
+    public TrackInfoViewModel(IHttpManager httpManager, SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, ProgramSettings settings, IMusicPlayer musicPlayer, History history)
     {
         Mediator.Default.Register(MediatorEvent.OpenTrackInfo, OpenTrack);
         _httpManager = httpManager;
@@ -68,7 +70,6 @@ public partial class TrackInfoViewModel : ViewModelBase
         _soundCloudCommands = soundCloudCommands;
         _settings = settings;
         _musicPlayer = musicPlayer;
-        _logger = logger;
         _history = history;
         OpenUrlInBrowserCommand = new RelayCommand(OpenUrlInBrowser);
         LikeTrackCommand = new AsyncRelayCommand(LikeTrack);
@@ -151,7 +152,7 @@ public partial class TrackInfoViewModel : ViewModelBase
                 notifMessage,
                 NotificationType.Error,
                 TimeSpan.Zero));
-            _logger.Error($"failed sending a like request: {message}");
+            _logger.Error("failed sending a like request: {message}", message);
         }
     }
 
@@ -204,7 +205,7 @@ public partial class TrackInfoViewModel : ViewModelBase
             return;
         if (Track.User is null)
         {
-            _logger.Warn($"Track id {Track.Id} didn't have a user reference");
+            _logger.Warn("Track id {id} didn't have a user reference", Track.Id);
             return;
         }
         Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, Track.User);
@@ -284,7 +285,7 @@ public partial class TrackInfoViewModel : ViewModelBase
                     TrackLiked = response.Collection.Contains(Track.Id);
                 else
                 {
-                    _logger.Error($"Failed retrieving liked tracks: {errorMessage}");
+                    _logger.Error("Failed retrieving liked tracks: {errorMessage}", errorMessage);
                     NotificationManager.Show(new("Failed retrieving liked list", "Please check the logs", NotificationType.Warning, TimeSpan.FromSeconds(10)));
                 }
             }

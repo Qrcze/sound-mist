@@ -129,10 +129,9 @@ namespace SCPlayerTests
             var queries = new SoundCloudQueries(httpManager, settings);
             var downloader = new SoundCloudDownloader(httpManager, settings, queries);
             var audioController = new MockAudioController() { ChannelInitialized = true };
-            var logger = new DummyLogger();
             var track = GetMockTrack();
 
-            var player = new MusicPlayer(queries, downloader, settings, audioController, logger);
+            var player = new MusicPlayer(queries, downloader, settings, audioController);
             player.PlayStateUpdated += (state, message) =>
             {
                 Assert.False(state == PlayState.Error, $"Play state threw an error: {message}");

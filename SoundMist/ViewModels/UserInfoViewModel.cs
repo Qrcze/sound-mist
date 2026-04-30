@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
@@ -42,6 +43,8 @@ public class UserTabData : ObservableObject
 
 public partial class UserInfoViewModel : ViewModelBase
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     [ObservableProperty] private User? _user;
     [ObservableProperty] private bool _loadingView;
     [ObservableProperty] private bool _showFullImage;
@@ -61,7 +64,6 @@ public partial class UserInfoViewModel : ViewModelBase
 
     private readonly IDatabase _database;
     private readonly SoundCloudQueries _soundCloudQueries;
-    private readonly ILogger _logger;
     private readonly History _history;
 
     private CancellationTokenSource? _tokenSource;
@@ -76,13 +78,12 @@ public partial class UserInfoViewModel : ViewModelBase
     public IRelayCommand OpenInBrowserCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
 
-    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, ILogger logger, History history)
+    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, History history)
     {
         Mediator.Default.Register(MediatorEvent.OpenUserInfo, OpenUser);
 
         _database = database;
         _soundCloudQueries = soundCloudQueries;
-        _logger = logger;
         _history = history;
         OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
         ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
@@ -131,7 +132,7 @@ public partial class UserInfoViewModel : ViewModelBase
                 break;
 
             default:
-                _logger.Error($"Tried opening a tab that is not defined by enum: {tab}");
+                _logger.Error("Tried opening a tab that is not defined by enum: {tab}", tab);
                 break;
         }
     }

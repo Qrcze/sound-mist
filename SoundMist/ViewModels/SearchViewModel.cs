@@ -1,15 +1,14 @@
 ﻿using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -21,6 +20,8 @@ namespace SoundMist.ViewModels;
 
 public partial class SearchViewModel : ViewModelBase
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     [ObservableProperty] private string _searchFilter = string.Empty;
     [ObservableProperty] private string _selectedFilter = "All";
     [ObservableProperty] private bool _showQueryResults;
@@ -45,13 +46,12 @@ public partial class SearchViewModel : ViewModelBase
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
-    private readonly ILogger _logger;
     private readonly JsonSerializerOptions _convertJsonScObjects = new() { Converters = { new SearchObjectConverter() } };
 
     public IRelayCommand ClearFilterCommand { get; }
     public IAsyncRelayCommand RunSearchCommand { get; }
 
-    public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, ILogger logger)
+    public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer)
     {
         _querySearchDelay = new(800) { AutoReset = false };
         _querySearchDelay.Elapsed += GetSearchResults;
@@ -61,7 +61,6 @@ public partial class SearchViewModel : ViewModelBase
         _database = database;
         _settings = settings;
         _musicPlayer = musicPlayer;
-        _logger = logger;
 
         ClearFilterCommand = new RelayCommand(ClearFilter);
         RunSearchCommand = new AsyncRelayCommand(async () => await RunSearch());
@@ -111,12 +110,12 @@ public partial class SearchViewModel : ViewModelBase
         }
         catch (HttpRequestException ex)
         {
-            _logger.Error($"Failed getting the response for search query: {ex.Message}");
+            _logger.Error(ex, "Failed getting the response for search query");
             return;
         }
         catch (Exception ex)
         {
-            _logger.Error($"Unhandled exception while getting search query: {ex.Message}");
+            _logger.Error(ex, "Unhandled exception while getting search query");
             throw;
         }
 
@@ -154,12 +153,12 @@ public partial class SearchViewModel : ViewModelBase
         }
         catch (HttpRequestException ex)
         {
-            NotifyAboutErrorOnSearch($"Failed getting the response for search query: {ex.Message}");
+            NotifyAboutErrorOnSearch(ex, "Failed getting the response for search query");
             return;
         }
         catch (Exception ex)
         {
-            NotifyAboutErrorOnSearch($"Unhandled exception while getting search query: {ex.Message}");
+            NotifyAboutErrorOnSearch(ex, "Unhandled exception while getting search query");
             return;
         }
 
@@ -178,10 +177,10 @@ public partial class SearchViewModel : ViewModelBase
         _runningSearch = false;
     }
 
-    void NotifyAboutErrorOnSearch(string message)
+    void NotifyAboutErrorOnSearch(Exception ex, string message)
     {
         SearchResults.Add(message);
-        _logger.Error(message);
+        _logger.Error(ex, message);
         NotificationManager.Show(new("Failed getting response", "Please check the logs.", NotificationType.Error, TimeSpan.Zero));
         LoadingView = false;
         _runningSearch = false;
@@ -246,6 +245,4 @@ public partial class SearchViewModel : ViewModelBase
 
         //await PlayFromPlaylist(playlist, 0);
     }
-
-    
 }

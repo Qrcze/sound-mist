@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using NLog;
 using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
@@ -10,6 +11,8 @@ namespace SoundMist.Views;
 
 public partial class LikedLibraryView : UserControl
 {
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
     private readonly LikedLibraryViewModel _vm;
 
     public LikedLibraryView()
@@ -23,7 +26,7 @@ public partial class LikedLibraryView : UserControl
             if (scrollViewer != null)
                 scrollViewer.ScrollChanged += OnScrollChanged;
             else
-                FileLogger.Instance.Warn("Failed getting the ScrollViewer for Liked ListBox!");
+                _logger.Warn("Failed getting the ScrollViewer for Liked ListBox!");
         };
 
         Loaded += ViewLoaded;
