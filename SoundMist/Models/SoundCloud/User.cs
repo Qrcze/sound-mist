@@ -8,6 +8,8 @@ namespace SoundMist.Models.SoundCloud
 {
     public class User
     {
+        public const string DefaultSoundcloudAvatarLink = "https://i1.sndcdn.com/avatars-000050634102-gvxcc6-t200x200.jpg";
+
         [JsonIgnore] public string? BackgroundVisual => Visuals?.Items.FirstOrDefault()?.VisualUrl;
 
         //CountryCode comes in a form like "GB" instead of "United Kingdom" and such, so not very verbose, but it'll have to do for now
@@ -38,6 +40,7 @@ namespace SoundMist.Models.SoundCloud
 
         //A bit of a guess work, but seems like one of the fields, that the snipped user data doesn't contain, is TrackCount
         [JsonIgnore] public bool IsFullInfo => TrackCount.HasValue;
+
         [JsonIgnore] public string CreatedAtFormatted => CreatedAt.HasValue ? $"Account Created: {CreatedAt.Value.ToShortDateString()}" : string.Empty;
 
         [JsonIgnore] public bool IsDeleted { get; set; }
@@ -185,13 +188,24 @@ namespace SoundMist.Models.SoundCloud
         [JsonPropertyName("website_title")]
         public string? WebsiteTitle { get; set; }
 
+        public static User CreateDummyUser()
+        {
+            var user = new User
+            {
+                FullName = "John Soundcloud",
+                Username = "Dummy User",
+                AvatarUrl = DefaultSoundcloudAvatarLink
+            };
+            return user;
+        }
+
         internal static User CreateDeletedUser(long id)
         {
             return new()
             {
                 Id = id,
                 Username = $"Missing User {id}",
-                AvatarUrl = "",
+                AvatarUrl = DefaultSoundcloudAvatarLink,
                 IsDeleted = true,
             };
         }

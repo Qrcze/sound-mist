@@ -18,7 +18,7 @@ internal partial class DownloadedViewModel : ViewModelBase
     private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     [ObservableProperty] private string _tracksFilter = string.Empty;
-    [ObservableProperty] private Track? _selectedTrack;
+    [ObservableProperty] private Track _selectedTrack = Track.CreatePlaceholderTrack();
 
     public ObservableCollection<Track> TracksList { get; } = [];
 

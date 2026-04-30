@@ -2,6 +2,7 @@
 using Avalonia.Logging;
 using NLog;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -56,7 +57,7 @@ public class NLogSink : ILogSink
 
     private const int MaxCacheSize = 16;
 
-    private static readonly Dictionary<Type, (ILogger logger, DateTime creationTime)> _loggerCache = [];
+    private static readonly ConcurrentDictionary<Type, (ILogger logger, DateTime creationTime)> _loggerCache = [];
 
     public static ILogger Resolve(Type type)
     {
@@ -64,10 +65,10 @@ public class NLogSink : ILogSink
             return value.logger;
 
         var log = LogManager.GetLogger(type.ToString());
-        _loggerCache.Add(type, (log, DateTime.Now));
+        var addedToCache = _loggerCache.TryAdd(type, (log, DateTime.Now));
 
-        if (_loggerCache.Count > MaxCacheSize)
-            _loggerCache.Remove(_loggerCache.MinBy(x => x.Value.creationTime).Key);
+        if (addedToCache && _loggerCache.Count > MaxCacheSize)
+            _loggerCache.TryRemove(_loggerCache.MinBy(x => x.Value.creationTime).Key, out _);
 
         return log;
     }

@@ -23,7 +23,7 @@ public partial class PlayerViewModel : ViewModelBase
     [ObservableProperty] private string _trackTitle = string.Empty;
     [ObservableProperty] private string _trackAuthor = string.Empty;
     [ObservableProperty] private string? _trackThumbnail = string.Empty;
-    [ObservableProperty] private Track? _trackSelectedInQueue;
+    [ObservableProperty] private Track _trackSelectedInQueue = Track.CreatePlaceholderTrack();
     [ObservableProperty] private bool _volumeHigh;
     [ObservableProperty] private bool _volumeMid;
     [ObservableProperty] private bool _volumeLow;

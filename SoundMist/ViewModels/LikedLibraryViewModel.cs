@@ -37,7 +37,7 @@ namespace SoundMist.ViewModels
 
         private readonly string _baseHref;
         [ObservableProperty] private string _tracksFilter = string.Empty;
-        [ObservableProperty] private Track? _selectedTrack;
+        [ObservableProperty] private Track _selectedTrack = Track.CreatePlaceholderTrack();
 
         private volatile bool _loadingItems;
 

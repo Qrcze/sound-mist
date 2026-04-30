@@ -20,7 +20,7 @@ public partial class TrackInfoViewModel : ViewModelBase
 {
     private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    [ObservableProperty] private Track? _track;
+    [ObservableProperty] private Track _track = Track.CreatePlaceholderTrack();
     [ObservableProperty] private bool _isPlaying;
     [ObservableProperty] private bool _isCurrentTrack;
     [ObservableProperty] private bool _trackLiked;

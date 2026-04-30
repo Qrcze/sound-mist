@@ -107,7 +107,7 @@
 		</Grid>
 
 		<Panel Background="#9333" IsVisible="{Binding LoadingView}">
-			<li:LoadingIndicator Mode="ThreeDots" MaxWidth="300" />
+			<li:LoadingIndicator Mode="ThreeDots" Width="100" Height="100" />
 		</Panel>
 		<Panel IsVisible="{Binding ShowFullImage}">
 			<Border Background="#a222" Tapped="TogglePreview" />

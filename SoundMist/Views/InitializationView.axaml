@@ -7,6 +7,6 @@
 			 xmlns:vm="clr-namespace:SoundMist.ViewModels"
              x:Class="SoundMist.Views.InitializationView">
 	<Grid>
-		<li:LoadingIndicator Mode="Wave" Width="100" Foreground="OrangeRed" />
+		<li:LoadingIndicator Mode="Wave" Width="100" Height="100" Foreground="OrangeRed" />
 	</Grid>
 </UserControl>

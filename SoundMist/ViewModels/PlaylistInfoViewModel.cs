@@ -17,11 +17,11 @@ namespace SoundMist.ViewModels
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        [ObservableProperty] private Playlist? _playlist;
+        [ObservableProperty] private Playlist _playlist = Playlist.CreateDeletedPlaylist(0);
         [ObservableProperty] private bool _loadingView;
         [ObservableProperty] private bool _isLiked;
         [ObservableProperty] private bool _showFullImage;
-        [ObservableProperty] private Track? _selectedTrack;
+        [ObservableProperty] private Track _selectedTrack = Track.CreatePlaceholderTrack();
 
         private CancellationTokenSource? _tokenSource;
         private readonly IHttpManager _httpManager;

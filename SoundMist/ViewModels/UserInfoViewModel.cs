@@ -45,7 +45,7 @@ public partial class UserInfoViewModel : ViewModelBase
 {
     private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    [ObservableProperty] private User? _user;
+    [ObservableProperty] private User _user = User.CreateDummyUser();
     [ObservableProperty] private bool _loadingView;
     [ObservableProperty] private bool _showFullImage;
 
