@@ -146,10 +146,12 @@ namespace SoundMist.Helpers
             bool forceProxy = false;
             if (_settings.ProxyMode == ProxyMode.BypassOnly)
             {
+                if (track.Policy == "BLOCK")
+                {
                 httpClient = _httpManager.GetProxiedClient();
                 forceProxy = true;
-                if (track.Policy == "BLOCK")
                     track = (await _scQueries.GetTracksById([track.Id])).Single();
+            }
             }
 
             (var links, string error) = await GetTrackLinks(track, forceProxy, CancellationToken.None);

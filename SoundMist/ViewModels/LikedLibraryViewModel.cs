@@ -205,10 +205,19 @@ namespace SoundMist.ViewModels
             var notif = new Notification($"Downloading {SelectedTrack.FullLabel}", "Downloading started...", NotificationType.Information, TimeSpan.Zero);
             NotificationManager.Show(notif);
 
-            (bool success, string errorMessage) = await _downloader.SaveTrackLocally(SelectedTrack, (message) =>
+            bool success = false;
+            string errorMessage = string.Empty;
+            try
             {
-                notif.Message = message;
-            });
+                (success, errorMessage) = await _downloader.SaveTrackLocally(SelectedTrack, (message) =>
+                {
+                    notif.Message = message;
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed downloading the track {0}", SelectedTrack.Title);
+            }
 
             if (success)
             {
