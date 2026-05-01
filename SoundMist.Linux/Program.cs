@@ -21,7 +21,6 @@ internal class Program
         App.ServiceConfigured += (services) =>
         {
             Debug.Print("connecting media player");
-            var logger = services.GetRequiredService<ILogger>();
             var musicPlayer = services.GetRequiredService<IMusicPlayer>();
 
             var media = new MediaService(musicPlayer);
