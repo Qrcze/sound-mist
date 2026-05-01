@@ -10,12 +10,13 @@ namespace SoundMist.Models.SoundCloud
     {
         public static Track CreatePlaceholderTrack(string author = "Empty", string title = "Track", string? imageUrl = null)
         {
+            var user = User.CreateDummyUser();
+            user.Username = author;
             return new Track()
             {
-                User = new() { Username = author },
+                User = user,
                 Title = title,
                 ArtworkUrl = imageUrl ?? User.DefaultSoundcloudAvatarLink,
-                CommentCount = 0
             };
         }
 
@@ -55,20 +56,20 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public DateTime CreatedLocalTime => CreatedAt.ToLocalTime();
         [JsonIgnore] public DateTime ModifiedLocalTime => LastModified.ToLocalTime();
 
-        [JsonIgnore] public string LikesFormatted => StringHelpers.ShortenedNumber(LikesCount);
-        [JsonIgnore] public string PlaybackFormatted => StringHelpers.ShortenedNumber(PlaybackCount);
-        [JsonIgnore] public string RepostsFormatted => StringHelpers.ShortenedNumber(RepostsCount);
-        [JsonIgnore] public string CommentFormatted => StringHelpers.ShortenedNumber(CommentCount);
+        [JsonIgnore] public string LikesFormatted => LikesCount.HasValue ? StringHelpers.ShortenedNumber(LikesCount.Value) : "0";
+        [JsonIgnore] public string PlaybackFormatted => PlaybackCount.HasValue ? StringHelpers.ShortenedNumber(PlaybackCount.Value) : "0";
+        [JsonIgnore] public string RepostsFormatted => RepostsCount.HasValue ? StringHelpers.ShortenedNumber(RepostsCount.Value) : "0";
+        [JsonIgnore] public string CommentFormatted => CommentCount.HasValue ? StringHelpers.ShortenedNumber(CommentCount.Value) : "0";
 
-        [JsonIgnore] public string PlaybackTooltip => $"{PlaybackCount:n0} plays";
-        [JsonIgnore] public string LikesTooltip => $"{LikesCount:n0} likes";
-        [JsonIgnore] public string RepostsTooltip => $"{RepostsCount:n0} reposts";
-        [JsonIgnore] public string CommentTooltip => $"{CommentCount:n0} comments";
+        [JsonIgnore] public string PlaybackTooltip => PlaybackCount.HasValue ? $"{PlaybackCount.Value:n0} plays" : "0 plays";
+        [JsonIgnore] public string LikesTooltip => LikesCount.HasValue ? $"{LikesCount.Value:n0} likes" : "0 likes";
+        [JsonIgnore] public string RepostsTooltip => RepostsCount.HasValue ? $"{RepostsCount.Value:n0} reposts" : "0 reposts";
+        [JsonIgnore] public string CommentTooltip => CommentCount.HasValue ? $"{CommentCount.Value:n0} comments" : "0 reposts";
 
-        [JsonIgnore] public bool HasPlaybacks => PlaybackCount > 0;
-        [JsonIgnore] public bool HasLikes => LikesCount > 0;
-        [JsonIgnore] public bool HasReposts => RepostsCount > 0;
-        [JsonIgnore] public bool HasComment => CommentCount > 0;
+        [JsonIgnore] public bool HasPlaybacks => PlaybackCount.HasValue && PlaybackCount.Value > 0;
+        [JsonIgnore] public bool HasLikes => LikesCount.HasValue && LikesCount.Value > 0;
+        [JsonIgnore] public bool HasReposts => RepostsCount.HasValue && RepostsCount.Value > 0;
+        [JsonIgnore] public bool HasComment => CommentCount.HasValue && CommentCount.Value > 0;
 
         [JsonIgnore] public bool HasGenre => !string.IsNullOrEmpty(Genre);
 
@@ -143,10 +144,10 @@ namespace SoundMist.Models.SoundCloud
         public string? Caption { get; set; }
 
         [JsonPropertyName("comment_count")]
-        public int CommentCount { get; set; }
+        public int? CommentCount { get; set; } //for whatever reason some of these fields can be null
 
         [JsonPropertyName("commentable")]
-        public bool Commentable { get; set; }
+        public bool? Commentable { get; set; }
 
         [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
@@ -158,10 +159,10 @@ namespace SoundMist.Models.SoundCloud
         public DateTime DisplayDate { get; set; }
 
         [JsonPropertyName("download_count")]
-        public int DownloadCount { get; set; }
+        public int? DownloadCount { get; set; }
 
         [JsonPropertyName("downloadable")]
-        public bool Downloadable { get; set; }
+        public bool? Downloadable { get; set; }
 
         [JsonPropertyName("duration")]
         public int Duration { get; set; }
@@ -176,7 +177,7 @@ namespace SoundMist.Models.SoundCloud
         public string? Genre { get; set; }
 
         [JsonPropertyName("has_downloads_left")]
-        public bool HasDownloadsLeft { get; set; }
+        public bool? HasDownloadsLeft { get; set; }
 
         [JsonPropertyName("id")]
         public long Id { get; set; }
@@ -194,7 +195,7 @@ namespace SoundMist.Models.SoundCloud
         public string? License { get; set; }
 
         [JsonPropertyName("likes_count")]
-        public int LikesCount { get; set; }
+        public int? LikesCount { get; set; }
 
         [JsonPropertyName("media")]
         public Media Media { get; set; } = null!;
@@ -209,16 +210,16 @@ namespace SoundMist.Models.SoundCloud
         public string? PermalinkUrl { get; set; }
 
         [JsonPropertyName("playback_count")]
-        public int PlaybackCount { get; set; }
+        public int? PlaybackCount { get; set; }
 
         /// <summary>
-        /// possible policies: "ALLOW", "SNIP", "BLOCK", "MONETIZE"
+        /// possible policies: "ALLOW", "SNIP"
         /// </summary>
         [JsonPropertyName("policy")]
         public string? Policy { get; set; }
 
         [JsonPropertyName("public")]
-        public bool Public { get; set; }
+        public bool? Public { get; set; }
 
         [JsonPropertyName("publisher_metadata")]
         public PublisherMetadata? PublisherMetadata { get; set; } = null!;
@@ -233,7 +234,7 @@ namespace SoundMist.Models.SoundCloud
         public DateTime? ReleaseDate { get; set; }
 
         [JsonPropertyName("reposts_count")]
-        public int RepostsCount { get; set; }
+        public int? RepostsCount { get; set; }
 
         [JsonPropertyName("secret_token")]
         public string? SecretToken { get; set; }
@@ -251,7 +252,7 @@ namespace SoundMist.Models.SoundCloud
         public string? StationUrn { get; set; }
 
         [JsonPropertyName("streamable")]
-        public bool Streamable { get; set; }
+        public bool? Streamable { get; set; }
 
         [JsonPropertyName("tag_list")]
         public string? TagList { get; set; }
