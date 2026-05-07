@@ -351,15 +351,13 @@ namespace SoundMist.Models.Audio
             if (links is null)
             {
                 var soundCloudAvaiable = await _soundCloudDownloader.CheckConnection(throughProxy, token);
-                if (soundCloudAvaiable)
+                if (!soundCloudAvaiable)
                 {
-                    ErrorCallback?.Invoke(error);
-
-                    //skip forward
-                    return TrackLoadStatus.Error;
+                    _logger.Error(error);
+                    error = "Can't connect to SoundCloud services, please check your internet connection.";
                 }
 
-                ErrorCallback?.Invoke($"Can't connect to SoundCloud services, please check your internet connection.");
+                ErrorCallback?.Invoke(error);
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
                 return TrackLoadStatus.Error;
             }

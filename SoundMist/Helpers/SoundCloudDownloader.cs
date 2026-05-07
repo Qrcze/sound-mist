@@ -49,13 +49,15 @@ namespace SoundMist.Helpers
             try
             {
                 using var playbackStreamRequest = await client.GetAsync($"{url}?client_id={_settings.ClientId}&track_authorization={track.TrackAuthorization}", token);
+                if (!playbackStreamRequest.IsSuccessStatusCode && track.Media.Transcodings.Any(x => x.Format.Protocol?.Contains("encrypted") == true))
+                    return (null, $"Couldn't get hls stream for \"{track.Title}\" - looks like it's DRM-protected");
                 playbackStreamRequest.EnsureSuccessStatusCode();
 
                 playlistLink = await playbackStreamRequest.Content.ReadFromJsonAsync<M3ULinkHolder>(token);
             }
             catch (HttpRequestException e)
             {
-                return (null, $"Failed getting playback stream url for track: {track.Title} by {track.ArtistName} (ID: {track.Id}), return code: {e.StatusCode}: {e.Message}");
+                return (null, $"Failed getting track: {track.Title} by {track.ArtistName}, return code: {e.StatusCode}: {e.Message}");
             }
 
             //get the list of streams
