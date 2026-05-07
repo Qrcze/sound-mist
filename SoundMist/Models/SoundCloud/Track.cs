@@ -1,4 +1,5 @@
-﻿using SoundMist.Helpers;
+﻿using Avalonia.Media.Imaging;
+using SoundMist.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -280,5 +281,6 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonPropertyName("waveform_url")]
         public string? WaveformUrl { get; set; }
+        public Bitmap? ArtworkImage { get; internal set; }
     }
 }

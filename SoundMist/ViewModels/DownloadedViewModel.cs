@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NLog;
 using SoundMist.Helpers;
@@ -25,6 +26,7 @@ internal partial class DownloadedViewModel : ViewModelBase
     public IAsyncRelayCommand AppendToQueueCommand { get; }
     public IAsyncRelayCommand PlayStationCommand { get; }
     public IRelayCommand PrependToQueueCommand { get; }
+    public IAsyncRelayCommand RefreshListCommand { get; }
 
     private readonly SoundCloudQueries _queries;
     private readonly IMusicPlayer _musicPlayer;
@@ -36,60 +38,56 @@ internal partial class DownloadedViewModel : ViewModelBase
         AppendToQueueCommand = new AsyncRelayCommand(AppendToQueue);
         PlayStationCommand = new AsyncRelayCommand(PlayStation);
         PrependToQueueCommand = new RelayCommand(PrependToQueue);
+        RefreshListCommand = new AsyncRelayCommand(LoadDowloadedTracks);
 
         Task.Run(LoadDowloadedTracks);
     }
 
     private async Task LoadDowloadedTracks()
     {
+        var previousTracks = new List<Track>(TracksList);
+        TracksList.Clear();
+        foreach (var item in previousTracks)
+            item.ArtworkImage?.Dispose();
+
         if (!Directory.Exists(Globals.LocalDownloadsPath))
             return;
 
-        string[] idFiles = Directory.GetFiles(Globals.LocalDownloadsPath, "*.id");
-        List<(long id, string label)> ids = new(idFiles.Length);
-
-        foreach (var idPath in idFiles)
-        {
-            string trackLabel = Path.GetFileNameWithoutExtension(idPath);
-            string mp3Path = $"{Globals.LocalDownloadsPath}/{trackLabel}.mp3";
-
-            //remove unused json files
-            if (!File.Exists(mp3Path))
-            {
-                File.Delete(idPath);
-                _logger.Info("removed unused downloaded id file for track: {trackLabel}", trackLabel);
-                continue;
-            }
-
-            string idString = File.ReadAllText(idPath);
-            if (long.TryParse(idString, out long id))
-                ids.Add((id, trackLabel));
-            else
-            {
-                _logger.Warn("failed reading track id for the track {trackLabel}: \"{idString}\"", trackLabel, idString);
-                File.Delete(idPath);
-            }
-        }
-
-        var tracksData = await _queries.GetTracksById(ids.Select(x => x.id));
-
-        foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3"))
+        foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3").OrderByDescending(x => new FileInfo(x).CreationTimeUtc))
         {
             string trackLabel = Path.GetFileNameWithoutExtension(filePath);
-            (long trackId, _) = ids.FirstOrDefault(x => x.label == trackLabel);
 
-            var trackData = tracksData.FirstOrDefault(x => x.FullLabel == trackLabel);
-            if (trackData is not null)
+            string idPath = trackLabel + ".id";
+            string? idString = File.Exists(idPath) ? File.ReadAllText(idPath) : null;
+            bool idExists = long.TryParse(idString, out long trackId);
+
+            using var tags = TagLib.File.Create(filePath);
+            string artist = tags.Tag.FirstAlbumArtist;
+            string title = tags.Tag.Title;
+            int duration = (int)tags.Properties.Duration.TotalMilliseconds;
+            var picture = tags.Tag.Pictures.FirstOrDefault();
+            Bitmap? artwork = null;
+
+            if (picture != null)
             {
-                TracksList.Add(trackData);
+                using var pictureStream = new MemoryStream(picture.Data.Data);
+                using var fullImage = new Bitmap(pictureStream);
+                artwork = fullImage.CreateScaledBitmap(new(200, 200));
             }
-            else
+
+            Track track = new()
             {
-                using var tags = TagLib.File.Create(filePath);
-                string artist = tags.Tag.FirstAlbumArtist;
-                string title = tags.Tag.Title;
-                TracksList.Add(Track.CreatePlaceholderTrack(artist, title));
-            }
+                Id = trackId,
+                Title = title,
+                User = new()
+                {
+                    Username = artist,
+                },
+                FullDuration = duration,
+                ArtworkImage = artwork,
+            };
+
+            TracksList.Add(track);
         }
     }
 

@@ -5,33 +5,39 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 			 xmlns:vm="clr-namespace:SoundMist.ViewModels"
+             xmlns:c="using:SoundMist.Controls"
              x:Class="SoundMist.Views.DownloadedView"
 			 x:DataType="vm:DownloadedViewModel">
 	<Grid RowDefinitions="auto,*">
-		<Grid Grid.Row="0" >
+		<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" >
 			<!--<Button Content="Load Liked" Command="{Binding GetLikedTracksCommand}" />-->
 			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5" />
-		</Grid>
+			<Button ToolTip.Tip="Refresh List" Command="{Binding RefreshListCommand}" Padding="0" Margin="0 0 5 0" Width="30" Background="Transparent">
+				<Image Source="/Assets/refresh.png" />
+			</Button>
+		</StackPanel>
 		<ListBox Grid.Row="1" x:Name="LikedList" ItemsSource="{Binding TracksList}" SelectedItem="{Binding SelectedTrack}" DoubleTapped="ListBox_DoubleTapped">
 			<ListBox.ItemsPanel>
 				<ItemsPanelTemplate>
-					<WrapPanel />
+					<c:UniformGridWithMaxColumns MaxColumns="6" ChildWidth="224" HorizontalAlignment="Center" VerticalAlignment="Top" />
 				</ItemsPanelTemplate>
 			</ListBox.ItemsPanel>
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<Grid ColumnDefinitions="120,200" RowDefinitions="auto,auto" Height="120">
-						<Image Grid.RowSpan="2" asyncImageLoader:ImageLoader.Source="{Binding ArtworkUrl}" />
-						<TextBlock Margin="3" FontSize="15" TextWrapping="Wrap" Grid.Column="1" Grid.Row="0" Text="{Binding Title}" />
-						<TextBlock Margin="3" FontSize="13" Foreground="AliceBlue" TextWrapping="Wrap" Grid.Column="1" Grid.Row="1" Text="{Binding ArtistName}" />
-						<TextBlock Margin="3" FontSize="11" HorizontalAlignment="Right" Foreground="Gray" VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="1" Text="{Binding DurationFormatted}" />
+					<Grid RowDefinitions="auto,auto,auto" Width="200">
+						<Border Height="200" Width="200" CornerRadius="10" ClipToBounds="True" HorizontalAlignment="Center">
+							<Image Source="{Binding ArtworkImage}" />
+						</Border>
+						<Border Opacity=".75" Background="Black" VerticalAlignment="Bottom" HorizontalAlignment="Right" CornerRadius="5" Margin="5">
+							<TextBlock Padding="3 0" Margin="3" FontSize="11" Foreground="White" Text="{Binding DurationFormatted}" />
+						</Border>
+						<TextBlock Grid.Row="1" Padding="5 1" HorizontalAlignment="Stretch" FontSize="15" FontWeight="DemiBold" Text="{Binding Title}" ToolTip.Tip="{Binding Title}" />
+						<TextBlock Grid.Row="2" Padding="5 1" HorizontalAlignment="Stretch" FontSize="13" Text="{Binding ArtistName}" Opacity="0.75" ToolTip.Tip="{Binding ArtistName}" />
 					</Grid>
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 			<ListBox.ContextMenu>
 				<ContextMenu>
-					<MenuItem Header="Track page (WIP)"/>
-					<MenuItem Header="Play next (WIP)" Command="{Binding PrependToQueueCommand}" />
 					<MenuItem Header="Add to queue" Command="{Binding AppendToQueueCommand}" />
 					<MenuItem Header="Play station" Command="{Binding PlayStationCommand}" />
 					<Separator />

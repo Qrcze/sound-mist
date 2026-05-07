@@ -26,7 +26,7 @@
 				 DoubleTapped="ListBox_DoubleTapped">
 			<ListBox.ItemsPanel>
 				<ItemsPanelTemplate>
-					<c:UniformGridWithMaxColumns MaxColumns="6" ChildWidth="224" HorizontalAlignment="Center" />
+					<c:UniformGridWithMaxColumns MaxColumns="6" ChildWidth="224" HorizontalAlignment="Center" VerticalAlignment="Top" />
 				</ItemsPanelTemplate>
 			</ListBox.ItemsPanel>
 			<ListBox.ItemTemplate>
