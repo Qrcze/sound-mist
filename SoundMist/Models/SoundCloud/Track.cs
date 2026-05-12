@@ -51,6 +51,8 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public string ArtistName => PublisherMetadata?.Artist ?? User.Username;
         [JsonIgnore] public string LocalFilePath => $"{Globals.LocalDownloadsPath}/{SanitizeFilename()}.mp3"; //todo check for invalid characters in label
 
+        [JsonIgnore] public bool DownloadedLocally => File.Exists(LocalFilePath);
+
         [JsonIgnore] public string DurationFormatted => StringHelpers.DurationFormatted(FullDuration);
 
         [JsonIgnore] public string? LikedThumbnail => ArtworkUrl?.Replace("large", "t200x200") ?? User?.AvatarUrl.Replace("large", "t200x200");
@@ -294,6 +296,7 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonPropertyName("waveform_url")]
         public string? WaveformUrl { get; set; }
+
         public Bitmap? ArtworkImage { get; internal set; }
     }
 }
