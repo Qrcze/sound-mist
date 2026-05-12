@@ -172,6 +172,7 @@ namespace SoundMist.Helpers
             await System.IO.File.WriteAllBytesAsync(track.LocalFilePath, data);
 
             using var tfile = TagLib.File.Create(track.LocalFilePath);
+            tfile.Tag.Track = (uint)track.Id;
             tfile.Tag.Title = track.Title;
             tfile.Tag.AlbumArtists = [track.ArtistName];
             if (!string.IsNullOrEmpty(track.Genre))
@@ -206,8 +207,6 @@ namespace SoundMist.Helpers
             }
 
             tfile.Save();
-
-            System.IO.File.WriteAllText($"{Path.GetFileNameWithoutExtension(track.LocalFilePath)}.id", track.Id.ToString());
 
             return (true, string.Empty);
         }

@@ -57,11 +57,8 @@ internal partial class DownloadedViewModel : ViewModelBase
         {
             string trackLabel = Path.GetFileNameWithoutExtension(filePath);
 
-            string idPath = trackLabel + ".id";
-            string? idString = File.Exists(idPath) ? File.ReadAllText(idPath) : null;
-            bool idExists = long.TryParse(idString, out long trackId);
-
             using var tags = TagLib.File.Create(filePath);
+            long trackId = tags.Tag.Track;
             string artist = tags.Tag.FirstAlbumArtist;
             string title = tags.Tag.Title;
             int duration = (int)tags.Properties.Duration.TotalMilliseconds;

@@ -6,6 +6,7 @@ using SoundMist.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -23,7 +24,7 @@ namespace SoundMist.Models
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public const int SettingsVersion = 1;
+        public const int SettingsVersion = 2;
 
         private static readonly Rect DefaultWindowPos = new(200, 200, 1150, 800);
 
@@ -93,20 +94,26 @@ namespace SoundMist.Models
             if (v is not null)
                 version = (int)v;
 
+            bool versionChanged = false;
             if (version != SettingsVersion)
             {
+                versionChanged = true;
                 do
                 {
                     jsonNode = version switch
                     {
                         0 => UpdateFromVersion0(jsonNode),
+                        1 => UpdateFromVersion1(jsonNode),
                         _ => throw new NotImplementedException(),
                     };
                     version = (int)jsonNode[nameof(Version)]!;
                 } while (version != SettingsVersion);
             }
 
-            return jsonNode.Deserialize<ProgramSettings>();
+            var settings = jsonNode.Deserialize<ProgramSettings>();
+            if (versionChanged)
+                settings!.SaveSettingsFile();
+            return settings;
         }
 
         private static JsonObject UpdateFromVersion0(JsonObject jsonObject)
@@ -127,6 +134,30 @@ namespace SoundMist.Models
             jsonObject["BlockedTracks"]!.ReplaceWith(newTracks);
 
             jsonObject["Version"] = 1;
+            return jsonObject;
+        }
+
+        private static JsonObject UpdateFromVersion1(JsonObject jsonObject)
+        {
+            _logger.Info("Updating ProgramSettings from version 1");
+
+            foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3").OrderByDescending(x => new FileInfo(x).CreationTimeUtc))
+            {
+                string idPath = Path.Combine(Globals.LocalDownloadsPath, Path.GetFileNameWithoutExtension(filePath) + ".id");
+                if (!File.Exists(idPath))
+                    continue;
+
+                string idString = File.ReadAllText(idPath);
+                bool validId = uint.TryParse(idString, out uint id);
+
+                using var tags = TagLib.File.Create(filePath);
+                tags.Tag.Track = id;
+                tags.Save();
+
+                File.Delete(idPath);
+            }
+
+            jsonObject["Version"] = 2;
             return jsonObject;
         }
 
