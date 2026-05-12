@@ -201,22 +201,23 @@ namespace SoundMist.ViewModels
         {
             if (SelectedTrack == null)
                 return;
+            var trackToDownload = SelectedTrack;
 
-            var notif = new Notification($"Downloading {SelectedTrack.FullLabel}", "Downloading started...", NotificationType.Information, TimeSpan.Zero);
+            var notif = new Notification($"Downloading {trackToDownload.FullLabel}", "Downloading started...", NotificationType.Information, TimeSpan.Zero);
             NotificationManager.Show(notif);
 
             bool success = false;
             string errorMessage = string.Empty;
             try
             {
-                (success, errorMessage) = await _downloader.SaveTrackLocally(SelectedTrack, (message) =>
+                (success, errorMessage) = await _downloader.SaveTrackLocally(trackToDownload, (message) =>
                 {
                     notif.Message = message;
                 });
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Failed downloading the track {0}", SelectedTrack.Title);
+                _logger.Error(ex, "Failed downloading the track {0}", trackToDownload.Title);
             }
 
             if (success)
@@ -229,7 +230,7 @@ namespace SoundMist.ViewModels
             {
                 notif.Type = NotificationType.Error;
                 notif.Expiration = TimeSpan.Zero;
-                notif.Title = $"Failed downloading {SelectedTrack.FullLabel}";
+                notif.Title = $"Failed downloading {trackToDownload.FullLabel}";
                 notif.Message = errorMessage;
                 _logger.Error("Failed downloading a track: {errorMessage}", errorMessage);
             }

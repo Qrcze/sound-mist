@@ -1,4 +1,5 @@
-﻿using SoundMist.Models;
+﻿using NLog;
+using SoundMist.Models;
 using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using System;
@@ -17,6 +18,7 @@ namespace SoundMist.Helpers
 {
     public class SoundCloudDownloader(IHttpManager httpManager, ProgramSettings settings, SoundCloudQueries scQueries)
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private readonly IHttpManager _httpManager = httpManager;
         private readonly ProgramSettings _settings = settings;
         private readonly SoundCloudQueries _scQueries = scQueries;
@@ -183,16 +185,29 @@ namespace SoundMist.Helpers
                 tfile.Tag.Composers = [track.PublisherMetadata.WriterComposer];
             }
 
-            using var pic = await httpClient.GetAsync(track.ArtworkUrlOriginal);
-            if (pic.IsSuccessStatusCode)
+            HttpResponseMessage? pic = null;
+            try
             {
-                var vect = ByteVector.FromStream(await pic.Content.ReadAsStreamAsync());
-                tfile.Tag.Pictures = [new Picture(vect)];
+                pic = await httpClient.GetAsync(track.ArtworkOrAvatarUrlOriginal);
+
+                //some tracks seem to be missing the original image for whatever reason?
+                // - try getting the thumbnail version instead
+                if (!pic.IsSuccessStatusCode)
+                    pic = await httpClient.GetAsync(track.LikedThumbnail);
+
+                if (pic.IsSuccessStatusCode)
+                    tfile.Tag.Pictures = [new Picture(ByteVector.FromStream(await pic.Content.ReadAsStreamAsync()))];
+                else
+                    _logger.Warn("Failed getting the image for a track: {0} (id: {1})", track.FullLabel, track.Id);
+            }
+            finally
+            {
+                pic?.Dispose();
             }
 
             tfile.Save();
 
-            System.IO.File.WriteAllText($"{Globals.LocalDownloadsPath}/{track.FullLabel}.id", track.Id.ToString());
+            System.IO.File.WriteAllText($"{Path.GetFileNameWithoutExtension(track.LocalFilePath)}.id", track.Id.ToString());
 
             return (true, string.Empty);
         }
