@@ -2,6 +2,7 @@
 using SoundMist.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -9,6 +10,8 @@ namespace SoundMist.Models.SoundCloud
 {
     public class Track
     {
+        private static readonly char[] _illegalChars = Path.GetInvalidFileNameChars();
+
         public static Track CreatePlaceholderTrack(string author = "Empty", string title = "Track", string? imageUrl = null)
         {
             var user = User.CreateDummyUser();
@@ -34,9 +37,19 @@ namespace SoundMist.Models.SoundCloud
             };
         }
 
+        private string SanitizeFilename()
+        {
+            var filename = FullLabel;
+
+            filename = string.Join('_', filename.Split(_illegalChars));
+            if (string.IsNullOrWhiteSpace(filename))
+                return "unnamed";
+            return filename;
+        }
+
         [JsonIgnore] public string FullLabel => $"{PublisherMetadata?.Artist ?? User.Username} - {Title}";
         [JsonIgnore] public string ArtistName => PublisherMetadata?.Artist ?? User.Username;
-        [JsonIgnore] public string LocalFilePath => $"{Globals.LocalDownloadsPath}/{FullLabel}.mp3"; //todo check for invalid characters in label
+        [JsonIgnore] public string LocalFilePath => $"{Globals.LocalDownloadsPath}/{SanitizeFilename()}.mp3"; //todo check for invalid characters in label
 
         [JsonIgnore] public string DurationFormatted => StringHelpers.DurationFormatted(FullDuration);
 
