@@ -55,10 +55,11 @@
 			</ListBox.ItemTemplate>
 			<ListBox.ContextMenu>
 				<ContextMenu>
+					<MenuItem Header="About Track" Command="{Binding OpenTrackPageCommand}" />
+					<MenuItem Header="About Uploader" Command="{Binding OpenUserPageCommand}" />
+					<Separator Height="1" />
 					<MenuItem Header="Add to queue" Command="{Binding AppendToQueueCommand}" />
 					<MenuItem Header="Play station" Command="{Binding PlayStationCommand}" />
-					<Separator />
-					<MenuItem Header="Remove from liked (WIP)" />
 				</ContextMenu>
 			</ListBox.ContextMenu>
 		</ListBox>

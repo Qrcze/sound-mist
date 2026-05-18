@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NLog;
+using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
@@ -34,6 +35,8 @@ internal partial class DownloadedViewModel : ViewModelBase
     public ObservableCollection<Track> TracksList { get; } = [];
     private readonly List<Track> _tracksList = new(500);
 
+    public IAsyncRelayCommand OpenTrackPageCommand { get; }
+    public IAsyncRelayCommand OpenUserPageCommand { get; }
     public IAsyncRelayCommand AppendToQueueCommand { get; }
     public IAsyncRelayCommand PlayStationCommand { get; }
     public IRelayCommand PrependToQueueCommand { get; }
@@ -41,10 +44,14 @@ internal partial class DownloadedViewModel : ViewModelBase
     public IAsyncRelayCommand RefreshListCommand { get; }
 
     private readonly IMusicPlayer _musicPlayer;
+    private readonly IDatabase _database;
 
-    public DownloadedViewModel(IMusicPlayer musicPlayer)
+    public DownloadedViewModel(IMusicPlayer musicPlayer, IDatabase database)
     {
         _musicPlayer = musicPlayer;
+        _database = database;
+        OpenTrackPageCommand = new AsyncRelayCommand(OpenTrackPage);
+        OpenUserPageCommand = new AsyncRelayCommand(OpenUserPage);
         AppendToQueueCommand = new AsyncRelayCommand(AppendToQueue);
         PlayStationCommand = new AsyncRelayCommand(PlayStation);
         PrependToQueueCommand = new RelayCommand(PrependToQueue);
@@ -209,5 +216,42 @@ internal partial class DownloadedViewModel : ViewModelBase
     public async Task PlayQueue(IEnumerable<Track> tracks)
     {
         await _musicPlayer.LoadNewQueue(tracks);
+    }
+
+    public async Task OpenTrackPage(CancellationToken token)
+    {
+        if (SelectedTrack is null)
+            return;
+
+        Track? track = await FetchTrack(token);
+        if (track is null)
+            return;
+
+        Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, SelectedTrack);
+    }
+
+    public async Task OpenUserPage(CancellationToken token)
+    {
+        if (SelectedTrack is null)
+            return;
+
+        Track? track = await FetchTrack(token);
+        if (track is null)
+            return;
+
+        Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, track.User);
+    }
+
+    async Task<Track?> FetchTrack(CancellationToken token)
+    {
+        try
+        {
+            return await _database.GetTrackById(SelectedTrack.Id, token);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "Failed fetching track info");
+            return null;
+        }
     }
 }
