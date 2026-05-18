@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using NLog;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -20,6 +21,15 @@ internal partial class DownloadedViewModel : ViewModelBase
 
     [ObservableProperty] private string _tracksFilter = string.Empty;
     [ObservableProperty] private Track _selectedTrack = Track.CreatePlaceholderTrack();
+    [ObservableProperty] private bool _sortDescending = true;
+    [ObservableProperty] private string _selectedOrdering = "Date Added";
+
+    public string[] Orderings { get; } = [
+        "Date Added",
+        "Track Name",
+        "Uploader/Artist Name",
+        "Duration",
+    ];
 
     public ObservableCollection<Track> TracksList { get; } = [];
     private readonly List<Track> _tracksList = new(500);
@@ -61,7 +71,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             var track = await Task.Run(() => LoadTrack(filePath));
             if (token.IsCancellationRequested) return;
 
-            if (string.IsNullOrWhiteSpace(TracksFilter) || track.Title.Contains(TracksFilter, System.StringComparison.InvariantCultureIgnoreCase) || track.ArtistName.Contains(TracksFilter, System.StringComparison.InvariantCultureIgnoreCase))
+            if (string.IsNullOrWhiteSpace(TracksFilter) || track.Title.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase) || track.ArtistName.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase))
                 TracksList.Add(track);
             _tracksList.Add(track);
         }
@@ -112,8 +122,64 @@ internal partial class DownloadedViewModel : ViewModelBase
         }
 
         foreach (var track in _tracksList)
-            if (track.Title.Contains(TracksFilter, System.StringComparison.InvariantCultureIgnoreCase) || track.ArtistName.Contains(TracksFilter, System.StringComparison.InvariantCultureIgnoreCase))
+            if (track.Title.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase) || track.ArtistName.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase))
                 TracksList.Add(track);
+    }
+
+    partial void OnSortDescendingChanged(bool value)
+    {
+        OnSelectedOrderingChanged(SelectedOrdering);
+    }
+
+    partial void OnSelectedOrderingChanged(string value)
+    {
+        ShowOrderTracks(GetTracksOrderedBy(value));
+    }
+
+    IEnumerable<Track> GetTracksOrderedBy(string value)
+    {
+        switch (value)
+        {
+            case "Date Added":
+                if (SortDescending)
+                    return _tracksList.OrderByDescending(x => new FileInfo(x.LocalFilePath).CreationTimeUtc);
+                else
+                    return _tracksList.OrderBy(x => new FileInfo(x.LocalFilePath).CreationTimeUtc);
+
+            case "Track Name":
+                if (SortDescending)
+                    return _tracksList.OrderByDescending(x => x.Title);
+                else
+                    return _tracksList.OrderBy(x => x.Title);
+
+            case "Uploader/Artist Name":
+                if (SortDescending)
+                    return _tracksList.OrderByDescending(x => x.ArtistName);
+                else
+                    return _tracksList.OrderBy(x => x.ArtistName);
+
+            case "Duration":
+                if (SortDescending)
+                    return _tracksList.OrderByDescending(x => x.FullDuration);
+                else
+                    return _tracksList.OrderBy(x => x.FullDuration);
+
+            default:
+                _logger.Warn("Unexpected tracks order: {0}", value);
+                return _tracksList;
+        }
+    }
+
+    void ShowOrderTracks(IEnumerable<Track> orderedTracks)
+    {
+        TracksList.Clear();
+        if (string.IsNullOrWhiteSpace(TracksFilter))
+            foreach (var track in orderedTracks)
+                TracksList.Add(track);
+        else
+            foreach (var track in orderedTracks)
+                if (track.Title.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase) || track.ArtistName.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase))
+                    TracksList.Add(track);
     }
 
     private async Task AppendToQueue()

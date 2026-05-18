@@ -10,6 +10,18 @@
 			 x:DataType="vm:DownloadedViewModel">
 	<Grid RowDefinitions="auto,*">
 		<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" >
+			<TextBlock Text="Order By:" Margin="5" VerticalAlignment="Center" Opacity="0.6"/>
+			<ComboBox Margin="0 5" Width="200" ItemsSource="{Binding Orderings}" SelectedItem="{Binding SelectedOrdering}">
+			</ComboBox>
+			<ToggleButton x:Name="DescendingToggle" IsChecked="{Binding SortDescending}" Width="25" Height="25" VerticalAlignment="Center" Margin="5 5 15 5" >
+				<Panel>
+				    <PathIcon IsVisible="{Binding #DescendingToggle.IsChecked}" ToolTip.Tip="Sort Descending"
+							Data="{StaticResource sort_down}" />
+				    <PathIcon IsVisible="{Binding !#DescendingToggle.IsChecked}" ToolTip.Tip="Sort Ascending"
+							Data="{StaticResource sort_up}" />
+				</Panel>
+			</ToggleButton>
+
 			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5">
 				<TextBox.InnerRightContent>
 					<Button IsVisible="{Binding TracksFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Command="{Binding ClearFilterCommand}" Classes="textbox-clear">

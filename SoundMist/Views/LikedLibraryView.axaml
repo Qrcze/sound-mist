@@ -39,7 +39,7 @@
 							<TextBlock Padding="3 0" Margin="3" FontSize="11" Foreground="White" Text="{Binding DurationFormatted}" />
 						</Border>
 						<Border IsVisible="{Binding DownloadedLocally}" Opacity=".75" Background="#5000" VerticalAlignment="Bottom" HorizontalAlignment="Left" CornerRadius="5" Padding="3 1" Margin="7 5" ToolTip.Tip="Available Locally">
-							<PathIcon Foreground="White" Data="m434-297 226-227-56-56-170 170-85-85-57 57 142 141ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h240l80 80h320q33 0 56.5 23.5T880-640v400q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H447l-80-80H160v480Zm0 0v-480 480Z"/>
+							<PathIcon Foreground="White" Data="{StaticResource downloaded}"/>
 						</Border>
 						<TextBlock Grid.Row="1" Padding="5 1" HorizontalAlignment="Stretch" FontSize="15" FontWeight="DemiBold" Text="{Binding Title}" ToolTip.Tip="{Binding Title}" />
 						<TextBlock Grid.Row="2" Padding="5 1" HorizontalAlignment="Stretch" FontSize="13" Text="{Binding ArtistName}" Opacity="0.75" ToolTip.Tip="{Binding ArtistName}" />
