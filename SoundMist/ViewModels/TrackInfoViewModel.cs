@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,6 +56,7 @@ public partial class TrackInfoViewModel : ViewModelBase
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
     private readonly History _history;
+    private readonly IDatabase _database;
 
     public IRelayCommand OpenUrlInBrowserCommand { get; }
     public IAsyncRelayCommand LikeTrackCommand { get; }
@@ -62,7 +64,7 @@ public partial class TrackInfoViewModel : ViewModelBase
     public IRelayCommand ToggleFullImageCommand { get; }
     public IRelayCommand OpenArtistProfileCommand { get; }
 
-    public TrackInfoViewModel(IHttpManager httpManager, SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, ProgramSettings settings, IMusicPlayer musicPlayer, History history)
+    public TrackInfoViewModel(IHttpManager httpManager, SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, ProgramSettings settings, IMusicPlayer musicPlayer, History history, IDatabase database)
     {
         Mediator.Default.Register(MediatorEvent.OpenTrackInfo, OpenTrack);
         _httpManager = httpManager;
@@ -71,6 +73,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         _settings = settings;
         _musicPlayer = musicPlayer;
         _history = history;
+        _database = database;
         OpenUrlInBrowserCommand = new RelayCommand(OpenUrlInBrowser);
         LikeTrackCommand = new AsyncRelayCommand(LikeTrack);
         PlayPauseCommand = new AsyncRelayCommand(PlayPause);
@@ -275,6 +278,28 @@ public partial class TrackInfoViewModel : ViewModelBase
 
         Task.Run(async () =>
         {
+            try
+            {
+                Track = await _database.GetTrackById(Track.Id, token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.Error(ex, "Failed retrieving full info for the track");
+                NotificationManager.Show(new("Failed retrieving track info",
+                    $"SC responded with {(ex.StatusCode.HasValue ? (int)ex.StatusCode.Value : "unknown code")} {ex.StatusCode}",
+                    NotificationType.Error,
+                    TimeSpan.Zero));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Exception getting full info for the track");
+                NotificationManager.Show(new("Failed retrieving track info", "Unhandled exception, please check logs.", NotificationType.Error, TimeSpan.Zero));
+            }
+
             if (_httpManager.AuthorizedClient.IsAuthorized)
             {
                 var (response, errorMessage) = await _soundCloudQueries.GetUsersLikedTracksIds(token);

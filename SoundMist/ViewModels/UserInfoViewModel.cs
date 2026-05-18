@@ -178,7 +178,7 @@ public partial class UserInfoViewModel : ViewModelBase
                 else
                 {
                     entryFail = true;
-                    _logger.Error($"Received a user entry that doesn't contain track nor playlist - entry type: {entry.Type}");
+                    _logger.Error("Received a user entry that doesn't contain track nor playlist - entry type: {entryType}", entry.Type);
                 }
             }
             else if (item is not null)
@@ -188,7 +188,7 @@ public partial class UserInfoViewModel : ViewModelBase
             else
             {
                 entryFail = true;
-                _logger.Error($"Received an unknown object for user view: {item} (checked user id: {User.Id}, on tab: {(UserTab)OpenedTabIndex})");
+                _logger.Error("Received an unknown object for user view: {item} (checked user id: {id}, on tab: {tab})", item, User.Id, (UserTab)OpenedTabIndex);
             }
         }
         if (entryFail)
@@ -234,7 +234,7 @@ public partial class UserInfoViewModel : ViewModelBase
             }
             catch (HttpRequestException ex)
             {
-                _logger.Error($"Failed retrieving full info for the user: {ex.Message}");
+                _logger.Error(ex, "Failed retrieving full info for the user");
                 NotificationManager.Show(new("Failed retrieving user info",
                     $"SC responded with {(ex.StatusCode.HasValue ? (int)ex.StatusCode.Value : "unknown code")} {ex.StatusCode}",
                     NotificationType.Error,
@@ -242,7 +242,7 @@ public partial class UserInfoViewModel : ViewModelBase
             }
             catch (Exception ex)
             {
-                _logger.Error($"Exception getting full info for the user: {ex.Message}");
+                _logger.Error(ex, "Exception getting full info for the user");
                 NotificationManager.Show(new("Failed retrieving user info", "Unhandled exception, please check logs.", NotificationType.Error, TimeSpan.Zero));
             }
 
