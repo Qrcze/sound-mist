@@ -10,8 +10,13 @@
 			 x:DataType="vm:DownloadedViewModel">
 	<Grid RowDefinitions="auto,*">
 		<StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" >
-			<!--<Button Content="Load Liked" Command="{Binding GetLikedTracksCommand}" />-->
-			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5" />
+			<TextBox Text="{Binding TracksFilter}" Watermark="Search..." Width="300" HorizontalAlignment="Right" Margin="5">
+				<TextBox.InnerRightContent>
+					<Button IsVisible="{Binding TracksFilter, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Command="{Binding ClearFilterCommand}" Classes="textbox-clear">
+						<Image Source="/Assets/close.png" />
+					</Button>
+				</TextBox.InnerRightContent>
+			</TextBox>
 			<Button ToolTip.Tip="Refresh List" Command="{Binding RefreshListCommand}" Padding="0" Margin="0 0 5 0" Width="30" Background="Transparent">
 				<Image Source="/Assets/refresh.png" />
 			</Button>

@@ -47,8 +47,8 @@ namespace SoundMist.Models.SoundCloud
             return filename;
         }
 
-        [JsonIgnore] public string FullLabel => $"{PublisherMetadata?.Artist ?? User.Username} - {Title}";
-        [JsonIgnore] public string ArtistName => PublisherMetadata?.Artist ?? User.Username;
+        [JsonIgnore] public string FullLabel => $"{ArtistName} - {Title}";
+        [JsonIgnore] public string ArtistName => PublisherMetadata?.Artist ?? User?.Username ?? "Unknown Artist";
         [JsonIgnore] public string LocalFilePath => $"{Globals.LocalDownloadsPath}/{SanitizeFilename()}.mp3"; //todo check for invalid characters in label
 
         [JsonIgnore] public bool DownloadedLocally => File.Exists(LocalFilePath);
