@@ -18,7 +18,7 @@
     <PackageReference Include="ManagedBass" Version="4.0.2" />
     <PackageReference Include="NLog" Version="6.1.2" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
-    <PackageReference Include="Tmds.DBus" Version="0.21.2" />
+    <PackageReference Include="Tmds.DBus" Version="0.94.0" />
   </ItemGroup>
 
   <ItemGroup>
