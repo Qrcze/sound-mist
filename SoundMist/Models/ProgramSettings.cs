@@ -20,6 +20,13 @@ namespace SoundMist.Models
         Dark
     }
 
+    public enum RepeatMode
+    {
+        Off,
+        Queue,
+        One
+    }
+
     public class ProgramSettings
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -36,6 +43,7 @@ namespace SoundMist.Models
         private float _volume = 1;
         private bool _autoplayStationOnLastTrack = true;
         private bool _shuffle;
+        private RepeatMode _repeatMode;
         private long? _lastTrackId;
         private MainViewTab _startingTabIndex = MainViewTab.LikedTracks;
         private bool _startPlayingOnLaunch;
@@ -176,6 +184,7 @@ namespace SoundMist.Models
         public float Volume { get => _volume; set => SetPropertyAndSave(ref _volume, value); }
         public bool AutoplayStationOnLastTrack { get => _autoplayStationOnLastTrack; set => SetPropertyAndSave(ref _autoplayStationOnLastTrack, value); }
         public bool Shuffle { get => _shuffle; set => SetPropertyAndSave(ref _shuffle, value); }
+        public RepeatMode RepeatMode { get => _repeatMode; set => SetPropertyAndSave(ref _repeatMode, value); }
         public long? LastTrackId { get => _lastTrackId; set => SetPropertyAndSave(ref _lastTrackId, value); }
         public MainViewTab StartingTabIndex { get => _startingTabIndex; set => SetPropertyAndSave(ref _startingTabIndex, value); }
         public bool StartPlayingOnLaunch { get => _startPlayingOnLaunch; set => SetPropertyAndSave(ref _startPlayingOnLaunch, value); }

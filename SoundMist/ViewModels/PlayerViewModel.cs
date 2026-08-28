@@ -58,6 +58,31 @@ public partial class PlayerViewModel : ViewModelBase
         }
     }
 
+    public RepeatMode RepeatMode
+    {
+        get => _settings.RepeatMode;
+        set
+        {
+            if (_settings.RepeatMode == value)
+                return;
+
+            _settings.RepeatMode = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(RepeatOne));
+            OnPropertyChanged(nameof(RepeatIconOpacity));
+            OnPropertyChanged(nameof(RepeatTooltip));
+        }
+    }
+
+    public bool RepeatOne => RepeatMode == RepeatMode.One;
+    public double RepeatIconOpacity => RepeatMode == RepeatMode.Off ? 0.4 : 1;
+    public string RepeatTooltip => RepeatMode switch
+    {
+        RepeatMode.Queue => "Repeat queue",
+        RepeatMode.One => "Repeat one",
+        _ => "Repeat off",
+    };
+
     public double TrackTime
     {
         get => _trackTime;
@@ -88,6 +113,7 @@ public partial class PlayerViewModel : ViewModelBase
     public IRelayCommand OpenTrackInfoCommand { get; }
     public IRelayCommand TogglePlaylistCommand { get; }
     public IRelayCommand MuteVolumeCommand { get; }
+    public IRelayCommand CycleRepeatCommand { get; }
 
     public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, History history)
     {
@@ -110,6 +136,7 @@ public partial class PlayerViewModel : ViewModelBase
         OpenTrackInfoCommand = new RelayCommand(OpenTrackInfo);
         TogglePlaylistCommand = new RelayCommand(() => ShowingPlaylist = !ShowingPlaylist);
         MuteVolumeCommand = new RelayCommand(ToggleMute);
+        CycleRepeatCommand = new RelayCommand(CycleRepeat);
 
         //when the music player got initialized before this view
         if (_musicPlayer.CurrentTrack != null)
@@ -121,6 +148,17 @@ public partial class PlayerViewModel : ViewModelBase
         }
 
         UpdateVolumeMode();
+    }
+
+    private void CycleRepeat()
+    {
+        RepeatMode = RepeatMode switch
+        {
+            RepeatMode.Off => RepeatMode.Queue,
+            RepeatMode.Queue => RepeatMode.One,
+            RepeatMode.One => RepeatMode.Off,
+            _ => RepeatMode.Off,
+        };
     }
 
     private void ToggleMute()

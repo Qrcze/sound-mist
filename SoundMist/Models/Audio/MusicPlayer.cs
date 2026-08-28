@@ -78,7 +78,7 @@ namespace SoundMist.Models.Audio
             _soundCloudDownloader = soundCloudDownloader;
             _settings = settings;
             _audioController = audioController;
-            _audioController.OnTrackEnded += () => Task.Run(PlayNext);
+            _audioController.OnTrackEnded += () => Task.Run(HandleTrackEnded);
 
             _timeUpdateTimer = new(250);
             _timeUpdateTimer.Elapsed += _timeUpdateTimer_Elapsed;
@@ -173,6 +173,30 @@ namespace SoundMist.Models.Audio
             }
         }
 
+        private async Task HandleTrackEnded()
+        {
+            if (_settings.RepeatMode == RepeatMode.One)
+            {
+                RestartCurrentPlayback();
+                return;
+            }
+
+            await PlayNext();
+        }
+
+        private void RestartCurrentPlayback()
+        {
+            if (!PlayerReady)
+            {
+                _ = ReloadCurrentTrack();
+                return;
+            }
+
+            SetPosition(0);
+            TrackTimeUpdated?.Invoke(0);
+            StartPlaying();
+        }
+
         public async Task PlayNext()
         {
             _loadTrackTokenSource?.Cancel();
@@ -189,6 +213,29 @@ namespace SoundMist.Models.Audio
                     {
                         StartPlaying();
                     }
+                    else if (loadStatus == TrackLoadStatus.Skip)
+                        goto try_playing_next;
+                }
+                catch (TaskCanceledException)
+                { }
+            }
+            else if (_settings.RepeatMode == RepeatMode.Queue)
+            {
+                TracksPlaylist.TryGetCurrent(out var endedTrack);
+                if (!TracksPlaylist.TryMoveToStart(out track))
+                    return;
+
+                if (endedTrack is not null && endedTrack.Id == track.Id)
+                {
+                    RestartCurrentPlayback();
+                    return;
+                }
+
+                try
+                {
+                    var loadStatus = await LoadTrack(track, _loadTrackTokenSource.Token);
+                    if (loadStatus == TrackLoadStatus.Ok)
+                        StartPlaying();
                     else if (loadStatus == TrackLoadStatus.Skip)
                         goto try_playing_next;
                 }
@@ -236,6 +283,29 @@ namespace SoundMist.Models.Audio
                 try
                 {
                     if (await LoadTrack(track, _loadTrackTokenSource.Token) == TrackLoadStatus.Ok)
+                        StartPlaying();
+                }
+                catch (TaskCanceledException)
+                { }
+            }
+            else if (_settings.RepeatMode == RepeatMode.Queue)
+            {
+                TracksPlaylist.TryGetCurrent(out var currentTrack);
+                if (!TracksPlaylist.TryMoveToLast(out var lastTrack))
+                    return;
+
+                _loadTrackTokenSource?.Cancel();
+                _loadTrackTokenSource = new();
+
+                if (currentTrack is not null && lastTrack.Id == currentTrack.Id)
+                {
+                    RestartCurrentPlayback();
+                    return;
+                }
+
+                try
+                {
+                    if (await LoadTrack(lastTrack, _loadTrackTokenSource.Token) == TrackLoadStatus.Ok)
                         StartPlaying();
                 }
                 catch (TaskCanceledException)

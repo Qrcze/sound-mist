@@ -44,6 +44,13 @@
 				<ToggleButton Classes="button-small" Margin="5 0 0 0" IsChecked="{Binding Shuffle}" ToolTip.Tip="Shuffle">
 					<Image Source="/Assets/shuffle.png" />
 				</ToggleButton>
+				<Button Classes="button-small" Margin="5 0 0 0" Command="{Binding CycleRepeatCommand}" ToolTip.Tip="{Binding RepeatTooltip}">
+					<Panel>
+						<Image Source="/Assets/repeat.png" Opacity="{Binding RepeatIconOpacity}" />
+						<TextBlock Text="1" IsVisible="{Binding RepeatOne}" FontSize="9" FontWeight="Bold"
+								   HorizontalAlignment="Center" VerticalAlignment="Center" />
+					</Panel>
+				</Button>
 			</StackPanel>
 
 			<!-- status bar -->
