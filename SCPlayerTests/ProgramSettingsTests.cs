@@ -38,6 +38,7 @@ namespace SCPlayerTests
             var settings = ProgramSettings.GetUpdatedSettings(json);
             Assert.NotNull(settings);
             Assert.Equal(ProgramSettings.SettingsVersion, settings.Version);
+            Assert.Equal(RepeatMode.Off, settings.RepeatMode);
         }
 
         [Fact]

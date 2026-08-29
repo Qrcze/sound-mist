@@ -120,6 +120,34 @@ namespace SoundMist.Models
             return true;
         }
 
+        public bool TryMoveToStart(out Track firstTrack)
+        {
+            firstTrack = null!;
+            lock (listLock)
+            {
+                if (_items.Count == 0)
+                    return false;
+
+                _position = 0;
+                firstTrack = _items[_position];
+            }
+            return true;
+        }
+
+        public bool TryMoveToLast(out Track lastTrack)
+        {
+            lastTrack = null!;
+            lock (listLock)
+            {
+                if (_items.Count == 0)
+                    return false;
+
+                _position = _items.Count - 1;
+                lastTrack = _items[_position];
+            }
+            return true;
+        }
+
         public void ChangeShuffle(bool shuffle)
         {
             lock (listLock)

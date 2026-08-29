@@ -19,6 +19,8 @@ namespace SCPlayerTests
 
         public event Action? OnTrackEnded;
 
+        public void SimulateTrackEnded() => OnTrackEnded?.Invoke();
+
         //debug flag
         public bool IsStreamCompleted { get; set; }
 
@@ -164,6 +166,54 @@ namespace SCPlayerTests
                 if (tries <= 0)
                     break;
             }
+            Assert.True(player.IsPlaying);
+        }
+
+        [Fact]
+        public async Task RepeatOneRestartsTheCurrentTrackWhenItEnds()
+        {
+            var httpManager = new MockHttpManager();
+            var settings = new ProgramSettings { RepeatMode = RepeatMode.One };
+            var queries = new SoundCloudQueries(httpManager, settings);
+            var downloader = new SoundCloudDownloader(httpManager, settings, queries);
+            var audioController = new MockAudioController() { ChannelInitialized = true };
+            var track = GetMockTrack();
+
+            var player = new MusicPlayer(queries, downloader, settings, audioController);
+            await player.LoadNewQueue([track], null, true);
+
+            audioController.TimeInSeconds = 30;
+            audioController.SimulateTrackEnded();
+
+            int tries = 50;
+            while (audioController.TimeInSeconds != 0 && tries-- > 0)
+                await Task.Delay(20);
+
+            Assert.Equal(0, audioController.TimeInSeconds);
+            Assert.Equal(track.Id, player.CurrentTrack?.Id);
+            Assert.True(player.IsPlaying);
+        }
+
+        [Fact]
+        public async Task RepeatQueueWrapsToTheFirstTrack()
+        {
+            var httpManager = new MockHttpManager();
+            var settings = new ProgramSettings { RepeatMode = RepeatMode.Queue };
+            var queries = new SoundCloudQueries(httpManager, settings);
+            var downloader = new SoundCloudDownloader(httpManager, settings, queries);
+            var audioController = new MockAudioController() { ChannelInitialized = true };
+            var first = GetMockTrack();
+            var last = GetMockTrack();
+            last.Id = 2;
+            last.Title = "Second Track";
+
+            var player = new MusicPlayer(queries, downloader, settings, audioController);
+            await player.LoadNewQueue([first, last], null, true);
+
+            Assert.True(player.TracksPlaylist.TryMoveForward(out _));
+            await player.PlayNext();
+
+            Assert.Equal(first.Id, player.CurrentTrack?.Id);
             Assert.True(player.IsPlaying);
         }
 

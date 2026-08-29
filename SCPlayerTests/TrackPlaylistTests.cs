@@ -119,6 +119,28 @@ namespace SCPlayerTests
             Assert.Equal(4, currentTrack.Id);
         }
 
+        [Fact]
+        public void QueueWrapsToStartAndEnd()
+        {
+            var playlist = new TracksPlaylist();
+            playlist.AddRange([new Track() { Id = 1 }, new Track() { Id = 2 }, new Track() { Id = 3 },]);
+
+            Assert.True(playlist.TryMoveForward(out _));
+            Assert.True(playlist.TryMoveForward(out _));
+            Assert.False(playlist.TryMoveForward(out _));
+
+            Assert.True(playlist.TryMoveToStart(out var first));
+            Assert.Equal(1, first.Id);
+            Assert.True(playlist.TryGetCurrent(out var current));
+            Assert.Equal(1, current.Id);
+            Assert.False(playlist.TryMoveBack(out _));
+
+            Assert.True(playlist.TryMoveToLast(out var last));
+            Assert.Equal(3, last.Id);
+            Assert.True(playlist.TryGetCurrent(out current));
+            Assert.Equal(3, current.Id);
+        }
+
         //could need a retry because of randomness nature
         [RetryFact(5)]
         public void QueueShuffle()
