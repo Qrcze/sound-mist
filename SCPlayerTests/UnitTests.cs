@@ -96,9 +96,10 @@ namespace SCPlayerTests
             var settings = new ProgramSettings { StartingTabIndex = MainViewTab.LikedTracks };
             var history = new History(settings);
             var musicPlayer = new MockMusicPlayer();
+            var database = new DummyDatabase();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null!, null!, null!, settings, musicPlayer, history);
+            var tv = new TrackInfoViewModel(null!, null!, null!, settings, musicPlayer, history, database);
 
             var track = new Track() { Id = 5 };
 

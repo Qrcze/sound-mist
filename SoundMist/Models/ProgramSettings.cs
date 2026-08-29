@@ -149,6 +149,7 @@ namespace SoundMist.Models
         {
             _logger.Info("Updating ProgramSettings from version 1");
 
+            Directory.CreateDirectory(Globals.LocalDownloadsPath);
             foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3").OrderByDescending(x => new FileInfo(x).CreationTimeUtc))
             {
                 string idPath = Path.Combine(Globals.LocalDownloadsPath, Path.GetFileNameWithoutExtension(filePath) + ".id");
