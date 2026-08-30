@@ -102,6 +102,14 @@
 
 					<Grid ColumnDefinitions="*,*">
 						<StackPanel Orientation="Horizontal">
+							<ToggleButton Padding="0" Margin="5" Background="Transparent" Command="{Binding LikeTrackCommand}" IsChecked="{Binding TrackLiked}">
+								<StackPanel Orientation="Horizontal">
+									<Image IsVisible="{Binding TrackLiked}" Source="/Assets/favorite-filled.png" Width="24" />
+									<Image IsVisible="{Binding !TrackLiked}" Source="/Assets/favorite.png" Width="24" />
+									<TextBlock IsVisible="{Binding TrackLiked}" Text="Liked" VerticalAlignment="Center" Margin="5" />
+									<TextBlock IsVisible="{Binding !TrackLiked}" Text="Like" VerticalAlignment="Center" Margin="5" />
+								</StackPanel>
+							</ToggleButton>
 							<Button Content="Open in browser" Command="{Binding OpenUrlInBrowserCommand}" />
 						</StackPanel>
 

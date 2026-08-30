@@ -9,5 +9,7 @@ namespace SoundMist
 
         HttpClient GetClient();
         HttpClient GetProxiedClient();
+
+        void SetDataDomeCookie(string? value);
     }
 }

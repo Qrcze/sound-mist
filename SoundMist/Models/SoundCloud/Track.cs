@@ -2,15 +2,19 @@
 using SoundMist.Helpers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace SoundMist.Models.SoundCloud
 {
-    public class Track
+    public class Track : INotifyPropertyChanged
     {
         private static readonly char[] _illegalChars = Path.GetInvalidFileNameChars();
+        private bool _isLiked;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public static Track CreatePlaceholderTrack(string author = "Empty", string title = "Track", string? imageUrl = null)
         {
@@ -104,6 +108,20 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public bool RegionBlocked => Policy == "BLOCK";
         [JsonIgnore] public bool Snipped => Policy == "SNIP";
+        [JsonIgnore]
+        public bool IsLiked
+        {
+            get => _isLiked;
+            set
+            {
+                if (_isLiked == value)
+                    return;
+
+                _isLiked = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLiked)));
+            }
+        }
+
         [JsonIgnore] public bool FromAutoplay { get; set; }
 
         [JsonIgnore]

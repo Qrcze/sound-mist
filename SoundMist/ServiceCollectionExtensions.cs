@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(programSettings);
         collection.AddSingleton<IHttpManager>(httpManager);
         collection.AddSingleton<SoundCloudQueries>();
+        collection.AddSingleton<SoundCloudCommands>();
         collection.AddSingleton<SoundCloudDownloader>();
         collection.AddSingleton(History.Load(programSettings));
         collection.AddSingleton<IAudioController, ManagedBassController>();
