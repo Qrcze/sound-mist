@@ -49,6 +49,8 @@ namespace SoundMist.ViewModels
         private string? _nextHref;
         private readonly Timer _filterDelay;
 
+        public bool LoadAllLikedTracks => _settings.LoadAllLikedTracks;
+
         public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer)
         {
             _httpManager = httpManager;
@@ -215,7 +217,10 @@ namespace SoundMist.ViewModels
             TracksList.Clear();
             _fullTracksList.Clear();
             _nextHref = _baseHref;
-            await DownloadAllTrackList();
+            if (LoadAllLikedTracks)
+                await DownloadAllTrackList();
+            else
+                await DownloadTrackList();
         }
 
         private async Task Download()

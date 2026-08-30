@@ -34,7 +34,10 @@ public partial class LikedLibraryView : UserControl
 
     private async void ViewLoaded(object? sender, RoutedEventArgs e)
     {
-        await _vm.DownloadAllTrackList();
+        if (_vm.LoadAllLikedTracks)
+            await _vm.DownloadAllTrackList();
+        else
+            await _vm.DownloadTrackList();
         Loaded -= ViewLoaded;
     }
 

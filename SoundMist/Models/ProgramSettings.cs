@@ -55,6 +55,7 @@ namespace SoundMist.Models
         private string _proxyHost;
         private int _proxyPort;
         private bool _alternativeWindowsMediaKeysHandling;
+        private bool _loadAllLikedTracks = true;
         private Rect _windowPos = DefaultWindowPos;
 
         public static ProgramSettings Load()
@@ -195,6 +196,7 @@ namespace SoundMist.Models
         public string ProxyHost { get => _proxyHost; set => SetPropertyAndSave(ref _proxyHost, value); }
         public int ProxyPort { get => _proxyPort; set => SetPropertyAndSave(ref _proxyPort, value); }
         public bool AlternativeWindowsMediaKeysHandling { get => _alternativeWindowsMediaKeysHandling; set => SetPropertyAndSave(ref _alternativeWindowsMediaKeysHandling, value); }
+        public bool LoadAllLikedTracks { get => _loadAllLikedTracks; set => SetPropertyAndSave(ref _loadAllLikedTracks, value); }
 
         [JsonConverter(typeof(SizeConverter))]
         public Rect WindowPos { get => _windowPos; set => SetPropertyAndSave(ref _windowPos, value); }
