@@ -19,10 +19,10 @@ namespace SoundMist.Helpers
                 HttpResponseMessage response;
                 if (liked)
                 {
-                    response = await _httpManager.AuthorizedClient.PostAsync($"https://api-v2.soundcloud.com/likes/tracks/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", null);
+                    response = await _httpManager.AuthorizedClient.PostAsync($"https://api.soundcloud.com/likes/tracks/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", null);
                 }
                 else
-                    response = await _httpManager.AuthorizedClient.DeleteAsync($"https://api-v2.soundcloud.com/likes/tracks/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en");
+                    response = await _httpManager.AuthorizedClient.DeleteAsync($"https://api.soundcloud.com/likes/tracks/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en");
 
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     return (true, $"Already {(liked ? "liked" : "removed")}");

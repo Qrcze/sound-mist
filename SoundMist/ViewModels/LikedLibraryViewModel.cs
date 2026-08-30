@@ -78,7 +78,7 @@ namespace SoundMist.ViewModels
             RefreshListCommand = new AsyncRelayCommand(RefreshList);
             ClearFilterCommand = new RelayCommand(ClearFilter);
 
-            _baseHref = $"users/{_settings.UserId}/track_likes?client_id={_settings.ClientId}&limit=24&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+            _baseHref = $"https://api.soundcloud.com/me/likes/tracks?client_id={_settings.ClientId}&limit=24&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             _nextHref = _baseHref;
         }
 
@@ -128,15 +128,13 @@ namespace SoundMist.ViewModels
 
             Debug.Print("downloading liked tracks list");
 
-            QueryResponse<LikedTrack> tracks;
-            var auth = _httpManager.DefaultClient.DefaultRequestHeaders.Authorization;
-            _httpManager.DefaultClient.DefaultRequestHeaders.Authorization = null;
+            QueryResponse<Track> tracks;
             try
             {
-                using var response = await _httpManager.DefaultClient.GetAsync(_nextHref);
+                using var response = await _httpManager.AuthorizedClient.GetAsync(_nextHref);
                 response.EnsureSuccessStatusCode();
 
-                tracks = await response.Content.ReadFromJsonAsync<QueryResponse<LikedTrack>>() ?? throw new Exception("lol");
+                tracks = await response.Content.ReadFromJsonAsync<QueryResponse<Track>>() ?? throw new Exception("Empty liked tracks response");
 
                 //await File.WriteAllTextAsync("likedTracks.json", await response.Content.ReadAsStringAsync());
             }
@@ -146,17 +144,12 @@ namespace SoundMist.ViewModels
                 _loadingItems = false;
                 return;
             }
-            finally
-            {
-                _httpManager.DefaultClient.DefaultRequestHeaders.Authorization = auth;
-            }
-
             if (!string.IsNullOrEmpty(tracks.NextHref))
                 _nextHref = tracks.NextHref + $"&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
             else
                 _nextHref = null;
 
-            var newTracks = tracks.Collection.Select(x => x.Track);
+            var newTracks = tracks.Collection;
             _fullTracksList.AddRange(newTracks);
 
             foreach (var track in newTracks)
