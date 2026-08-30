@@ -14,8 +14,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace SoundMist.ViewModels
 {
