@@ -47,4 +47,14 @@ public partial class PlayerView : UserControl
         _vm.ShowingPlaylist = false;
         Mediator.Default.Invoke(MediatorEvent.OpenUserInfo, _vm.TrackSelectedInQueue!.User);
     }
+
+    private void VolumeSlider_PointerWheelChanged(object? sender, Avalonia.Input.PointerWheelEventArgs e)
+    {
+        const float step = 0.05f;
+        var volume = Math.Clamp(_vm.DesiredVolume + (float)(e.Delta.Y * step), 0f, 1f);
+
+        _vm.DesiredVolume = volume;
+        VolumeSlider.Value = volume;
+        e.Handled = true;
+    }
 }

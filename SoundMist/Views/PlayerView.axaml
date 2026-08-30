@@ -96,7 +96,8 @@
 						<Image Source="/Assets/volume_muted.png" IsVisible="{Binding VolumeMuted}" />
 					</Panel>
 				</Button>
-				<Slider VerticalAlignment="Center" Value="{Binding DesiredVolume}" Minimum="0" Maximum="1" Width="100" />
+				<Slider x:Name="VolumeSlider" VerticalAlignment="Center" Value="{Binding DesiredVolume}" Minimum="0" Maximum="1" Width="100"
+						PointerWheelChanged="VolumeSlider_PointerWheelChanged" />
 
 				<!-- Playlist queue popup -->
 				<Popup Placement="Top" PlacementTarget="{Binding #PlaylistButton}" IsLightDismissEnabled="True" IsOpen="{Binding ShowingPlaylist, Mode=TwoWay}">

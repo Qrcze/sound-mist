@@ -135,6 +135,7 @@ namespace SoundMist.ViewModels
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed retrieving liked tracks");
+                _loadingItems = false;
                 return;
             }
             finally
@@ -159,6 +160,25 @@ namespace SoundMist.ViewModels
             Debug.Print($"track list contains {TracksList.Count} elements");
 
             _loadingItems = false;
+        }
+
+        /// <summary>
+        /// Fully materializes the paginated liked library so filtering and
+        /// shuffle playback never depend on scroll position.
+        /// </summary>
+        public async Task DownloadAllTrackList()
+        {
+            while (!string.IsNullOrEmpty(_nextHref))
+            {
+                var hrefBefore = _nextHref;
+                var countBefore = _fullTracksList.Count;
+                await DownloadTrackList();
+
+                // An empty page can still advance pagination, but a failed
+                // request leaves the cursor unchanged and must stop the loop.
+                if (_fullTracksList.Count == countBefore && _nextHref == hrefBefore)
+                    break;
+            }
         }
 
         public async Task PlayQueue(IEnumerable<Track> tracks)
@@ -193,8 +213,9 @@ namespace SoundMist.ViewModels
         private async Task RefreshList()
         {
             TracksList.Clear();
+            _fullTracksList.Clear();
             _nextHref = _baseHref;
-            await DownloadTrackList();
+            await DownloadAllTrackList();
         }
 
         private async Task Download()

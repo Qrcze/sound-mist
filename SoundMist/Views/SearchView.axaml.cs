@@ -50,6 +50,13 @@ public partial class SearchView : UserControl
 
     private async void ListBox_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
     {
+        if (e.Source is Control source)
+        {
+            var item = source.FindAncestorOfType<ListBoxItem>();
+            if (item?.DataContext is object selected)
+                _vm.SelectedItem = selected;
+        }
+
         await _vm.RunSelectedItem();
     }
 
