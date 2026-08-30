@@ -66,7 +66,21 @@
 			<TabItem Header="Playlists">
 				<Grid RowDefinitions="auto,*">
 					<TextBlock Text="Loading liked playlists..." HorizontalAlignment="Center" Margin="5" IsVisible="{Binding LoadingLikedPlaylists}" />
-					<ListBox Grid.Row="1" x:Name="LikedPlaylistsList" ItemsSource="{Binding LikedPlaylists}" DoubleTapped="Playlist_DoubleTapped" />
+					<ListBox Grid.Row="1" x:Name="LikedPlaylistsList" ItemsSource="{Binding LikedPlaylists}" DoubleTapped="Playlist_DoubleTapped">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid ColumnDefinitions="auto,*" RowDefinitions="auto,auto,auto" Margin="8" MaxWidth="700">
+									<Image Grid.RowSpan="3" Width="100" Height="100" Margin="0 0 12 0"
+										   asyncImageLoader:ImageLoader.Source="{Binding ArtworkOrFirstTrackArtwork}" />
+									<TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="18" FontWeight="DemiBold"
+											   TextWrapping="Wrap" ToolTip.Tip="{Binding Title}" />
+									<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Author}" Opacity="0.75" />
+									<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CreatedAgo}" Opacity="0.55"
+											   ToolTip.Tip="{Binding CreatedLocalTime}" />
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
 				</Grid>
 			</TabItem>
 		</TabControl>
