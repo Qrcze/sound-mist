@@ -67,7 +67,6 @@ public partial class UserInfoViewModel : ViewModelBase
 
     private readonly IDatabase _database;
     private readonly SoundCloudQueries _soundCloudQueries;
-    private readonly SoundCloudCommands _soundCloudCommands;
     private readonly History _history;
     private readonly IMusicPlayer? _musicPlayer;
 
@@ -84,29 +83,16 @@ public partial class UserInfoViewModel : ViewModelBase
     public IRelayCommand OpenInBrowserCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
 
-    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, History history, IMusicPlayer? musicPlayer = null)
+    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, History history, IMusicPlayer? musicPlayer = null)
     {
         Mediator.Default.Register(MediatorEvent.OpenUserInfo, OpenUser);
 
         _database = database;
         _soundCloudQueries = soundCloudQueries;
-        _soundCloudCommands = soundCloudCommands;
         _history = history;
         _musicPlayer = musicPlayer;
-        _soundCloudCommands.TrackLikeChanged += OnTrackLikeChanged;
         OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
         ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
-    }
-
-    private void OnTrackLikeChanged(Track changedTrack, bool liked)
-    {
-        if (liked)
-            _likedTrackIds.Add(changedTrack.Id);
-        else
-            _likedTrackIds.Remove(changedTrack.Id);
-
-        foreach (var track in All.Items.Concat(PopularTracks.Items).Concat(Tracks.Items).Concat(Reposts.Items).OfType<Track>().Where(track => track.Id == changedTrack.Id))
-            track.IsLiked = liked;
     }
 
     internal async Task PlayTrack(Track track)

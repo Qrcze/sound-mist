@@ -40,7 +40,6 @@ namespace SoundMist.Models
         private bool _settingsInitialized; // a guard, otherwise json uses property to SetPropertyAndSave and it can break stuff
 
         private string? _authToken;
-        private string? _dataDomeToken;
         private float _volume = 1;
         private bool _autoplayStationOnLastTrack = true;
         private bool _shuffle;
@@ -184,8 +183,6 @@ namespace SoundMist.Models
         public event Action<Rect>? WindowPosReset;
 
         public string? AuthToken { get => _authToken; set => SetPropertyAndSave(ref _authToken, value); }
-        /// <summary>Optional SoundCloud anti-bot clearance cookie used for account write operations.</summary>
-        public string? DataDomeToken { get => _dataDomeToken; set => SetPropertyAndSave(ref _dataDomeToken, value); }
         public float Volume { get => _volume; set => SetPropertyAndSave(ref _volume, value); }
         public bool AutoplayStationOnLastTrack { get => _autoplayStationOnLastTrack; set => SetPropertyAndSave(ref _autoplayStationOnLastTrack, value); }
         public bool Shuffle { get => _shuffle; set => SetPropertyAndSave(ref _shuffle, value); }

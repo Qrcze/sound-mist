@@ -15,7 +15,6 @@ internal partial class LoginViewModel : ViewModelBase
 
     [ObservableProperty] private string _validationMessage = string.Empty;
     [ObservableProperty] private string _authToken = string.Empty;
-    [ObservableProperty] private string _dataDomeToken = string.Empty;
     private readonly IHttpManager _httpManager;
     private readonly ProgramSettings _settings;
     private readonly MainWindowViewModel _mainWindowViewModel;
@@ -29,7 +28,6 @@ internal partial class LoginViewModel : ViewModelBase
         _httpManager = httpManager;
         _settings = settings;
         _mainWindowViewModel = mainViewModel;
-        DataDomeToken = settings.DataDomeToken ?? string.Empty;
         GuestLoginCommand = new AsyncRelayCommand(GuestLogin);
         UseTokenCommand = new AsyncRelayCommand(UseToken);
         OpenSoundcloudPageCommand = new RelayCommand(OpenSoundcloudPage);
@@ -44,7 +42,6 @@ internal partial class LoginViewModel : ViewModelBase
     {
         _logger.Info("Checking authorization token");
         AuthToken = AuthToken.Trim();
-        DataDomeToken = DataDomeToken.Trim();
         _httpManager.AuthorizedClient.Authorization = new("OAuth", AuthToken);
 
         using var response = await _httpManager.AuthorizedClient.GetAsync("me");
@@ -61,18 +58,11 @@ internal partial class LoginViewModel : ViewModelBase
         var user = await response.Content.ReadFromJsonAsync<User>();
         _settings.UserId = user.Id;
         _settings.AuthToken = AuthToken;
-        _settings.DataDomeToken = string.IsNullOrWhiteSpace(DataDomeToken) ? null : DataDomeToken;
-        _httpManager.SetDataDomeCookie(_settings.DataDomeToken);
 
         _mainWindowViewModel.OpenMainView();
     }
 
     partial void OnAuthTokenChanged(string? oldValue, string newValue)
-    {
-        ValidationMessage = string.Empty;
-    }
-
-    partial void OnDataDomeTokenChanged(string? oldValue, string newValue)
     {
         ValidationMessage = string.Empty;
     }

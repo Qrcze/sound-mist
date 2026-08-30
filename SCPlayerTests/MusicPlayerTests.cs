@@ -94,9 +94,6 @@ namespace SCPlayerTests
 
         public HttpClient GetProxiedClient() => DefaultClient;
 
-        public void SetDataDomeCookie(string? value)
-        {
-        }
     }
 
     public class MusicPlayerTests

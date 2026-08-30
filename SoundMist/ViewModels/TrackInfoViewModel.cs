@@ -24,7 +24,6 @@ public partial class TrackInfoViewModel : ViewModelBase
     [ObservableProperty] private Track _track = Track.CreatePlaceholderTrack();
     [ObservableProperty] private bool _isPlaying;
     [ObservableProperty] private bool _isCurrentTrack;
-    [ObservableProperty] private bool _trackLiked;
     [ObservableProperty] private bool _loadingView;
     [ObservableProperty] private bool _showFullImage;
     [ObservableProperty] private int[] _samples = [];
@@ -51,29 +50,23 @@ public partial class TrackInfoViewModel : ViewModelBase
     }
 
     private readonly SoundCloudQueries _soundCloudQueries;
-    private readonly SoundCloudCommands _soundCloudCommands;
-    private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
     private readonly History _history;
     private readonly IDatabase _database;
 
     public IRelayCommand OpenUrlInBrowserCommand { get; }
-    public IAsyncRelayCommand LikeTrackCommand { get; }
     public IAsyncRelayCommand PlayPauseCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
     public IRelayCommand OpenArtistProfileCommand { get; }
 
-    public TrackInfoViewModel(SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, ProgramSettings settings, IMusicPlayer musicPlayer, History history, IDatabase database)
+    public TrackInfoViewModel(SoundCloudQueries soundCloudQueries, IMusicPlayer musicPlayer, History history, IDatabase database)
     {
         Mediator.Default.Register(MediatorEvent.OpenTrackInfo, OpenTrack);
         _soundCloudQueries = soundCloudQueries;
-        _soundCloudCommands = soundCloudCommands;
-        _settings = settings;
         _musicPlayer = musicPlayer;
         _history = history;
         _database = database;
         OpenUrlInBrowserCommand = new RelayCommand(OpenUrlInBrowser);
-        LikeTrackCommand = new AsyncRelayCommand(LikeTrack);
         PlayPauseCommand = new AsyncRelayCommand(PlayPause);
         ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
         OpenArtistProfileCommand = new RelayCommand(OpenArtistProfile);
@@ -118,40 +111,6 @@ public partial class TrackInfoViewModel : ViewModelBase
     private void TrackTimeUpdated(double pos)
     {
         SetProperty(ref _position, pos, nameof(Position));
-    }
-
-    private async Task LikeTrack()
-    {
-        if (Track is null)
-            return;
-
-        if (!_settings.UserId.HasValue)
-        {
-            NotificationManager.Show(new("User not logged-in",
-                "Please log-in to save the track to your likes",
-                NotificationType.Warning));
-            return;
-        }
-
-        bool requestedState = TrackLiked;
-        var (success, message) = await _soundCloudCommands.SetTrackLiked(requestedState, Track);
-        if (success)
-        {
-            Track.IsLiked = requestedState;
-            NotificationManager.Show(new(
-                requestedState ? "Track Added to Liked" : "Track Removed from Liked",
-                $"{Track.Title}: {(requestedState ? "liked" : "removed")}",
-                NotificationType.Success));
-            return;
-        }
-
-        TrackLiked = !requestedState;
-        _logger.Error("Failed sending a like request: {message}", message);
-        NotificationManager.Show(new(
-            requestedState ? "Like Failure" : "Dislike Failure",
-            message,
-            NotificationType.Error,
-            TimeSpan.Zero));
     }
 
     public async Task LoadMoreComments(bool force = false)
@@ -259,7 +218,6 @@ public partial class TrackInfoViewModel : ViewModelBase
 
         LoadingView = true;
         ShowFullImage = false;
-        TrackLiked = false;
 
         Comments.Clear();
         _commentsEnded = false;
@@ -294,18 +252,6 @@ public partial class TrackInfoViewModel : ViewModelBase
             {
                 _logger.Error(ex, "Exception getting full info for the track");
                 NotificationManager.Show(new("Failed retrieving track info", "Unhandled exception, please check logs.", NotificationType.Error, TimeSpan.Zero));
-            }
-
-            if (_settings.UserId.HasValue)
-            {
-                var (likedTracks, errorMessage) = await _soundCloudQueries.GetUsersLikedTracksIds(token);
-                if (token.IsCancellationRequested)
-                    return;
-
-                if (likedTracks is not null)
-                    TrackLiked = likedTracks.Collection.Contains(Track.Id);
-                else
-                    _logger.Warn("Failed retrieving liked tracks: {errorMessage}", errorMessage);
             }
 
             if (!string.IsNullOrEmpty(Track.WaveformUrl))
