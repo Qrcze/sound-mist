@@ -135,7 +135,7 @@ public partial class TrackInfoViewModel : ViewModelBase
             return;
         }
 
-        (bool success, string message) = await _soundCloudCommands.ToggleLikedDisliked(TrackLiked, Track.Id);
+        (bool success, string message) = await _soundCloudCommands.SetTrackLiked(TrackLiked, Track);
         if (success)
         {
             Track.IsLiked = TrackLiked;

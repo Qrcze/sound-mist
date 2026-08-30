@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -46,6 +47,7 @@ public partial class SearchViewModel : ViewModelBase
     private readonly Timer _querySearchDelay;
     private readonly IHttpManager _httpManager;
     private readonly SoundCloudQueries _queries;
+    private readonly SoundCloudCommands _soundCloudCommands;
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
@@ -54,19 +56,32 @@ public partial class SearchViewModel : ViewModelBase
     public IRelayCommand ClearFilterCommand { get; }
     public IAsyncRelayCommand RunSearchCommand { get; }
 
-    public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer)
+    public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, SoundCloudCommands soundCloudCommands, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer)
     {
         _querySearchDelay = new(800) { AutoReset = false };
         _querySearchDelay.Elapsed += GetSearchResults;
 
         _httpManager = httpManager;
         _queries = queries;
+        _soundCloudCommands = soundCloudCommands;
         _database = database;
         _settings = settings;
         _musicPlayer = musicPlayer;
+        _soundCloudCommands.TrackLikeChanged += OnTrackLikeChanged;
 
         ClearFilterCommand = new RelayCommand(ClearFilter);
         RunSearchCommand = new AsyncRelayCommand(async () => await RunSearch());
+    }
+
+    private void OnTrackLikeChanged(Track changedTrack, bool liked)
+    {
+        if (liked)
+            _likedTrackIds.Add(changedTrack.Id);
+        else
+            _likedTrackIds.Remove(changedTrack.Id);
+
+        foreach (var track in SearchResults.OfType<Track>().Where(track => track.Id == changedTrack.Id))
+            track.IsLiked = liked;
     }
 
     private void ClearFilter()

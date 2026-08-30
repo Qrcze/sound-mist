@@ -111,7 +111,7 @@ public static class NLogSinkExtensions
         LogManager.Setup().LoadConfiguration(conf =>
         {
             Directory.CreateDirectory(Globals.AppDirectory);
-            string logFilePath = Globals.AppDirectory + "log.txt";
+            string logFilePath = Globals.LogFilePath;
             if (File.Exists(logFilePath))
             {
                 var fi = new FileInfo(logFilePath);
