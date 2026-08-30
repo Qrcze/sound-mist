@@ -39,6 +39,7 @@ namespace SoundMist.ViewModels
         private readonly string _baseHref;
         [ObservableProperty] private string _tracksFilter = string.Empty;
         [ObservableProperty] private Track _selectedTrack = Track.CreatePlaceholderTrack();
+        [ObservableProperty] private bool _loadingLikedPlaylists;
 
         public ObservableCollection<Playlist> LikedPlaylists { get; } = [];
 
@@ -193,6 +194,7 @@ namespace SoundMist.ViewModels
             if (LikedPlaylists.Count > 0 || !_httpManager.AuthorizedClient.IsAuthorized)
                 return;
 
+            LoadingLikedPlaylists = true;
             try
             {
                 if (_queries is null)
@@ -215,6 +217,10 @@ namespace SoundMist.ViewModels
             catch (Exception ex)
             {
                 _logger.Error(ex, "Failed retrieving liked playlists");
+            }
+            finally
+            {
+                LoadingLikedPlaylists = false;
             }
         }
 

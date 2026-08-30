@@ -264,6 +264,7 @@ public partial class TrackInfoViewModel : ViewModelBase
 
         LoadingView = true;
         ShowFullImage = false;
+        TrackLiked = false;
 
         Comments.Clear();
         _commentsEnded = false;

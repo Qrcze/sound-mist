@@ -64,7 +64,10 @@
 			</ListBox>
 			</TabItem>
 			<TabItem Header="Playlists">
-				<ListBox x:Name="LikedPlaylistsList" ItemsSource="{Binding LikedPlaylists}" DoubleTapped="Playlist_DoubleTapped" />
+				<Grid RowDefinitions="auto,*">
+					<TextBlock Text="Loading liked playlists..." HorizontalAlignment="Center" Margin="5" IsVisible="{Binding LoadingLikedPlaylists}" />
+					<ListBox Grid.Row="1" x:Name="LikedPlaylistsList" ItemsSource="{Binding LikedPlaylists}" DoubleTapped="Playlist_DoubleTapped" />
+				</Grid>
 			</TabItem>
 		</TabControl>
 	</Grid>
