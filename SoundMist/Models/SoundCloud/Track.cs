@@ -105,7 +105,7 @@ namespace SoundMist.Models.SoundCloud
         [JsonIgnore] public bool RegionBlocked => Policy == "BLOCK";
         [JsonIgnore] public bool Snipped => Policy == "SNIP";
         [JsonIgnore] public bool IsLiked { get; set; }
-        [JsonIgnore] public string LikeButtonBackground => IsLiked ? "#d97706" : "Transparent";
+        [JsonIgnore] public string LikeButtonBackground => IsLiked ? "Orange" : "Transparent";
         [JsonIgnore] public bool FromAutoplay { get; set; }
 
         [JsonIgnore]

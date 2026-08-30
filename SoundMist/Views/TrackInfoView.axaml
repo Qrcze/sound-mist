@@ -27,6 +27,9 @@
 			<Setter Property="Margin" Value="3" />
 			<Setter Property="Padding" Value="8 2" />
 		</Style>
+		<Style Selector="ToggleButton:checked">
+			<Setter Property="Background" Value="Orange" />
+		</Style>
 
 		<Style Selector="TextBox.select-only-text">
 			<Setter Property="IsReadOnly" Value="True" />

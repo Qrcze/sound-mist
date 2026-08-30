@@ -19,13 +19,10 @@ namespace SoundMist.Helpers
                 HttpResponseMessage response;
                 if (liked)
                 {
-                    //using var message = new HttpRequestMessage(HttpMethod.Options, $"https://api-v2.soundcloud.com/users/{userId}?client_id={clientId}&app_version={appVersion}&app_locale=en");
-                    //using var opt = await httpClient.SendAsync(message);
-                    //using var mee = await httpClient.PostAsync("https://api-v2.soundcloud.com/me?client_id=0hzUVOl6v8aC6mJ7TmWjHRlD0Zp6Gf8a");
-                    response = await _httpManager.AuthorizedClient.PutAsync($"https://api-v2.soundcloud.com/users/{_settings.UserId}/track_likes/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", null);
+                    response = await _httpManager.AuthorizedClient.PostAsync($"https://api-v2.soundcloud.com/likes/tracks/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en", null);
                 }
                 else
-                    response = await _httpManager.AuthorizedClient.DeleteAsync($"https://api-v2.soundcloud.com/users/{_settings.UserId}/track_likes/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en");
+                    response = await _httpManager.AuthorizedClient.DeleteAsync($"https://api-v2.soundcloud.com/likes/tracks/{trackId}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en");
 
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     return (true, $"Already {(liked ? "liked" : "removed")}");
