@@ -21,7 +21,9 @@
 				<Image Source="/Assets/refresh.png" />
 			</Button>
 		</StackPanel>
-		<ListBox Grid.Row="1" AutoScrollToSelectedItem="True" x:Name="LikedList"
+		<TabControl Grid.Row="1">
+			<TabItem Header="Tracks">
+			<ListBox AutoScrollToSelectedItem="True" x:Name="LikedList"
 				 ItemsSource="{Binding TracksList}" SelectedItem="{Binding SelectedTrack}"
 				 DoubleTapped="ListBox_DoubleTapped">
 			<ListBox.ItemsPanel>
@@ -59,6 +61,11 @@
 					<MenuItem Header="Download" Command="{Binding DownloadCommand}" />
 				</ContextMenu>
 			</ListBox.ContextMenu>
-		</ListBox>
+			</ListBox>
+			</TabItem>
+			<TabItem Header="Playlists">
+				<ListBox x:Name="LikedPlaylistsList" ItemsSource="{Binding LikedPlaylists}" DoubleTapped="Playlist_DoubleTapped" />
+			</TabItem>
+		</TabControl>
 	</Grid>
 </UserControl>

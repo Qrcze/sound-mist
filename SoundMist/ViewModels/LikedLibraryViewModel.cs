@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Timers;
 
 namespace SoundMist.ViewModels
@@ -39,11 +40,14 @@ namespace SoundMist.ViewModels
         [ObservableProperty] private string _tracksFilter = string.Empty;
         [ObservableProperty] private Track _selectedTrack = Track.CreatePlaceholderTrack();
 
+        public ObservableCollection<Playlist> LikedPlaylists { get; } = [];
+
         private volatile bool _loadingItems;
 
         private readonly IHttpManager _httpManager;
         private readonly ProgramSettings _settings;
         private readonly SoundCloudDownloader _downloader;
+        private readonly SoundCloudQueries? _queries;
         private readonly IDatabase _database;
         private readonly IMusicPlayer _musicPlayer;
         private string? _nextHref;
@@ -51,11 +55,12 @@ namespace SoundMist.ViewModels
 
         public bool LoadAllLikedTracks => _settings.LoadAllLikedTracks;
 
-        public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer)
+        public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer, SoundCloudQueries? queries = null)
         {
             _httpManager = httpManager;
             _settings = settings;
             _downloader = downloader;
+            _queries = queries;
             _database = database;
             _musicPlayer = musicPlayer;
             musicPlayer.TrackChanged += (t) => SelectedTrack = t;
@@ -183,6 +188,36 @@ namespace SoundMist.ViewModels
             }
         }
 
+        public async Task DownloadLikedPlaylists()
+        {
+            if (LikedPlaylists.Count > 0 || !_httpManager.AuthorizedClient.IsAuthorized)
+                return;
+
+            try
+            {
+                if (_queries is null)
+                    return;
+
+                var (response, errorMessage) = await _queries.GetUsersLikedPlaylistsIds(CancellationToken.None);
+                if (response is null)
+                {
+                    _logger.Warn("Failed retrieving liked playlists: {errorMessage}", errorMessage);
+                    return;
+                }
+
+                var playlists = await _database.GetPlaylistsById(response.Collection, CancellationToken.None);
+                foreach (var playlist in playlists)
+                {
+                    _database.AddPlaylist(playlist);
+                    LikedPlaylists.Add(playlist);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed retrieving liked playlists");
+            }
+        }
+
         public async Task PlayQueue(IEnumerable<Track> tracks)
         {
             await _musicPlayer.LoadNewQueue(tracks, DownloadMoreLikedTracks);
@@ -221,6 +256,9 @@ namespace SoundMist.ViewModels
                 await DownloadAllTrackList();
             else
                 await DownloadTrackList();
+
+            LikedPlaylists.Clear();
+            await DownloadLikedPlaylists();
         }
 
         private async Task Download()

@@ -109,13 +109,13 @@ public partial class UserInfoViewModel : ViewModelBase
         SystemHelpers.OpenInBrowser(User.PermalinkUrl);
     }
 
-    public async Task LoadTab(bool force = false)
+    public async Task LoadTab(bool force = false, UserTab? requestedTab = null)
     {
         if (_tokenSource is null || User is null)
             return;
 
         var token = _tokenSource.Token;
-        var tab = (UserTab)OpenedTabIndex;
+        var tab = requestedTab ?? (UserTab)OpenedTabIndex;
 
         switch (tab)
         {
@@ -159,7 +159,10 @@ public partial class UserInfoViewModel : ViewModelBase
         tabData.Loading = true;
 
         if (!force && tabData.Items.Count > 0)
+        {
+            tabData.Loading = false;
             return;
+        }
 
         await LoadTabItems(tabData, getObjects, token);
 
