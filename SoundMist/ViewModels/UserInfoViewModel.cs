@@ -7,7 +7,9 @@ using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,6 +71,7 @@ public partial class UserInfoViewModel : ViewModelBase
     private readonly IMusicPlayer? _musicPlayer;
 
     private CancellationTokenSource? _tokenSource;
+    private HashSet<long> _likedTrackIds = [];
 
     public UserTabData All { get; } = new();
     public UserTabData PopularTracks { get; } = new();
@@ -190,7 +193,10 @@ public partial class UserInfoViewModel : ViewModelBase
             if (item is UserEntry entry)
             {
                 if (entry.Track is not null)
+                {
+                    entry.Track.IsLiked = _likedTrackIds.Contains(entry.Track.Id);
                     tabData.Items.Add(entry.Track);
+                }
                 else if (entry.Playlist is not null)
                     tabData.Items.Add(entry.Playlist);
                 else
@@ -201,6 +207,8 @@ public partial class UserInfoViewModel : ViewModelBase
             }
             else if (item is not null)
             {
+                if (item is Track track)
+                    track.IsLiked = _likedTrackIds.Contains(track.Id);
                 tabData.Items.Add(item);
             }
             else
@@ -238,12 +246,17 @@ public partial class UserInfoViewModel : ViewModelBase
 
         _tokenSource?.Cancel();
         _tokenSource = new();
+        _likedTrackIds = [];
         var token = _tokenSource.Token;
 
         Task.Run(async () =>
         {
             try
             {
+                var (likedTracks, _) = await _soundCloudQueries.GetUsersLikedTracksIds(token);
+                if (likedTracks is not null)
+                    _likedTrackIds = likedTracks.Collection.ToHashSet();
+
                 User = (await _database.GetUserById(userWithIdOnly.Id, token));
             }
             catch (TaskCanceledException)

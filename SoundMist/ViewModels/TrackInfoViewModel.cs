@@ -138,6 +138,7 @@ public partial class TrackInfoViewModel : ViewModelBase
         (bool success, string message) = await _soundCloudCommands.ToggleLikedDisliked(TrackLiked, Track.Id);
         if (success)
         {
+            Track.IsLiked = TrackLiked;
             string title = TrackLiked ? "Track Added to Liked" : "Track Removed from Liked";
             string notifMessage = $"{Track.Title}: {(TrackLiked ? "liked" : "removed")}";
 

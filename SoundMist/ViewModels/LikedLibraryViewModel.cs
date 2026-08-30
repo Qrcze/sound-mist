@@ -160,7 +160,10 @@ namespace SoundMist.ViewModels
             _fullTracksList.AddRange(newTracks);
 
             foreach (var track in newTracks)
+            {
+                track.IsLiked = true;
                 _database.AddTrack(track);
+            }
 
             foreach (var track in newTracks.Where(x => x.FullLabel.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase)))
                 TracksList.Add(track);

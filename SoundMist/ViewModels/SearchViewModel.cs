@@ -7,6 +7,7 @@ using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Http;
@@ -31,6 +32,8 @@ public partial class SearchViewModel : ViewModelBase
 
     private string? _nextHref;
     private volatile bool _runningSearch;
+    private readonly HashSet<long> _likedTrackIds = [];
+    private bool _likedTracksLoaded;
 
     public string[] Filters { get; } = ["All", "Tracks", "People", "Albums"];
 
@@ -146,6 +149,8 @@ public partial class SearchViewModel : ViewModelBase
             SearchResults.Clear();
         }
 
+        await LoadLikedTrackIds();
+
         SearchCollection? result;
         try
         {
@@ -166,7 +171,11 @@ public partial class SearchViewModel : ViewModelBase
         {
             ResultsMessage = $"Found: {result.TotalResults} results.";
             foreach (var item in result.Collection)
+            {
+                if (item is Track track)
+                    track.IsLiked = _likedTrackIds.Contains(track.Id);
                 SearchResults.Add(item);
+            }
         }
         else
         {
@@ -175,6 +184,22 @@ public partial class SearchViewModel : ViewModelBase
 
         LoadingView = false;
         _runningSearch = false;
+    }
+
+    private async Task LoadLikedTrackIds()
+    {
+        if (_likedTracksLoaded || !_httpManager.AuthorizedClient.IsAuthorized)
+            return;
+
+        var (response, errorMessage) = await _queries.GetUsersLikedTracksIds(System.Threading.CancellationToken.None);
+        if (response is null)
+        {
+            _logger.Warn("Failed retrieving liked tracks for search results: {errorMessage}", errorMessage);
+            return;
+        }
+
+        _likedTrackIds.UnionWith(response.Collection);
+        _likedTracksLoaded = true;
     }
 
     void NotifyAboutErrorOnSearch(Exception ex, string message)
