@@ -30,6 +30,7 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private ProxyProtocol _proxyProtocol;
     [ObservableProperty] private string _proxyHost;
     [ObservableProperty] private int _proxyPort;
+    [ObservableProperty] private string _dataDomeToken = string.Empty;
 
     //public ProxyMode ProxyMode { get => _settings.ProxyMode; set => _settings.ProxyMode = value; }
     //public ProxyProtocol ProxyProtocol { get => _settings.ProxyProtocol; set => _settings.ProxyProtocol = value; }
@@ -56,15 +57,18 @@ public partial class SettingsViewModel : ViewModelBase
     public RelayCommand ResetWindowSizeCommand { get; }
 
     private readonly ProgramSettings _settings;
+    private readonly IHttpManager? _httpManager;
 
-    public SettingsViewModel(ProgramSettings settings)
+    public SettingsViewModel(ProgramSettings settings, IHttpManager? httpManager = null)
     {
 #if OS_WINDOWS
         OnWindows = true;
 #endif
 
         _settings = settings;
+        _httpManager = httpManager;
         SelectedTheme = _settings.AppColorTheme;
+        DataDomeToken = _settings.DataDomeToken ?? string.Empty;
 
         (_proxyMode, _proxyProtocol, _proxyHost, _proxyPort) = _settings.GetProxySettings();
 
@@ -110,6 +114,19 @@ public partial class SettingsViewModel : ViewModelBase
     partial void OnSelectedThemeChanged(AppColorTheme value)
     {
         _settings.AppColorTheme = value;
+    }
+
+    partial void OnDataDomeTokenChanged(string? oldValue, string newValue)
+    {
+        string? token = string.IsNullOrWhiteSpace(newValue) ? null : newValue.Trim();
+        if (token != newValue)
+        {
+            DataDomeToken = token ?? string.Empty;
+            return;
+        }
+
+        _settings.DataDomeToken = token;
+        _httpManager?.SetDataDomeCookie(token);
     }
 
     public void RemoveBlockedTrack(BlockedEntry entry)

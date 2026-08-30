@@ -49,6 +49,7 @@ namespace SoundMist.ViewModels
         private readonly ProgramSettings _settings;
         private readonly SoundCloudDownloader _downloader;
         private readonly SoundCloudQueries? _queries;
+        private readonly SoundCloudCommands? _soundCloudCommands;
         private readonly IDatabase _database;
         private readonly IMusicPlayer _musicPlayer;
         private string? _nextHref;
@@ -56,14 +57,17 @@ namespace SoundMist.ViewModels
 
         public bool LoadAllLikedTracks => _settings.LoadAllLikedTracks;
 
-        public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer, SoundCloudQueries? queries = null)
+        public LikedLibraryViewModel(IHttpManager httpManager, ProgramSettings settings, SoundCloudDownloader downloader, IDatabase database, IMusicPlayer musicPlayer, SoundCloudQueries? queries = null, SoundCloudCommands? soundCloudCommands = null)
         {
             _httpManager = httpManager;
             _settings = settings;
             _downloader = downloader;
             _queries = queries;
+            _soundCloudCommands = soundCloudCommands;
             _database = database;
             _musicPlayer = musicPlayer;
+            if (_soundCloudCommands is not null)
+                _soundCloudCommands.TrackLikeChanged += OnTrackLikeChanged;
             musicPlayer.TrackChanged += (t) => SelectedTrack = t;
 
             _filterDelay = new Timer(500) { AutoReset = false };
@@ -80,6 +84,32 @@ namespace SoundMist.ViewModels
 
             _baseHref = $"users/{_settings.UserId}/track_likes?client_id={_settings.ClientId}&limit=24&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             _nextHref = _baseHref;
+        }
+
+        private void OnTrackLikeChanged(Track changedTrack, bool liked)
+        {
+            if (_fullTracksList.Count == 0)
+                return;
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (liked)
+                {
+                    if (_fullTracksList.All(track => track.Id != changedTrack.Id))
+                    {
+                        changedTrack.IsLiked = true;
+                        _fullTracksList.Insert(0, changedTrack);
+                        if (changedTrack.FullLabel.Contains(TracksFilter, StringComparison.InvariantCultureIgnoreCase))
+                            TracksList.Insert(0, changedTrack);
+                    }
+                }
+                else
+                {
+                    _fullTracksList.RemoveAll(track => track.Id == changedTrack.Id);
+                    foreach (var track in TracksList.Where(track => track.Id == changedTrack.Id).ToList())
+                        TracksList.Remove(track);
+                }
+            });
         }
 
         private void ClearFilter()
@@ -163,6 +193,7 @@ namespace SoundMist.ViewModels
 
             foreach (var track in newTracks)
             {
+                track.IsLiked = true;
                 _database.AddTrack(track);
             }
 

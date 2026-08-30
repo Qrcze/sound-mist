@@ -33,6 +33,8 @@ public partial class SearchViewModel : ViewModelBase
 
     private string? _nextHref;
     private volatile bool _runningSearch;
+    private readonly HashSet<long> _likedTrackIds = [];
+    private bool _likedTracksLoaded;
 
     public string[] Filters { get; } = ["All", "Tracks", "People", "Albums"];
 
@@ -44,6 +46,8 @@ public partial class SearchViewModel : ViewModelBase
 
     private readonly Timer _querySearchDelay;
     private readonly IHttpManager _httpManager;
+    private readonly SoundCloudQueries _queries;
+    private readonly SoundCloudCommands _soundCloudCommands;
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
@@ -52,18 +56,32 @@ public partial class SearchViewModel : ViewModelBase
     public IRelayCommand ClearFilterCommand { get; }
     public IAsyncRelayCommand RunSearchCommand { get; }
 
-    public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer)
+    public SearchViewModel(IHttpManager httpManager, SoundCloudQueries queries, SoundCloudCommands soundCloudCommands, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer)
     {
         _querySearchDelay = new(800) { AutoReset = false };
         _querySearchDelay.Elapsed += GetSearchResults;
 
         _httpManager = httpManager;
+        _queries = queries;
+        _soundCloudCommands = soundCloudCommands;
         _database = database;
         _settings = settings;
         _musicPlayer = musicPlayer;
+        _soundCloudCommands.TrackLikeChanged += OnTrackLikeChanged;
 
         ClearFilterCommand = new RelayCommand(ClearFilter);
         RunSearchCommand = new AsyncRelayCommand(async () => await RunSearch());
+    }
+
+    private void OnTrackLikeChanged(Track changedTrack, bool liked)
+    {
+        if (liked)
+            _likedTrackIds.Add(changedTrack.Id);
+        else
+            _likedTrackIds.Remove(changedTrack.Id);
+
+        foreach (var track in SearchResults.OfType<Track>().Where(track => track.Id == changedTrack.Id))
+            track.IsLiked = liked;
     }
 
     private void ClearFilter()
@@ -146,6 +164,8 @@ public partial class SearchViewModel : ViewModelBase
             SearchResults.Clear();
         }
 
+        await LoadLikedTrackIds();
+
         SearchCollection? result;
         try
         {
@@ -167,6 +187,8 @@ public partial class SearchViewModel : ViewModelBase
             ResultsMessage = $"Found: {result.TotalResults} results.";
             foreach (var item in result.Collection)
             {
+                if (item is Track track)
+                    track.IsLiked = _likedTrackIds.Contains(track.Id);
                 SearchResults.Add(item);
             }
         }
@@ -177,6 +199,22 @@ public partial class SearchViewModel : ViewModelBase
 
         LoadingView = false;
         _runningSearch = false;
+    }
+
+    private async Task LoadLikedTrackIds()
+    {
+        if (_likedTracksLoaded || !_httpManager.AuthorizedClient.IsAuthorized)
+            return;
+
+        var (response, errorMessage) = await _queries.GetUsersLikedTracksIds(System.Threading.CancellationToken.None);
+        if (response is null)
+        {
+            _logger.Warn("Failed retrieving liked tracks for search results: {errorMessage}", errorMessage);
+            return;
+        }
+
+        _likedTrackIds.UnionWith(response.Collection);
+        _likedTracksLoaded = true;
     }
 
     void NotifyAboutErrorOnSearch(Exception ex, string message)

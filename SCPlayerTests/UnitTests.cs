@@ -6,12 +6,32 @@ using System.Text.Json;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using SoundMist.Helpers;
+using System.Net;
+using System.Net.Http;
 
 namespace SCPlayerTests
 {
     public class UnitTests
     {
         private static readonly QueryResponse<Track> Tracks = JsonSerializer.Deserialize<QueryResponse<Track>>(File.ReadAllText("Resources/TracksCollection.json"))!;
+
+        private sealed class LikeHttpManager(HttpMessageHandler handler) : IHttpManager
+        {
+            public AuthorizedHttpClient AuthorizedClient { get; } = new(handler)
+            {
+                BaseAddress = new Uri(Globals.SoundCloudBaseUrl),
+            };
+
+            public HttpClient DefaultClient { get; } = new();
+
+            public HttpClient GetClient() => DefaultClient;
+
+            public HttpClient GetProxiedClient() => DefaultClient;
+
+            public void SetDataDomeCookie(string? value)
+            {
+            }
+        }
 
         [Fact]
         public void MainViewCanOpenSettings()
@@ -99,7 +119,7 @@ namespace SCPlayerTests
             var database = new DummyDatabase();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null!, musicPlayer, history, database);
+            var tv = new TrackInfoViewModel(null!, null!, settings, musicPlayer, history, database);
 
             var track = new Track() { Id = 5 };
 
@@ -137,6 +157,31 @@ namespace SCPlayerTests
 
             //Assert.True(uv.User is not null, "User info still has null User property");
             //Assert.True(uv.User == user, "User info tab displays incorrect user");
+        }
+
+        [Fact]
+        public async Task LikingTrackUsesAuthorizedWebEndpoint()
+        {
+            var settings = new ProgramSettings
+            {
+                ClientId = "client",
+                AppVersion = 1,
+                UserId = 42,
+            };
+            var mock = new MockHttpMessageHandler();
+            mock.When(HttpMethod.Put, "https://api-v2.soundcloud.com/users/42/track_likes/9?client_id=client&app_version=1&app_locale=en")
+                .Respond(HttpStatusCode.NoContent);
+
+            var httpManager = new LikeHttpManager(mock);
+            httpManager.AuthorizedClient.Authorization = new("OAuth", "token");
+            var commands = new SoundCloudCommands(httpManager, settings);
+            bool eventRaised = false;
+            commands.TrackLikeChanged += (_, liked) => eventRaised = liked;
+
+            var (success, _) = await commands.SetTrackLiked(true, new Track { Id = 9 });
+
+            Assert.True(success);
+            Assert.True(eventRaised);
         }
     }
 }
