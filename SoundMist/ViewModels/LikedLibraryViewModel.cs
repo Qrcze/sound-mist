@@ -198,14 +198,14 @@ namespace SoundMist.ViewModels
                 if (_queries is null)
                     return;
 
-                var (response, errorMessage) = await _queries.GetUsersLikedPlaylistsIds(CancellationToken.None);
+                var (response, errorMessage) = await _queries.GetUsersLikedPlaylistsIds(System.Threading.CancellationToken.None);
                 if (response is null)
                 {
                     _logger.Warn("Failed retrieving liked playlists: {errorMessage}", errorMessage);
                     return;
                 }
 
-                var playlists = await _database.GetPlaylistsById(response.Collection, CancellationToken.None);
+                var playlists = await _database.GetPlaylistsById(response.Collection, System.Threading.CancellationToken.None);
                 foreach (var playlist in playlists)
                 {
                     _database.AddPlaylist(playlist);
