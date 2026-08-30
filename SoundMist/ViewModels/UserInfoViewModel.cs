@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
+using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
 using System.Collections.ObjectModel;
@@ -65,6 +66,7 @@ public partial class UserInfoViewModel : ViewModelBase
     private readonly IDatabase _database;
     private readonly SoundCloudQueries _soundCloudQueries;
     private readonly History _history;
+    private readonly IMusicPlayer? _musicPlayer;
 
     private CancellationTokenSource? _tokenSource;
 
@@ -78,15 +80,25 @@ public partial class UserInfoViewModel : ViewModelBase
     public IRelayCommand OpenInBrowserCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
 
-    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, History history)
+    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, History history, IMusicPlayer? musicPlayer = null)
     {
         Mediator.Default.Register(MediatorEvent.OpenUserInfo, OpenUser);
 
         _database = database;
         _soundCloudQueries = soundCloudQueries;
         _history = history;
+        _musicPlayer = musicPlayer;
         OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
         ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
+    }
+
+    internal async Task PlayTrack(Track track)
+    {
+        if (_musicPlayer is null)
+            return;
+
+        _database.AddTrack(track);
+        await _musicPlayer.LoadNewQueue([track]);
     }
 
     private void OpenInBrowser()

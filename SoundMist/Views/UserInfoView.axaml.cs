@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using SoundMist.ViewModels;
+using SoundMist.Models.SoundCloud;
 
 namespace SoundMist.Views;
 
@@ -47,5 +48,11 @@ public partial class UserInfoView : UserControl
     private void TogglePreview(object? sender, TappedEventArgs e)
     {
         _vm.ToggleFullImageCommand.Execute(null);
+    }
+
+    private async void ListBox_DoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (e.Source is Control source && source.FindAncestorOfType<ListBoxItem>()?.DataContext is Track track)
+            await _vm.PlayTrack(track);
     }
 }
