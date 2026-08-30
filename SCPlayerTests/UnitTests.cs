@@ -99,7 +99,7 @@ namespace SCPlayerTests
             var database = new DummyDatabase();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null!, null!, null!, settings, musicPlayer, history, database);
+            var tv = new TrackInfoViewModel(null!, musicPlayer, history, database);
 
             var track = new Track() { Id = 5 };
 

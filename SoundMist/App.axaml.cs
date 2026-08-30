@@ -1,15 +1,12 @@
 ﻿using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
-using SoundMist.Models.SoundCloud;
 using SoundMist.ViewModels;
 using SoundMist.Views;
 using System;
@@ -101,27 +98,6 @@ public partial class App : Application
     private void TrackItem_AboutUser(object? sender, RoutedEventArgs e)
     {
         ScObjectHelpers.TrackItem_AboutUser(sender);
-    }
-
-    private async void TrackItem_Like(object? sender, RoutedEventArgs e)
-    {
-        if (sender is not Control { DataContext: Track track })
-            return;
-
-        e.Handled = true;
-        bool liked = !track.IsLiked;
-        var (success, message) = await GetService<SoundCloudCommands>().SetTrackLiked(liked, track);
-        if (success)
-        {
-            track.IsLiked = liked;
-            return;
-        }
-
-        NotificationManager.Show(new Notification(
-            liked ? "Failed liking track" : "Failed removing like",
-            message,
-            NotificationType.Error,
-            TimeSpan.Zero));
     }
 
     private async void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)

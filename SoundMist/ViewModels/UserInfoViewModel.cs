@@ -67,12 +67,10 @@ public partial class UserInfoViewModel : ViewModelBase
 
     private readonly IDatabase _database;
     private readonly SoundCloudQueries _soundCloudQueries;
-    private readonly SoundCloudCommands _soundCloudCommands;
     private readonly History _history;
     private readonly IMusicPlayer? _musicPlayer;
 
     private CancellationTokenSource? _tokenSource;
-    private HashSet<long> _likedTrackIds = [];
 
     public UserTabData All { get; } = new();
     public UserTabData PopularTracks { get; } = new();
@@ -84,29 +82,16 @@ public partial class UserInfoViewModel : ViewModelBase
     public IRelayCommand OpenInBrowserCommand { get; }
     public IRelayCommand ToggleFullImageCommand { get; }
 
-    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, SoundCloudCommands soundCloudCommands, History history, IMusicPlayer? musicPlayer = null)
+    public UserInfoViewModel(IDatabase database, SoundCloudQueries soundCloudQueries, History history, IMusicPlayer? musicPlayer = null)
     {
         Mediator.Default.Register(MediatorEvent.OpenUserInfo, OpenUser);
 
         _database = database;
         _soundCloudQueries = soundCloudQueries;
-        _soundCloudCommands = soundCloudCommands;
         _history = history;
         _musicPlayer = musicPlayer;
-        _soundCloudCommands.TrackLikeChanged += OnTrackLikeChanged;
         OpenInBrowserCommand = new RelayCommand(OpenInBrowser);
         ToggleFullImageCommand = new RelayCommand(() => ShowFullImage = !ShowFullImage);
-    }
-
-    private void OnTrackLikeChanged(Track changedTrack, bool liked)
-    {
-        if (liked)
-            _likedTrackIds.Add(changedTrack.Id);
-        else
-            _likedTrackIds.Remove(changedTrack.Id);
-
-        foreach (var track in All.Items.Concat(PopularTracks.Items).Concat(Tracks.Items).Concat(Reposts.Items).OfType<Track>().Where(track => track.Id == changedTrack.Id))
-            track.IsLiked = liked;
     }
 
     internal async Task PlayTrack(Track track)
@@ -208,7 +193,6 @@ public partial class UserInfoViewModel : ViewModelBase
             {
                 if (entry.Track is not null)
                 {
-                    entry.Track.IsLiked = _likedTrackIds.Contains(entry.Track.Id);
                     tabData.Items.Add(entry.Track);
                 }
                 else if (entry.Playlist is not null)
@@ -221,8 +205,6 @@ public partial class UserInfoViewModel : ViewModelBase
             }
             else if (item is not null)
             {
-                if (item is Track track)
-                    track.IsLiked = _likedTrackIds.Contains(track.Id);
                 tabData.Items.Add(item);
             }
             else
@@ -260,17 +242,12 @@ public partial class UserInfoViewModel : ViewModelBase
 
         _tokenSource?.Cancel();
         _tokenSource = new();
-        _likedTrackIds = [];
         var token = _tokenSource.Token;
 
         Task.Run(async () =>
         {
             try
             {
-                var (likedTracks, _) = await _soundCloudQueries.GetUsersLikedTracksIds(token);
-                if (likedTracks is not null)
-                    _likedTrackIds = likedTracks.Collection.ToHashSet();
-
                 User = (await _database.GetUserById(userWithIdOnly.Id, token));
             }
             catch (TaskCanceledException)
