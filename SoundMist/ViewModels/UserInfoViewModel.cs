@@ -129,6 +129,8 @@ public partial class UserInfoViewModel : ViewModelBase
 
             case UserTab.Tracks:
                 await LoadTab(force, Tracks, _soundCloudQueries.GetUserTracks, "hasn't uploaded any tracks yet.", token);
+                while (!Tracks.ReachedEnd && !token.IsCancellationRequested)
+                    await LoadTab(true, Tracks, _soundCloudQueries.GetUserTracks, "hasn't uploaded any tracks yet.", token);
                 break;
 
             case UserTab.Albums:
@@ -166,7 +168,7 @@ public partial class UserInfoViewModel : ViewModelBase
 
         await LoadTabItems(tabData, getObjects, token);
 
-        if (tabData.Items.Count == 0)
+        if (tabData.Items.Count == 0 && tabData.ReachedEnd)
             tabData.Items.Add($"{User?.Username} {emptyMessage}");
 
         tabData.Loading = false;
@@ -178,6 +180,7 @@ public partial class UserInfoViewModel : ViewModelBase
         if (response == null)
         {
             _logger.Error(errorMessage!);
+            tabData.ReachedEnd = true;
             return;
         }
 

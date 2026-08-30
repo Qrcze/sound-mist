@@ -243,7 +243,7 @@ namespace SoundMist.Helpers
         public async Task<(QueryResponse<Track>? tracks, string? errorMessage)> GetUserTracks(long userId, string? href, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
-                href = $"users/{userId}/tracks?representation=&client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+                href = $"users/{userId}/tracks?client_id={_settings.ClientId}&limit=200&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             else
                 href += DefaultHrefSuffix;
 
