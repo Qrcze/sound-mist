@@ -23,35 +23,61 @@ namespace SoundMist.Helpers
             if (!_httpManager.AuthorizedClient.IsAuthorized || !_settings.UserId.HasValue)
                 return (false, "User not logged-in");
 
+            string trackReference = track.Urn ?? $"soundcloud:tracks:{track.Id}";
+            string publicUrl = $"https://api.soundcloud.com/likes/tracks/{Uri.EscapeDataString(trackReference)}";
+            var publicResult = await SendLikeRequest(liked, publicUrl, includeWebHeaders: false, internalEndpoint: false);
+            if (publicResult.success)
+            {
+                TrackLikeChanged?.Invoke(track, liked);
+                return (true, "OK");
+            }
+
+            // The public API may reject a web-session token. Keep the internal web
+            // endpoint as a fallback for sessions that are accepted by api-v2.
+            string internalUrl = $"users/{_settings.UserId.Value}/track_likes/{track.Id}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+            var internalResult = await SendLikeRequest(liked, internalUrl, includeWebHeaders: true, internalEndpoint: true);
+            if (internalResult.success)
+            {
+                TrackLikeChanged?.Invoke(track, liked);
+                return (true, "OK");
+            }
+
+            return (false, $"Public API: {publicResult.message} Internal API: {internalResult.message}");
+        }
+
+        private async Task<(bool success, string message)> SendLikeRequest(bool liked, string url, bool includeWebHeaders, bool internalEndpoint)
+        {
             try
             {
-                string url = $"users/{_settings.UserId.Value}/track_likes/{track.Id}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
-                using var request = new HttpRequestMessage(liked ? HttpMethod.Put : HttpMethod.Delete, url);
+                HttpMethod method = internalEndpoint
+                    ? (liked ? HttpMethod.Put : HttpMethod.Delete)
+                    : (liked ? HttpMethod.Post : HttpMethod.Delete);
+                using var request = new HttpRequestMessage(method, url);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                request.Headers.Referrer = new Uri("https://soundcloud.com/");
-                request.Headers.TryAddWithoutValidation("Origin", "https://soundcloud.com");
-                request.Headers.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
+                if (includeWebHeaders)
+                {
+                    request.Headers.Referrer = new Uri("https://soundcloud.com/");
+                    request.Headers.TryAddWithoutValidation("Origin", "https://soundcloud.com");
+                    request.Headers.TryAddWithoutValidation("X-Requested-With", "XMLHttpRequest");
+                }
+
                 using var response = await _httpManager.AuthorizedClient.SendAsync(request);
 
                 // These responses mean the requested state was already reached.
                 bool alreadyInRequestedState = (liked && response.StatusCode == HttpStatusCode.Conflict)
                     || (!liked && response.StatusCode == HttpStatusCode.NotFound);
-                if (!response.IsSuccessStatusCode && !alreadyInRequestedState)
-                {
-                    string details = await response.Content.ReadAsStringAsync();
-                    details = details.Trim();
-                    if (details.Length > 300)
-                        details = details[..300] + "...";
-                    string suffix = string.IsNullOrWhiteSpace(details) ? string.Empty : $" {details}";
-                    if (response.StatusCode == HttpStatusCode.Forbidden)
-                        suffix += " SoundCloud may require a fresh datadome cookie; it can be pasted in Settings.";
-                    else if (response.StatusCode == HttpStatusCode.Unauthorized)
-                        suffix += " Please sign in again.";
-                    return (false, $"SoundCloud returned {(int)response.StatusCode} ({response.ReasonPhrase}).{suffix}");
-                }
+                if (response.IsSuccessStatusCode || alreadyInRequestedState)
+                    return (true, "OK");
 
-                TrackLikeChanged?.Invoke(track, liked);
-                return (true, "OK");
+                string details = (await response.Content.ReadAsStringAsync()).Trim();
+                if (details.Length > 300)
+                    details = details[..300] + "...";
+                string suffix = string.IsNullOrWhiteSpace(details) ? string.Empty : $" {details}";
+                if (response.StatusCode == HttpStatusCode.Forbidden)
+                    suffix += " SoundCloud may require a fresh datadome cookie or browser verification.";
+                else if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    suffix += " Please sign in again.";
+                return (false, $"SoundCloud returned {(int)response.StatusCode} ({response.ReasonPhrase}).{suffix}");
             }
             catch (HttpRequestException ex)
             {

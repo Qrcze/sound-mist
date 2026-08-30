@@ -160,7 +160,7 @@ namespace SCPlayerTests
         }
 
         [Fact]
-        public async Task LikingTrackUsesAuthorizedWebEndpoint()
+        public async Task LikingTrackUsesPublicApiEndpoint()
         {
             var settings = new ProgramSettings
             {
@@ -169,7 +169,7 @@ namespace SCPlayerTests
                 UserId = 42,
             };
             var mock = new MockHttpMessageHandler();
-            mock.When(HttpMethod.Put, "https://api-v2.soundcloud.com/users/42/track_likes/9?client_id=client&app_version=1&app_locale=en")
+            mock.When(HttpMethod.Post, "https://api.soundcloud.com/likes/tracks/soundcloud%3Atracks%3A9")
                 .Respond(HttpStatusCode.NoContent);
 
             var httpManager = new LikeHttpManager(mock);
@@ -178,10 +178,34 @@ namespace SCPlayerTests
             bool eventRaised = false;
             commands.TrackLikeChanged += (_, liked) => eventRaised = liked;
 
-            var (success, _) = await commands.SetTrackLiked(true, new Track { Id = 9 });
+            var (success, _) = await commands.SetTrackLiked(true, new Track { Id = 9, Urn = "soundcloud:tracks:9" });
 
             Assert.True(success);
             Assert.True(eventRaised);
+        }
+
+        [Fact]
+        public async Task LikingTrackFallsBackToInternalWebEndpoint()
+        {
+            var settings = new ProgramSettings
+            {
+                ClientId = "client",
+                AppVersion = 1,
+                UserId = 42,
+            };
+            var mock = new MockHttpMessageHandler();
+            mock.When(HttpMethod.Post, "https://api.soundcloud.com/likes/tracks/soundcloud%3Atracks%3A9")
+                .Respond(HttpStatusCode.Forbidden);
+            mock.When(HttpMethod.Put, "https://api-v2.soundcloud.com/users/42/track_likes/9?client_id=client&app_version=1&app_locale=en")
+                .Respond(HttpStatusCode.NoContent);
+
+            var httpManager = new LikeHttpManager(mock);
+            httpManager.AuthorizedClient.Authorization = new("OAuth", "token");
+            var commands = new SoundCloudCommands(httpManager, settings);
+
+            var (success, _) = await commands.SetTrackLiked(true, new Track { Id = 9, Urn = "soundcloud:tracks:9" });
+
+            Assert.True(success);
         }
     }
 }
