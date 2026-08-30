@@ -68,7 +68,7 @@
 					<!-- soundcloud's track wave thingy; todo control -->
 				</StackPanel>
 				<StackPanel Grid.Column="1" Grid.Row="1" Margin="5">
-					<Button Margin="5" ToolTip.Tip="Like" Background="{Binding LikeButtonBackground}">
+					<Button Margin="5" ToolTip.Tip="Like">
 						<StackPanel Orientation="Horizontal">
 							<Image Source="/Assets/favorite-filled.png" Width="20" IsVisible="{Binding IsLiked}" />
 							<Image Source="/Assets/favorite.png" Width="20" IsVisible="{Binding !IsLiked}" />

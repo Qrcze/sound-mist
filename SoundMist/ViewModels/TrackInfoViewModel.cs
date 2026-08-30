@@ -39,9 +39,6 @@ public partial class TrackInfoViewModel : ViewModelBase
     public ObservableCollection<Comment> Comments { get; } = [];
 
     public bool TrackOpened => Track is not null;
-    public string LikeButtonBackground => TrackLiked ? "#af1c14" : "Transparent";
-
-    partial void OnTrackLikedChanged(bool value) => OnPropertyChanged(nameof(LikeButtonBackground));
 
     public double Position
     {

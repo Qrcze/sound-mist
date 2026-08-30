@@ -27,6 +27,9 @@
 			<Setter Property="Margin" Value="3" />
 			<Setter Property="Padding" Value="8 2" />
 		</Style>
+		<Style Selector="ToggleButton:checked">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
 
 		<Style Selector="TextBox.select-only-text">
 			<Setter Property="IsReadOnly" Value="True" />
@@ -99,7 +102,7 @@
 
 					<Grid ColumnDefinitions="*,*">
 						<StackPanel Orientation="Horizontal">
-							<ToggleButton Padding="0" Margin="5" Background="{Binding LikeButtonBackground}" Command="{Binding LikeTrackCommand}" IsChecked="{Binding TrackLiked}">
+							<ToggleButton Padding="0" Margin="5" Background="Transparent" Command="{Binding LikeTrackCommand}" IsChecked="{Binding TrackLiked}">
 								<Grid>
 									<StackPanel Orientation="Horizontal">
 										<Image IsVisible="{Binding TrackLiked}" Source="/Assets/favorite-filled.png" Width="24" />
