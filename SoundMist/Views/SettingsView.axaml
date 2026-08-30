@@ -77,10 +77,6 @@
 										ToolTip.Tip="Loads every liked track before showing the page. Disable this for large libraries to load tracks as you scroll.">
 										<CheckBox IsChecked="{Binding LoadAllLikedTracks}" />
 									</c:SettingsOption>
-									<c:SettingsOption Header="DataDome cookie (optional):"
-										ToolTip.Tip="SoundCloud may require this browser cookie for liking or unliking tracks.">
-										<TextBox Text="{Binding DataDomeToken}" Watermark="Paste datadome cookie value" Width="300" />
-									</c:SettingsOption>
 									<c:SettingsOption Header="Theme:">
 										<ComboBox Width="100" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
 									</c:SettingsOption>
