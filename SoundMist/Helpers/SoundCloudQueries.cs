@@ -140,17 +140,6 @@ namespace SoundMist.Helpers
         }
 
         /// <exception cref="TaskCanceledException" />
-        public async Task<(QueryResponse<long>? ids, string? errorMessage)> GetUsersLikedTracksIds(CancellationToken token)
-        {
-            if (!_httpManager.AuthorizedClient.IsAuthorized)
-                return (null, "User not logged-in");
-
-            string href = $"me/track_likes/ids?limit=200&client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
-
-            return await SimpleGet<long>(_httpManager.AuthorizedClient, href, "Failed get liked tracks request: {0}", token);
-        }
-
-        /// <exception cref="TaskCanceledException" />
         public async Task<(QueryResponse<long>? ids, string? errorMessage)> GetUsersLikedUsersIds(CancellationToken token)
         {
             if (!_httpManager.AuthorizedClient.IsAuthorized)
@@ -243,7 +232,7 @@ namespace SoundMist.Helpers
         public async Task<(QueryResponse<Track>? tracks, string? errorMessage)> GetUserTracks(long userId, string? href, CancellationToken token)
         {
             if (string.IsNullOrEmpty(href))
-                href = $"users/{userId}/tracks?representation=&client_id={_settings.ClientId}&limit=20&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
+                href = $"users/{userId}/tracks?client_id={_settings.ClientId}&limit=200&offset=0&linked_partitioning=1&app_version={_settings.AppVersion}&app_locale=en";
             else
                 href += DefaultHrefSuffix;
 

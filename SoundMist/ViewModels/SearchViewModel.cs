@@ -7,8 +7,10 @@ using SoundMist.Models;
 using SoundMist.Models.Audio;
 using SoundMist.Models.SoundCloud;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -42,7 +44,6 @@ public partial class SearchViewModel : ViewModelBase
 
     private readonly Timer _querySearchDelay;
     private readonly IHttpManager _httpManager;
-    private readonly SoundCloudQueries _queries;
     private readonly IDatabase _database;
     private readonly ProgramSettings _settings;
     private readonly IMusicPlayer _musicPlayer;
@@ -57,7 +58,6 @@ public partial class SearchViewModel : ViewModelBase
         _querySearchDelay.Elapsed += GetSearchResults;
 
         _httpManager = httpManager;
-        _queries = queries;
         _database = database;
         _settings = settings;
         _musicPlayer = musicPlayer;
@@ -166,7 +166,9 @@ public partial class SearchViewModel : ViewModelBase
         {
             ResultsMessage = $"Found: {result.TotalResults} results.";
             foreach (var item in result.Collection)
+            {
                 SearchResults.Add(item);
+            }
         }
         else
         {

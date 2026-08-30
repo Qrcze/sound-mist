@@ -67,13 +67,9 @@
 					<TextBlock Text="Not available in your country (snipped)" IsVisible="{Binding Snipped}" Opacity="0.5" Margin="5" />
 					<!-- soundcloud's track wave thingy; todo control -->
 				</StackPanel>
-				<StackPanel Grid.Column="1" Grid.Row="1" Margin="5">
-					<Button Margin="5" ToolTip.Tip="Like">
-						<StackPanel Orientation="Horizontal">
-							<Image Source="/Assets/favorite.png" Width="20" />
-							<TextBlock Text="{Binding LikesFormatted}" />
-						</StackPanel>
-					</Button>
+				<StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" Margin="5" Spacing="3" Opacity="0.75">
+					<Image Source="/Assets/favorite-filled.png" Width="20" />
+					<TextBlock Text="{Binding LikesFormatted}" VerticalAlignment="Center" />
 				</StackPanel>
 
 				<StackPanel Grid.Column="2" Margin="5">

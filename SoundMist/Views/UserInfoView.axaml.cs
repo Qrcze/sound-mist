@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using SoundMist.ViewModels;
 using SoundMist.Models.SoundCloud;
+using System;
 
 namespace SoundMist.Views;
 
@@ -42,7 +43,12 @@ public partial class UserInfoView : UserControl
 
         var sv = (ScrollViewer)sender!;
         if (sv.Offset.Y + sv.Viewport.Height >= sv.Extent.Height - 100)
-            await _vm.LoadTab(true);
+        {
+            if (sv.Tag is string tabName && Enum.TryParse<UserTab>(tabName, out var tab))
+                await _vm.LoadTab(true, tab);
+            else
+                await _vm.LoadTab(true);
+        }
     }
 
     private void TogglePreview(object? sender, TappedEventArgs e)

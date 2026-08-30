@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using NLog;
 using SoundMist.Helpers;
 using SoundMist.Models;
 using SoundMist.Models.Audio;
@@ -15,19 +14,13 @@ namespace SoundMist.ViewModels
 {
     public partial class PlaylistInfoViewModel : ViewModelBase
     {
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-
         [ObservableProperty] private Playlist _playlist = Playlist.CreateDeletedPlaylist(0);
         [ObservableProperty] private bool _loadingView;
-        [ObservableProperty] private bool _isLiked;
         [ObservableProperty] private bool _showFullImage;
         [ObservableProperty] private Track _selectedTrack = Track.CreatePlaceholderTrack();
 
         private CancellationTokenSource? _tokenSource;
-        private readonly IHttpManager _httpManager;
-        private readonly SoundCloudQueries _queries;
         private readonly IDatabase _database;
-        private readonly ProgramSettings _settings;
         private readonly IMusicPlayer _musicPlayer;
         private readonly History _history;
 
@@ -39,12 +32,9 @@ namespace SoundMist.ViewModels
         public IRelayCommand OpenUserInfoCommand { get; }
         public IRelayCommand ToggleFullImageCommand { get; }
 
-        public PlaylistInfoViewModel(IHttpManager httpManager, SoundCloudQueries queries, IDatabase database, ProgramSettings settings, IMusicPlayer musicPlayer, History history)
+        public PlaylistInfoViewModel(IDatabase database, IMusicPlayer musicPlayer, History history)
         {
-            _httpManager = httpManager;
-            _queries = queries;
             _database = database;
-            _settings = settings;
             _musicPlayer = musicPlayer;
             _history = history;
             Mediator.Default.Register(MediatorEvent.OpenPlaylistInfo, Open);
@@ -112,21 +102,6 @@ namespace SoundMist.ViewModels
             {
                 try
                 {
-                    if (_httpManager.AuthorizedClient.IsAuthorized)
-                    {
-                        var (response, message) = await _queries.GetUsersLikedPlaylistsIds(token);
-                        if (response is null)
-                        {
-                            _logger.Error("Failed getting liked playlists list: {message}", message);
-                            NotificationManager.Show(new("Failed getting liked playlists", message, Avalonia.Controls.Notifications.NotificationType.Warning));
-                        }
-                        else
-                        {
-                            if (response.Collection.Contains(Playlist.Id))
-                                IsLiked = true;
-                        }
-                    }
-
                     var neededTracks = Playlist.Tracks.Except(Playlist.FirstFiveTracks).Select(x => x.Id);
                     var tracks = await _database.GetTracksById(neededTracks, token);
 
