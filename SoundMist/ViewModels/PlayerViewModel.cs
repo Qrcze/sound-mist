@@ -23,6 +23,7 @@ public partial class PlayerViewModel : ViewModelBase
     [ObservableProperty] private string _trackTitle = string.Empty;
     [ObservableProperty] private string _trackAuthor = string.Empty;
     [ObservableProperty] private string? _trackThumbnail = string.Empty;
+    [ObservableProperty] private Track? _currentTrack;
     [ObservableProperty] private Track _trackSelectedInQueue = Track.CreatePlaceholderTrack();
     [ObservableProperty] private bool _volumeHigh;
     [ObservableProperty] private bool _volumeMid;
@@ -109,13 +110,14 @@ public partial class PlayerViewModel : ViewModelBase
     public IRelayCommand ClearPlaylistCommand { get; }
     public IAsyncRelayCommand BlockUserCommand { get; }
     public IAsyncRelayCommand BlockTrackCommand { get; }
+    public IAsyncRelayCommand ToggleTrackLikeCommand { get; }
     public IRelayCommand OpenUserInfoCommand { get; }
     public IRelayCommand OpenTrackInfoCommand { get; }
     public IRelayCommand TogglePlaylistCommand { get; }
     public IRelayCommand MuteVolumeCommand { get; }
     public IRelayCommand CycleRepeatCommand { get; }
 
-    public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, History history)
+    public PlayerViewModel(IMusicPlayer musicPlayer, ProgramSettings settings, History history, SoundCloudQueries queries)
     {
         _musicPlayer = musicPlayer;
         _settings = settings;
@@ -132,6 +134,7 @@ public partial class PlayerViewModel : ViewModelBase
         ClearPlaylistCommand = new RelayCommand(_musicPlayer.ClearQueue);
         BlockUserCommand = new AsyncRelayCommand(BlockUser);
         BlockTrackCommand = new AsyncRelayCommand(BlockTrack);
+        ToggleTrackLikeCommand = new AsyncRelayCommand(() => ToggleTrackLike(queries));
         OpenUserInfoCommand = new RelayCommand(OpenUserInfo);
         OpenTrackInfoCommand = new RelayCommand(OpenTrackInfo);
         TogglePlaylistCommand = new RelayCommand(() => ShowingPlaylist = !ShowingPlaylist);
@@ -207,6 +210,16 @@ public partial class PlayerViewModel : ViewModelBase
         Mediator.Default.Invoke(MediatorEvent.OpenTrackInfo, _musicPlayer.CurrentTrack);
     }
 
+    private async Task ToggleTrackLike(SoundCloudQueries queries)
+    {
+        if (CurrentTrack is null)
+            return;
+
+        var errorMessage = await queries.ToggleTrackLike(CurrentTrack, System.Threading.CancellationToken.None);
+        if (errorMessage is not null)
+            NotificationManager.Show(new("Couldn't update like", errorMessage, Avalonia.Controls.Notifications.NotificationType.Error, TimeSpan.FromSeconds(5)));
+    }
+
     private void UpdateTime(double value)
     {
         SetProperty(ref _trackTime, value, nameof(TrackTime));
@@ -260,6 +273,7 @@ public partial class PlayerViewModel : ViewModelBase
         TrackAuthor = track.ArtistName;
         TrackTitle = track.Title;
         TrackThumbnail = track.ArtworkUrlSmall;
+        CurrentTrack = track;
 
         TrackSelectedInQueue = track;
     }

@@ -164,6 +164,30 @@ namespace SoundMist.Helpers
             return (result, null);
         }
 
+        /// <summary>
+        /// Adds or removes a track from the signed-in user's likes and updates the supplied track on success.
+        /// </summary>
+        public async Task<string?> ToggleTrackLike(Track track, CancellationToken token)
+        {
+            if (!_httpManager.AuthorizedClient.IsAuthorized)
+                return "User not logged-in";
+
+            string href = $"me/track_likes/{track.Id}?client_id={_settings.ClientId}&app_version={_settings.AppVersion}&app_locale=en";
+            using var request = new HttpRequestMessage(track.IsLiked ? HttpMethod.Delete : HttpMethod.Put, href);
+
+            try
+            {
+                using var response = await _httpManager.AuthorizedClient.SendAsync(request, token);
+                response.EnsureSuccessStatusCode();
+                track.IsLiked = !track.IsLiked;
+                return null;
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Failed updating track like: {ex.Message}";
+            }
+        }
+
         /// <exception cref="TaskCanceledException" />
         public async Task<(QueryResponse<long>? ids, string? errorMessage)> GetUsersLikedUsersIds(CancellationToken token)
         {

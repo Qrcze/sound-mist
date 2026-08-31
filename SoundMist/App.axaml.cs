@@ -100,6 +100,16 @@ public partial class App : Application
         ScObjectHelpers.TrackItem_AboutUser(sender);
     }
 
+    private async void TrackItem_ToggleLike(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Avalonia.Controls.Button { DataContext: Models.SoundCloud.Track track })
+            return;
+
+        var errorMessage = await GetService<Helpers.SoundCloudQueries>().ToggleTrackLike(track, System.Threading.CancellationToken.None);
+        if (errorMessage is not null)
+            NotificationManager.Show(new("Couldn't update like", errorMessage, NotificationType.Error, TimeSpan.FromSeconds(5)));
+    }
+
     private async void ListBox_DoubleTapped_PlaylistItem(object? sender, Avalonia.Input.TappedEventArgs e)
     {
         e.Handled = true; // to prevent the parent ListBox from triggering DoubleTapped
