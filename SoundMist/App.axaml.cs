@@ -66,6 +66,10 @@ public partial class App : Application
             {
                 NotificationManager.Show(new Notification("Player error", error, NotificationType.Error, TimeSpan.Zero));
             };
+            musicPlayer.TrackSkipped += track =>
+            {
+                NotificationManager.Show(new Notification("Track skipped", $"{track.FullLabel} is DRM-protected and was skipped.", NotificationType.Warning, TimeSpan.FromSeconds(5)));
+            };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
