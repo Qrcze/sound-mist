@@ -57,6 +57,8 @@ namespace SoundMist.Models.Audio
 
         public event Action<string>? ErrorCallback;
 
+        public event Action<Track>? TrackSkipped;
+
         public event Action<Track>? TrackChanging;
 
         public event Action<Track>? TrackChanged;
@@ -427,6 +429,7 @@ namespace SoundMist.Models.Audio
                 if (error.Contains("DRM-protected", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.Info("Skipping DRM-protected track {trackId}: {title}", track.Id, track.Title);
+                    TrackSkipped?.Invoke(track);
                     return TrackLoadStatus.Skip;
                 }
 

@@ -25,6 +25,7 @@ namespace SoundMist.Models.Audio
         TracksPlaylist TracksPlaylist { get; }
 
         event Action<string>? ErrorCallback;
+        event Action<Track>? TrackSkipped;
         event Action<PlayState, string>? PlayStateUpdated;
         event Action<Track>? TrackChanging;
         event Action<Track>? TrackChanged;
