@@ -15,7 +15,6 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Timers;
-using Timer = System.Timers.Timer;
 
 namespace SoundMist.ViewModels
 {
@@ -176,8 +175,8 @@ namespace SoundMist.ViewModels
         }
 
         /// <summary>
-        /// Fully materializes the paginated liked library so filtering and
-        /// shuffle playback never depend on scroll position.
+        /// Downloads every page of liked tracks so shuffle can use the full
+        /// library rather than only the tracks loaded while scrolling.
         /// </summary>
         public async Task DownloadAllTrackList()
         {

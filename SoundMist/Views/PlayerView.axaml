@@ -87,13 +87,6 @@
 				<Button Classes="button-medium"  Margin="5 0 0 0" Command="{Binding BlockTrackCommand}" ToolTip.Tip="Block track">
 					<Image Source="/Assets/block-track.png" />
 				</Button>
-				<Button Classes="button-medium" Margin="5 0 0 0" Command="{Binding ToggleTrackLikeCommand}" ToolTip.Tip="Like or unlike track">
-					<Panel>
-						<Image Source="/Assets/favorite-filled.png" IsVisible="{Binding CurrentTrack.IsLiked}" />
-						<Image Source="/Assets/favorite.png" IsVisible="{Binding !CurrentTrack.IsLiked}" />
-					</Panel>
-				</Button>
-
 				<Button Classes="button-medium" Margin="20 0 4 0" Command="{Binding MuteVolumeCommand}">
 					<Panel>
 						<Image Source="/Assets/volume_high.png" IsVisible="{Binding VolumeHigh}" />
