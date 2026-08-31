@@ -1,10 +1,8 @@
 name: Build Windows
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  push: {}
+  pull_request: {}
   workflow_dispatch:
 
 jobs:

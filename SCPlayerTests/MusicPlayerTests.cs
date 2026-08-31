@@ -93,6 +93,7 @@ namespace SCPlayerTests
         public HttpClient GetClient() => DefaultClient;
 
         public HttpClient GetProxiedClient() => DefaultClient;
+
     }
 
     public class MusicPlayerTests

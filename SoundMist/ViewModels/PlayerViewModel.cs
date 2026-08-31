@@ -260,7 +260,6 @@ public partial class PlayerViewModel : ViewModelBase
         TrackAuthor = track.ArtistName;
         TrackTitle = track.Title;
         TrackThumbnail = track.ArtworkUrlSmall;
-
         TrackSelectedInQueue = track;
     }
 

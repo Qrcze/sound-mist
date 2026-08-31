@@ -12,6 +12,7 @@ namespace SCPlayerTests
         public bool IsPlaying { get; }
         public TracksPlaylist TracksPlaylist { get; }
         public event Action<string>? ErrorCallback;
+        public event Action<Track>? TrackSkipped;
         public event Action<PlayState, string>? PlayStateUpdated;
         public event Action<Track>? TrackChanging;
         public event Action<Track>? TrackChanged;

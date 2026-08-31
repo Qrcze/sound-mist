@@ -26,7 +26,6 @@
 				</Button>
 
 				<StackPanel Grid.Row="1" Orientation="Horizontal">
-					<Button Content="like" />
 					<Button Content="Open In Browser" Command="{Binding OpenPlaylistInBrowserCommand}" Margin="5 0" />
 				</StackPanel>
 			</Grid>
@@ -62,12 +61,6 @@
 					<Image Grid.Column="1" asyncImageLoader:ImageLoader.Source="{Binding SelectedTrack.ArtworkOrAvatarUrl}" MaxWidth="100" />
 				</Grid>
 				<StackPanel Orientation="Horizontal">
-					<Button Padding="0">
-						<StackPanel Orientation="Horizontal">
-							<Image Source="/Assets/favorite.png" Width="24" />
-							<TextBlock Text="Like" VerticalAlignment="Center" Margin="5" />
-						</StackPanel>
-					</Button>
 					<Button Content="Open In Browser" Command="{Binding OpenTrackInBrowserCommand}" Margin="5 0" />
 				</StackPanel>
 				

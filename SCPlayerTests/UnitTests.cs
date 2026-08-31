@@ -13,6 +13,7 @@ namespace SCPlayerTests
     {
         private static readonly QueryResponse<Track> Tracks = JsonSerializer.Deserialize<QueryResponse<Track>>(File.ReadAllText("Resources/TracksCollection.json"))!;
 
+
         [Fact]
         public void MainViewCanOpenSettings()
         {
@@ -99,7 +100,7 @@ namespace SCPlayerTests
             var database = new DummyDatabase();
 
             var mv = new MainViewModel(settings);
-            var tv = new TrackInfoViewModel(null!, null!, null!, settings, musicPlayer, history, database);
+            var tv = new TrackInfoViewModel(null!, musicPlayer, history, database);
 
             var track = new Track() { Id = 5 };
 
@@ -138,5 +139,6 @@ namespace SCPlayerTests
             //Assert.True(uv.User is not null, "User info still has null User property");
             //Assert.True(uv.User == user, "User info tab displays incorrect user");
         }
+
     }
 }

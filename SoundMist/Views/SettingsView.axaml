@@ -73,6 +73,10 @@
 									<c:SettingsOption Header="Start playing on launch:">
 										<CheckBox IsChecked="{Binding StartPlayingOnLaunch}" />
 									</c:SettingsOption>
+									<c:SettingsOption Header="Load all liked tracks when opening the liked page:"
+										ToolTip.Tip="Loads every liked track before showing the page. Disable this for large libraries to load tracks as you scroll.">
+										<CheckBox IsChecked="{Binding LoadAllLikedTracks}" />
+									</c:SettingsOption>
 									<c:SettingsOption Header="Theme:">
 										<ComboBox Width="100" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
 									</c:SettingsOption>

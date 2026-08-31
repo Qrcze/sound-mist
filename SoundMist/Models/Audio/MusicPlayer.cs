@@ -57,6 +57,8 @@ namespace SoundMist.Models.Audio
 
         public event Action<string>? ErrorCallback;
 
+        public event Action<Track>? TrackSkipped;
+
         public event Action<Track>? TrackChanging;
 
         public event Action<Track>? TrackChanged;
@@ -161,7 +163,11 @@ namespace SoundMist.Models.Audio
             _loadTrackTokenSource = new();
             try
             {
-                if (await LoadTrack(currentTrack, _loadTrackTokenSource.Token) == TrackLoadStatus.Ok && startPlaying)
+                var loadStatus = await LoadTrack(currentTrack, _loadTrackTokenSource.Token);
+                while (loadStatus == TrackLoadStatus.Skip && TracksPlaylist.TryMoveForward(out currentTrack))
+                    loadStatus = await LoadTrack(currentTrack, _loadTrackTokenSource.Token);
+
+                if (loadStatus == TrackLoadStatus.Ok && startPlaying)
                     StartPlaying();
             }
             catch (TaskCanceledException)
@@ -420,6 +426,13 @@ namespace SoundMist.Models.Audio
             (var links, string error) = await _soundCloudDownloader.GetTrackLinks(track, throughProxy, token);
             if (links is null)
             {
+                if (error.Contains("DRM-protected", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.Info("Skipping DRM-protected track {trackId}: {title}", track.Id, track.Title);
+                    TrackSkipped?.Invoke(track);
+                    return TrackLoadStatus.Skip;
+                }
+
                 var soundCloudAvaiable = await _soundCloudDownloader.CheckConnection(throughProxy, token);
                 if (!soundCloudAvaiable)
                 {

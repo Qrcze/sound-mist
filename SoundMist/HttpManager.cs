@@ -37,6 +37,7 @@ public class HttpManager : IHttpManager
         ConfigureHttpClient(_authorizedClient);
         ConfigureHttpClient(_proxiedClient);
         ConfigureHttpClient(_proxiedAuthorizedClient);
+
     }
 
     void ConfigureHttpClient(HttpClient client)
@@ -93,4 +94,5 @@ public class HttpManager : IHttpManager
     {
         return _httpClient;
     }
+
 }

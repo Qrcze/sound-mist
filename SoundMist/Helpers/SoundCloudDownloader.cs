@@ -42,7 +42,12 @@ namespace SoundMist.Helpers
         {
             string? url = track.Media.Transcodings.FirstOrDefault(x => x.Format.MimeType == "audio/mpeg" && x.Format.Protocol == "hls")?.Url;
             if (string.IsNullOrEmpty(url))
+            {
+                if (track.Media.Transcodings.Any(x => x.Format.Protocol?.Contains("encrypted", StringComparison.OrdinalIgnoreCase) == true))
+                    return (null, $"Track \"{track.Title}\" is DRM-protected");
+
                 return (null, "Track didn't have the hls stream");
+            }
 
             url = url.Replace("/preview/", "/stream/");
 
@@ -51,8 +56,8 @@ namespace SoundMist.Helpers
             try
             {
                 using var playbackStreamRequest = await client.GetAsync($"{url}?client_id={_settings.ClientId}&track_authorization={track.TrackAuthorization}", token);
-                if (!playbackStreamRequest.IsSuccessStatusCode && track.Media.Transcodings.Any(x => x.Format.Protocol?.Contains("encrypted") == true))
-                    return (null, $"Couldn't get hls stream for \"{track.Title}\" - looks like it's DRM-protected");
+                if (!playbackStreamRequest.IsSuccessStatusCode && track.Media.Transcodings.Any(x => x.Format.Protocol?.Contains("encrypted", StringComparison.OrdinalIgnoreCase) == true))
+                    return (null, $"Track \"{track.Title}\" is DRM-protected");
                 playbackStreamRequest.EnsureSuccessStatusCode();
 
                 playlistLink = await playbackStreamRequest.Content.ReadFromJsonAsync<M3ULinkHolder>(token);

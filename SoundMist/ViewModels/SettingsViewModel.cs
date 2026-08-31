@@ -42,6 +42,7 @@ public partial class SettingsViewModel : ViewModelBase
 
     public bool OnWindows { get; }
     public bool AlternativeMediaKeys { get => _settings.AlternativeWindowsMediaKeysHandling; set => _settings.AlternativeWindowsMediaKeysHandling = value; }
+    public bool LoadAllLikedTracks { get => _settings.LoadAllLikedTracks; set => _settings.LoadAllLikedTracks = value; }
 
     public MainViewTab[] TabsSelection { get; } = { MainViewTab.Search, MainViewTab.LikedTracks, MainViewTab.Downloaded, MainViewTab.History };
     public AppColorTheme[] Themes { get; } = Enum.GetValues<AppColorTheme>().ToArray();

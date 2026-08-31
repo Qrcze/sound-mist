@@ -87,7 +87,6 @@
 				<Button Classes="button-medium"  Margin="5 0 0 0" Command="{Binding BlockTrackCommand}" ToolTip.Tip="Block track">
 					<Image Source="/Assets/block-track.png" />
 				</Button>
-
 				<Button Classes="button-medium" Margin="20 0 4 0" Command="{Binding MuteVolumeCommand}">
 					<Panel>
 						<Image Source="/Assets/volume_high.png" IsVisible="{Binding VolumeHigh}" />
@@ -96,7 +95,8 @@
 						<Image Source="/Assets/volume_muted.png" IsVisible="{Binding VolumeMuted}" />
 					</Panel>
 				</Button>
-				<Slider VerticalAlignment="Center" Value="{Binding DesiredVolume}" Minimum="0" Maximum="1" Width="100" />
+				<Slider x:Name="VolumeSlider" VerticalAlignment="Center" Value="{Binding DesiredVolume}" Minimum="0" Maximum="1" Width="100"
+						PointerWheelChanged="VolumeSlider_PointerWheelChanged" />
 
 				<!-- Playlist queue popup -->
 				<Popup Placement="Top" PlacementTarget="{Binding #PlaylistButton}" IsLightDismissEnabled="True" IsOpen="{Binding ShowingPlaylist, Mode=TwoWay}">

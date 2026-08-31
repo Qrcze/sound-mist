@@ -86,13 +86,13 @@
 
 			<TabControl x:Name="TabsControl" Grid.Row="1" SelectedIndex="{Binding OpenedTabIndex}">
 				<TabItem Header="All">
-					<ListBox x:Name="AllList" Tag="All" ItemsSource="{Binding All.Items}" />
+					<ListBox x:Name="AllList" Tag="All" ItemsSource="{Binding All.Items}" DoubleTapped="ListBox_DoubleTapped" />
 				</TabItem>
 				<TabItem Header="Popular tracks">
-					<ListBox x:Name="PopularTracksList" Tag="PopularTracks" ItemsSource="{Binding PopularTracks.Items}" />
+					<ListBox x:Name="PopularTracksList" Tag="PopularTracks" ItemsSource="{Binding PopularTracks.Items}" DoubleTapped="ListBox_DoubleTapped" />
 				</TabItem>
 				<TabItem Header="Tracks">
-					<ListBox x:Name="TracksList" Tag="Tracks" ItemsSource="{Binding Tracks.Items}" />
+					<ListBox x:Name="TracksList" Tag="Tracks" ItemsSource="{Binding Tracks.Items}" DoubleTapped="ListBox_DoubleTapped" />
 				</TabItem>
 				<TabItem Header="Albums">
 					<ListBox x:Name="AlbumsList" Tag="Albums" ItemsSource="{Binding Albums.Items}" />
@@ -101,7 +101,7 @@
 					<ListBox x:Name="PlaylistsList" Tag="Playlists" ItemsSource="{Binding Playlists.Items}" />
 				</TabItem>
 				<TabItem Header="Reposts">
-					<ListBox x:Name="RepostsList" Tag="Reposts" ItemsSource="{Binding Reposts.Items}" />
+					<ListBox x:Name="RepostsList" Tag="Reposts" ItemsSource="{Binding Reposts.Items}" DoubleTapped="ListBox_DoubleTapped" />
 				</TabItem>
 			</TabControl>
 		</Grid>
