@@ -34,6 +34,9 @@ namespace SoundMist
                 return;
             }
 
+            if (!File.Exists(Path.Combine(InstallDirectory, "settings.josn")))
+                return;
+
             MigrateFile("settings.json");
             MigrateFile("settings.json.old");
             MigrateFile("history.json");
