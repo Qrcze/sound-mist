@@ -87,7 +87,6 @@
 				<Button Classes="button-medium"  Margin="5 0 0 0" Command="{Binding BlockTrackCommand}" ToolTip.Tip="Block track">
 					<Image Source="/Assets/block-track.png" />
 				</Button>
-
 				<Button Classes="button-medium" Margin="20 0 4 0" Command="{Binding MuteVolumeCommand}">
 					<Panel>
 						<Image Source="/Assets/volume_high.png" IsVisible="{Binding VolumeHigh}" />

@@ -55,7 +55,7 @@ namespace SoundMist.Models
         private string _proxyHost;
         private int _proxyPort;
         private bool _alternativeWindowsMediaKeysHandling;
-        private bool _loadAllLikedTracks = true;
+        private bool _loadAllLikedTracks;
         private Rect _windowPos = DefaultWindowPos;
 
         public static ProgramSettings Load()
