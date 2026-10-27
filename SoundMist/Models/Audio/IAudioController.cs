@@ -20,7 +20,7 @@ namespace SoundMist.Models.Audio
 
         void AppendBytes(Span<byte> bytes);
 
-        void InitBufferedChannel(byte[] initialBytes, int trackDurationMs);
+        void InitStream(byte[] buffer, int bufferLength, int trackDurationMs, int bitrate);
 
         void LoadFromFile(string filePath);
 

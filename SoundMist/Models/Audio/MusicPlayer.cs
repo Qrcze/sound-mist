@@ -352,7 +352,7 @@ namespace SoundMist.Models.Audio
 
             TrackLoadStatus trackLoadStatus = TrackLoadStatus.Error;
 
-            if (File.Exists(track.LocalFilePath))
+            if (track.LocalFilePath is not null && File.Exists(track.LocalFilePath))
             {
                 PlayStateUpdated?.Invoke(PlayState.Loading, "Loading track...");
                 _audioController.LoadFromFile(track.LocalFilePath);
@@ -423,9 +423,10 @@ namespace SoundMist.Models.Audio
 
         private async Task<TrackLoadStatus> InitBuffered(bool throughProxy, Track track, CancellationToken token)
         {
-            (var links, string error) = await _soundCloudDownloader.GetTrackLinks(track, throughProxy, token);
-            if (links is null)
+            var trackData = await _soundCloudDownloader.GetTrackLinks(track, throughProxy, token);
+            if (!string.IsNullOrEmpty(trackData.Error))
             {
+                string error = trackData.Error;
                 if (error.Contains("DRM-protected", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.Info("Skipping DRM-protected track {trackId}: {title}", track.Id, track.Title);
@@ -433,8 +434,8 @@ namespace SoundMist.Models.Audio
                     return TrackLoadStatus.Skip;
                 }
 
-                var soundCloudAvaiable = await _soundCloudDownloader.CheckConnection(throughProxy, token);
-                if (!soundCloudAvaiable)
+                var soundCloudAvailable = await _soundCloudDownloader.CheckConnection(throughProxy, token);
+                if (!soundCloudAvailable)
                 {
                     _logger.Error(error);
                     error = "Can't connect to SoundCloud services, please check your internet connection.";
@@ -444,14 +445,28 @@ namespace SoundMist.Models.Audio
                 PlayStateUpdated?.Invoke(PlayState.Error, error);
                 return TrackLoadStatus.Error;
             }
+            if (trackData.MapLink is null)
+            {
+                _logger.Info("Failed getting map link for track {trackId}: {title}", track.Id, track.Title);
+                ErrorCallback?.Invoke("No map link found in received m3u file");
+                return TrackLoadStatus.Error;
+            }
 
-            int chunksToPreDownload = Math.Min(3, links.Count);
+            int chunksToPreDownload = Math.Min(3, trackData.DataUrls.Count);
 
-            //first three chunks always seem to be exactly 159241 bytes long
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(159241);
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(610_000);
             int bufferOffset = 0;
             try
             {
+                //try getting map data (init.mp4) first
+                byte[]? mapData = null;
+                int mapDataLen = 0;
+                (mapData, mapDataLen) = await _soundCloudDownloader.DownloadTrackChunkPooled(trackData.MapLink, throughProxy, token);
+
+                //for now - only aac presets are handled, opus/abr not supported
+                AacConfig config = Mp4AacConfigReader.ReadAacConfigFromInit(mapData);
+                ArrayPool<byte>.Shared.Return(mapData);
+
                 //download chunks
                 for (int i = 0; i < chunksToPreDownload; i++)
                 {
@@ -460,18 +475,29 @@ namespace SoundMist.Models.Audio
                     byte[]? bytes = null;
                     try
                     {
-                        (bytes, int downloadLen) = await _soundCloudDownloader.DownloadTrackChunkPooled(links[i], throughProxy, token);
+                        (bytes, int downloadLen) = await _soundCloudDownloader.DownloadTrackChunkPooled(trackData.DataUrls[i], throughProxy, token);
 
                         //resize array if needed
                         if (downloadLen + bufferOffset >= buffer.Length)
                         {
+                            var newBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length + downloadLen);
+                            buffer.CopyTo(newBuffer, 0);
                             ArrayPool<byte>.Shared.Return(buffer);
-                            buffer = ArrayPool<byte>.Shared.Rent(buffer.Length + downloadLen);
+                            buffer = newBuffer;
                         }
 
                         //copy over the downloaded bytes into buffer
-                        bytes.AsSpan(0, downloadLen).CopyTo(buffer.AsSpan(bufferOffset));
-                        bufferOffset += downloadLen;
+                        //for now - only aac presets are handled, opus/abr not supported
+                        var samples = Mp4AacConfigReader.ExtractAacSamples(bytes);
+                        foreach (var sample in samples)
+                        {
+                            var adts = Mp4AacConfigReader.WrapAdts(sample, config);
+                            adts.CopyTo(buffer.AsSpan(bufferOffset));
+                            bufferOffset += adts.Length;
+                        }
+
+                        ArrayPool<byte>.Shared.Return(bytes);
+                        bytes = null;
                     }
                     finally
                     {
@@ -479,16 +505,18 @@ namespace SoundMist.Models.Audio
                             ArrayPool<byte>.Shared.Return(bytes);
                     }
 
-                    PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
+                    PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{trackData.DataUrls.Count}");
                 }
 
-                //initialize audio buffer
-                //this creates a new array, but the only potential improvement would be using pointers, which would require project to go unsafe
-                _audioController.InitBufferedChannel(buffer[..bufferOffset], track.Duration);
+                //guess the bitrate
+                int bitrate = 160_000;
+                if (trackData.Preset == "aac_96k")
+                    bitrate = 96_000;
 
-                //download rest of the chunks in the background
-                if (links.Count > 3)
-                    RunDownloaderTask(throughProxy, links, chunksToPreDownload, token);
+                _audioController.InitStream(buffer, bufferOffset, trackData.Duration, bitrate);
+
+                //start downloading the chunks in the background
+                RunDownloaderTask(throughProxy, config, trackData.DataUrls, chunksToPreDownload, token);
             }
             catch (HttpRequestException ex)
             {
@@ -503,6 +531,12 @@ namespace SoundMist.Models.Audio
                 PlayStateUpdated?.Invoke(PlayState.Error, err);
                 return TrackLoadStatus.Error;
             }
+            catch (InvalidDataException ex)
+            {
+                ErrorCallback?.Invoke(ex.Message);
+                PlayStateUpdated?.Invoke(PlayState.Error, "Invalid data exception");
+                return TrackLoadStatus.Error;
+            }
             finally
             {
                 ArrayPool<byte>.Shared.Return(buffer);
@@ -511,7 +545,7 @@ namespace SoundMist.Models.Audio
             return TrackLoadStatus.Ok;
         }
 
-        void RunDownloaderTask(bool throughProxy, List<string> links, int startingIndex, CancellationToken token)
+        void RunDownloaderTask(bool throughProxy, AacConfig? config, List<string> links, int startingIndex, CancellationToken token)
         {
             _ = Task.Run(async () =>
             {
@@ -525,8 +559,19 @@ namespace SoundMist.Models.Audio
                         try
                         {
                             (bytes, int len) = await _soundCloudDownloader.DownloadTrackChunkPooled(links[i], throughProxy, token);
-                            _audioController.AppendBytes(bytes.AsSpan(0, len));
+                            if (!config.HasValue)
+                                _audioController.AppendBytes(bytes.AsSpan(0, len));
+                            else
+                            {
+                                //for now - only aac presets are handled, opus/abr not supported
+                                var samples = Mp4AacConfigReader.ExtractAacSamples(bytes);
+                                foreach (var sample in samples)
+                                    _audioController.AppendBytes(Mp4AacConfigReader.WrapAdts(sample, config.Value));
+                            }
                             PlayStateUpdated?.Invoke(PlayState.Loading, $"{i + 1}/{links.Count}");
+
+                            ArrayPool<byte>.Shared.Return(bytes);
+                            bytes = null!;
                         }
                         finally
                         {

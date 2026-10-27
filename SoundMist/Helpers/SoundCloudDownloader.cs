@@ -38,18 +38,40 @@ namespace SoundMist.Helpers
             return true;
         }
 
-        public async Task<(List<string>? links, string errorMessage)> GetTrackLinks(Track track, bool forceProxy, CancellationToken token)
+        public class TranscodingData
         {
-            string? url = track.Media.Transcodings.FirstOrDefault(x => x.Format.MimeType == "audio/mpeg" && x.Format.Protocol == "hls")?.Url;
-            if (string.IsNullOrEmpty(url))
-            {
-                if (track.Media.Transcodings.Any(x => x.Format.Protocol?.Contains("encrypted", StringComparison.OrdinalIgnoreCase) == true))
-                    return (null, $"Track \"{track.Title}\" is DRM-protected");
+            public List<string> DataUrls { get; } = null!;
+            public string? MapLink { get; }
+            public string Preset { get; } = string.Empty;
+            public int Duration { get; }
+            public string Error { get; } = string.Empty;
 
-                return (null, "Track didn't have the hls stream");
+            public TranscodingData(List<string> links, string? mapLink, string preset, int duration)
+            {
+                DataUrls = links;
+                MapLink = mapLink;
+                Preset = preset;
+                Duration = duration;
             }
 
-            url = url.Replace("/preview/", "/stream/");
+            public TranscodingData(string error)
+            {
+                Error = error;
+            }
+        }
+
+        public async Task<TranscodingData> GetTrackLinks(Track track, bool forceProxy, CancellationToken token)
+        {
+            var bestTranscoding = track.FindBestTranscoding();
+            if (bestTranscoding is null)
+            {
+                if (track.Media.Transcodings.Any(x => x.Format.Protocol?.Contains("encrypted", StringComparison.OrdinalIgnoreCase) == true))
+                    return new($"Track \"{track.Title}\" is DRM-protected");
+
+                return new($"Couldn't get any working stream for track \"{track.Title}\"");
+            }
+
+            string url = bestTranscoding.Url.Replace("/preview/", "/stream/");
 
             M3ULinkHolder? playlistLink = null;
             var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
@@ -57,14 +79,14 @@ namespace SoundMist.Helpers
             {
                 using var playbackStreamRequest = await client.GetAsync($"{url}?client_id={_settings.ClientId}&track_authorization={track.TrackAuthorization}", token);
                 if (!playbackStreamRequest.IsSuccessStatusCode && track.Media.Transcodings.Any(x => x.Format.Protocol?.Contains("encrypted", StringComparison.OrdinalIgnoreCase) == true))
-                    return (null, $"Track \"{track.Title}\" is DRM-protected");
+                    return new($"Track \"{track.Title}\" is DRM-protected");
                 playbackStreamRequest.EnsureSuccessStatusCode();
 
                 playlistLink = await playbackStreamRequest.Content.ReadFromJsonAsync<M3ULinkHolder>(token);
             }
             catch (HttpRequestException e)
             {
-                return (null, $"Failed getting track: {track.Title} by {track.ArtistName}, return code: {e.StatusCode}: {e.Message}");
+                return new($"Failed getting track: \"{track.Title}\" by {track.ArtistName}, return code: {e.StatusCode}: {e.Message}");
             }
 
             //get the list of streams
@@ -76,10 +98,14 @@ namespace SoundMist.Helpers
             }
             catch (HttpRequestException e)
             {
-                return (null, $"exception while getting chunks list for {track.Title} (ID: {track.Id}): {e.Message}");
+                return new($"exception while getting chunks list for \"{track.Title}\" (ID: {track.Id}): {e.Message}");
             }
 
-            return (chunks.Split('\n').Where(x => !x.StartsWith('#')).ToList(), string.Empty);
+            string[] splitChunks = chunks.Split('\n', StringSplitOptions.TrimEntries);
+            List<string> chunksList = splitChunks.Where(x => !x.StartsWith('#')).ToList();
+            string? mapLink = splitChunks.FirstOrDefault(x => x.StartsWith("#EXT-X-MAP:URI=\""))?[16..^1];
+
+            return new(chunksList, mapLink, bestTranscoding.Preset, bestTranscoding.Duration);
         }
 
         internal async Task<(byte[]? data, string errorMessage)> DownloadTrackData(List<string> links, Action<string>? statusCallback, bool forceProxy, CancellationToken token)
@@ -163,23 +189,57 @@ namespace SoundMist.Helpers
                 }
             }
 
-            (var links, string error) = await GetTrackLinks(track, forceProxy, CancellationToken.None);
-            if (links is null)
+            var trackData = await GetTrackLinks(track, forceProxy, CancellationToken.None);
+            if (!string.IsNullOrEmpty(trackData.Error))
+                return (false, trackData.Error);
+
+            byte[] initData;
+            try
             {
-                return (false, error);
+                initData = await DownloadTrackChunk(trackData.MapLink, forceProxy, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed getting track init.mp4");
+                return (false, "Failed getting track init.mp4");
             }
 
-            (var data, error) = await DownloadTrackData(links, statusCallback, forceProxy, CancellationToken.None);
+            (var data, var error) = await DownloadTrackData(trackData.DataUrls, statusCallback, forceProxy, CancellationToken.None);
 
             if (data is null)
-                return (false, error);
+                return (false, trackData.Error);
 
-            await System.IO.File.WriteAllBytesAsync(track.LocalFilePath, data);
+            track.LocalFilePath = Path.Combine(Globals.LocalDownloadsPath, track.SanitizeFilename());
 
+            if (System.IO.File.Exists(track.LocalFilePath))
+                System.IO.File.Delete(track.LocalFilePath);
+
+            using (var file = System.IO.File.OpenWrite(track.LocalFilePath))
+            {
+                await file.WriteAsync(initData);
+                await file.WriteAsync(data);
+            }
+
+            try
+            {
+                await SaveFileMetadata(track, httpClient);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Failed saving file metadata");
+                return (false, "Failed to save file metadata.");
+            }
+
+            return (true, string.Empty);
+        }
+
+        private static async Task SaveFileMetadata(Track track, HttpClient httpClient)
+        {
             using var tfile = TagLib.File.Create(track.LocalFilePath);
             tfile.Tag.Track = (uint)track.Id;
             tfile.Tag.Title = track.Title;
             tfile.Tag.AlbumArtists = [track.ArtistName];
+            tfile.Tag.Length = track.DurationFormatted; //doesn't seem to work, to investigate
             if (!string.IsNullOrEmpty(track.Genre))
                 tfile.Tag.Genres = [track.Genre];
             if (track.ReleaseDate.HasValue)
@@ -212,8 +272,6 @@ namespace SoundMist.Helpers
             }
 
             tfile.Save();
-
-            return (true, string.Empty);
         }
 
         public async Task<(QueryResponse<Track>? tracks, string error)> GetRelatedTracks(Track track)

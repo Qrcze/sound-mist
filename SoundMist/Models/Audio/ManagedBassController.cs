@@ -1,4 +1,5 @@
 ﻿using ManagedBass;
+using NLog;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -7,6 +8,8 @@ namespace SoundMist.Models.Audio
 {
     public class ManagedBassController : IAudioController
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public event Action<string>? Message;
 
         public event Action<int, int>? ChunksLoadingStateChanged;
@@ -18,8 +21,6 @@ namespace SoundMist.Models.Audio
         private double _muteVolume;
 
         public event Action? OnTrackEnded;
-
-        //private CancellationTokenSource? _downloadTokenSource;
 
         public ManagedBassController()
         {
@@ -47,7 +48,10 @@ namespace SoundMist.Models.Audio
                     return;
 
                 var b = Bass.ChannelSeconds2Bytes(_musicChannel, value);
-                Bass.ChannelSetPosition(_musicChannel, b);
+                if (b == 0)
+                    _logger.Error("Couldn't convert seconds to bytes; {e}", Bass.LastError);
+                else
+                    Bass.ChannelSetPosition(_musicChannel, b);
             }
         }
 
@@ -135,26 +139,17 @@ namespace SoundMist.Models.Audio
 
         public void StreamCompleted()
         {
-            _bufferProvider!.FinishedLoading = true;
+            if (_bufferProvider is not null)
+                _bufferProvider.FinishedLoading = true;
         }
 
-        public void InitBufferedChannel(byte[] initialBytes, int trackDurationMs)
+        public void InitStream(byte[] buffer, int bufferLength, int trackDurationMs, int bitrate)
         {
             Stop();
 
-            var decodeChannel = Bass.CreateStream(initialBytes, 0, initialBytes.Length, BassFlags.Decode);
-            ThrowOnBassError();
-
-            Bass.ChannelGetAttribute(decodeChannel, ChannelAttribute.Bitrate, out float bitrate);
-            Debug.Print($"received bitrate: {bitrate}");
-            ThrowOnBassError();
-
-            Bass.StreamFree(decodeChannel);
-
-            int estimatedSize = trackDurationMs * (int)bitrate / 8;
-            _bufferProvider?.Dispose();
+            int estimatedSize = (trackDurationMs / 1_000) * (bitrate / 8);
             _bufferProvider = new(estimatedSize);
-            _bufferProvider.AppendBuffer(initialBytes);
+            _bufferProvider.AppendBuffer(buffer.AsSpan(0, bufferLength));
 
             _musicChannel = Bass.CreateStream(StreamSystem.Buffer, BassFlags.Default, _procedures);
             ThrowOnBassError();
@@ -183,8 +178,8 @@ namespace SoundMist.Models.Audio
 
         protected long ProcLength(nint User)
         {
-            //return 0;
-            return _bufferProvider!.BufferExpectedSize;
+            //make an overestimation so bass doesn't cut the audio stream short
+            return (int)(_bufferProvider!.BufferExpectedSize * 1.5) + 1_000_000;
         }
 
         protected int ProcRead(nint Buffer, int Length, nint User)

@@ -35,7 +35,7 @@ namespace SoundMist.Models.Audio
         }
 
         /// <summary>
-        /// Fills up the buffer up to the requested length with available bytes. If stalled, will return -1, if stream reached the end, will simply return 0.
+        /// Fills up the buffer up to the requested length with available bytes. If stalled with no data to give, it will return -1.
         /// </summary>
         /// <param name="buffer">pointer to buffer to copy to</param>
         /// <param name="requestedLen">max bytes to copy into the buffer</param>
@@ -44,10 +44,10 @@ namespace SoundMist.Models.Audio
         {
             if (offset + requestedLen > LoadedBytes)
             {
-                if (!FinishedLoading)
-                    return -1;
-
                 requestedLen = LoadedBytes - offset;
+
+                if (requestedLen <= 0 && !FinishedLoading)
+                    return -1;
             }
 
             Marshal.Copy(_buffer, offset, buffer, requestedLen);

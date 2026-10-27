@@ -7,7 +7,7 @@ namespace SoundMist.Models.SoundCloud;
 public class Transcoding
 {
     [JsonPropertyName("duration")]
-    public int? Duration { get; set; }
+    public int Duration { get; set; }
 
     [JsonPropertyName("format")]
     public Format Format { get; set; } = null!;
@@ -16,7 +16,7 @@ public class Transcoding
     public bool? IsLegacyTranscoding { get; set; }
 
     [JsonPropertyName("preset")]
-    public string? Preset { get; set; }
+    public string Preset { get; set; } = string.Empty;
 
     [JsonPropertyName("quality")]
     public string? Quality { get; set; }

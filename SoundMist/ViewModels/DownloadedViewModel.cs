@@ -72,7 +72,7 @@ internal partial class DownloadedViewModel : ViewModelBase
         if (!Directory.Exists(Globals.LocalDownloadsPath))
             return;
 
-        foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath, "*.mp3").OrderByDescending(x => new FileInfo(x).CreationTimeUtc))
+        foreach (var filePath in Directory.GetFiles(Globals.LocalDownloadsPath).Where(x => x.EndsWith(".mp3") || x.EndsWith(".m4a")).OrderByDescending(x => new FileInfo(x).CreationTimeUtc))
         {
             if (token.IsCancellationRequested) return;
             var track = await Task.Run(() => LoadTrack(filePath));
@@ -84,14 +84,46 @@ internal partial class DownloadedViewModel : ViewModelBase
         }
     }
 
-    private static Task<Track> LoadTrack(string filePath)
+    private Task<Track> LoadTrack(string filePath)
+    {
+        Track track;
+        try
+        {
+            track = GetTrackWithWithMetadata(filePath);
+        }
+        catch (Exception ex)
+        {
+            string trackName = Path.GetFileNameWithoutExtension(filePath);
+            _logger.Info("Failed opening {tname} metadata, creating a workable dummy; {ex}", trackName, ex);
+            track = new()
+            {
+                Id = -1,
+                Title = trackName,
+                User = new()
+                {
+                    Username = "",
+                },
+                LocalFilePath = filePath,
+            };
+        }
+
+        if (track.Id >= 0)
+        {
+            _database.AddTrack(track);
+        }
+
+        return Task.FromResult(track);
+    }
+
+    private static Track GetTrackWithWithMetadata(string filePath)
     {
         using var tags = TagLib.File.Create(filePath);
         long trackId = tags.Tag.Track;
-        string artist = tags.Tag.FirstAlbumArtist;
+        string artist = tags.Tag.FirstAlbumArtist ?? tags.Tag.FirstPerformer;
         string title = tags.Tag.Title;
         int duration = (int)tags.Properties.Duration.TotalMilliseconds;
         var picture = tags.Tag.Pictures.FirstOrDefault();
+
         Bitmap? artwork = null;
 
         if (picture != null)
@@ -101,7 +133,7 @@ internal partial class DownloadedViewModel : ViewModelBase
             artwork = fullImage.CreateScaledBitmap(new(200, 200));
         }
 
-        Track track = new()
+        return new()
         {
             Id = trackId,
             Title = title,
@@ -111,9 +143,8 @@ internal partial class DownloadedViewModel : ViewModelBase
             },
             FullDuration = duration,
             ArtworkImage = artwork,
+            LocalFilePath = filePath,
         };
-
-        return Task.FromResult(track);
     }
 
     partial void OnTracksFilterChanged(string value)

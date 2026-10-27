@@ -13,6 +13,8 @@ namespace SoundMist.Models.SoundCloud
     {
         private static readonly char[] _illegalChars = Path.GetInvalidFileNameChars();
         private bool _isLiked;
+        private string? _localFilePath;
+        private Transcoding? _bestTranscoding;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -41,19 +43,73 @@ namespace SoundMist.Models.SoundCloud
             };
         }
 
-        private string SanitizeFilename()
+        public string SanitizeFilename()
         {
             var filename = FullLabel;
 
             filename = string.Join('_', filename.Split(_illegalChars));
+
+            string extensionType = string.Empty;
+
+            var t = FindBestTranscoding();
+            if (t is not null && t.Format.MimeType is not null)
+            {
+                if (t.Format.MimeType.Contains("codecs=\"mp4a"))
+                    extensionType = ".m4a";
+            }
+
             if (string.IsNullOrWhiteSpace(filename))
-                return "unnamed";
-            return filename;
+                return $"[{Id}]{extensionType}";
+            return filename + extensionType;
+        }
+
+        public Transcoding? FindBestTranscoding()
+        {
+            if (Media is null)
+                return null;
+
+            if (_bestTranscoding is not null)
+                return _bestTranscoding;
+
+            //find best quality mp4a.40.2 transcoding
+            _bestTranscoding = Media.Transcodings.FirstOrDefault(x => x.Quality == "hq" && x.Format.Protocol == "hls" && x.Format.MimeType?.Contains("mp4a.40.2") == true);
+            _bestTranscoding ??= Media.Transcodings.FirstOrDefault(x => x.Quality == "sq" && x.Format.Protocol == "hls" && x.Format.MimeType?.Contains("mp4a.40.2") == true);
+            _bestTranscoding ??= Media.Transcodings.FirstOrDefault(x => x.Quality == "lq" && x.Format.Protocol == "hls" && x.Format.MimeType?.Contains("mp4a.40.2") == true);
+
+            return _bestTranscoding;
         }
 
         [JsonIgnore] public string FullLabel => $"{ArtistName} - {Title}";
         [JsonIgnore] public string ArtistName => PublisherMetadata?.Artist ?? User?.Username ?? "Unknown Artist";
-        [JsonIgnore] public string LocalFilePath => Path.Combine(Globals.LocalDownloadsPath, $"{SanitizeFilename()}.mp3"); //todo check for invalid characters in label
+
+        [JsonIgnore]
+        public string? LocalFilePath
+        {
+            get
+            {
+                if (_localFilePath is not null)
+                    return _localFilePath;
+
+                if (!Directory.Exists(Globals.LocalDownloadsPath))
+                    return null;
+
+                var expectedFileName = Path.GetFileNameWithoutExtension(SanitizeFilename());
+                foreach (var filePath in Directory.EnumerateFiles(Globals.LocalDownloadsPath))
+                {
+                    if (!filePath.EndsWith(".mp3") && !filePath.EndsWith(".m4a"))
+                        continue;
+
+                    var fileName = Path.GetFileNameWithoutExtension(filePath);
+                    if (expectedFileName != fileName)
+                        continue;
+
+                    _localFilePath = filePath;
+                    return filePath;
+                }
+                return null;
+            }
+            set => _localFilePath = value;
+        }
 
         [JsonIgnore] public bool DownloadedLocally => File.Exists(LocalFilePath);
 
@@ -108,6 +164,7 @@ namespace SoundMist.Models.SoundCloud
 
         [JsonIgnore] public bool RegionBlocked => Policy == "BLOCK";
         [JsonIgnore] public bool Snipped => Policy == "SNIP";
+
         [JsonIgnore]
         public bool IsLiked
         {
