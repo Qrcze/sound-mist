@@ -103,22 +103,30 @@ namespace SCPlayerTests
             int offset = 0;
             int readBytes = 0;
             readBytes = ReadNext(bp, readBuffer, 50, ref offset);
-            Assert.True(readBytes == -1, "Asking for more bytes than loaded should be stalled");
+            Assert.Equal(20, readBytes); //changed - previously it stalled, now it just returns whatever it can
 
-            offset = 0;
+            readBytes = ReadNext(bp, readBuffer, 50, ref offset);
+            Assert.Equal(-1, readBytes); //now it should be stalled because there's no thing left to get
 
+            //add 30 more bytes
             bp.AppendBuffer(bytesToAppend[20..50]);
 
             readBytes = ReadNext(bp, readBuffer, 50, ref offset);
             Assert.Equal(50, bp.LoadedBytes);
-            Assert.Equal(50, readBytes);
+            Assert.Equal(30, readBytes);
 
-            bp.AppendBuffer(bytesToAppend[50..60]);
+            bp.AppendBuffer(bytesToAppend[50..100]);
             bp.FinishedLoading = true;
 
             readBytes = ReadNext(bp, readBuffer, 50, ref offset);
-            Assert.Equal(10, readBytes);
-            Assert.Equal(60, bp.LoadedBytes);
+            Assert.Equal(50, readBytes);
+            Assert.Equal(100, bp.LoadedBytes);
+            
+            //stream ended and nothing left to read - return 0
+            readBytes = ReadNext(bp, readBuffer, 50, ref offset);
+            Assert.Equal(0, readBytes);
+            Assert.Equal(100, bp.LoadedBytes);
+
         }
     }
 }

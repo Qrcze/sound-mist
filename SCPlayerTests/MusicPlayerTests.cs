@@ -45,7 +45,7 @@ namespace SCPlayerTests
             Assert.False(IsStreamCompleted);
         }
 
-        public void InitBufferedChannel(byte[] initialBytes, int trackDurationMs)
+        public void InitStream(byte[] buffer, int bufferLength, int trackDurationMs, int bitrate)
         {
             IsPlaying = false;
             ChannelInitialized = true;
@@ -83,6 +83,9 @@ namespace SCPlayerTests
             mock.When(HttpMethod.Get, MusicPlayerTests.MockTrack1_M3U_Data_Request)
                 .Respond("application/vnd.apple.mpegurl", MusicPlayerTests.MockTrack1_M3U);
 
+            mock.When(HttpMethod.Get, MusicPlayerTests.MockTrack1_MapUrl)
+                .Respond("*/*", File.OpenRead("init.mp4"));
+
             mock.When(HttpMethod.Get, MusicPlayerTests.MockTrack1_M3U_Wildcard)
                 .Respond("application/octet-stream", File.OpenRead("sample.mp3"));
 
@@ -93,7 +96,6 @@ namespace SCPlayerTests
         public HttpClient GetClient() => DefaultClient;
 
         public HttpClient GetProxiedClient() => DefaultClient;
-
     }
 
     public class MusicPlayerTests
@@ -104,6 +106,7 @@ namespace SCPlayerTests
         public static readonly string MockTrack1_M3U_Response = $$"""{ "url": "{{MockTrack1_M3U_Data_Request}}" }""";
 
         public static readonly string MockTrack1_M3U_Wildcard = "https://playback.media-streaming.soundcloud.cloud/hash/aac_160k/*";
+        public static readonly string MockTrack1_MapUrl = "https://playback.media-streaming.soundcloud.cloud/hash/aac_160k/init.mp4";
         public static readonly string MockTrack1_M3U_0 = "https://playback.media-streaming.soundcloud.cloud/hash/aac_160k/0";
         public static readonly string MockTrack1_M3U_1 = "https://playback.media-streaming.soundcloud.cloud/hash/aac_160k/1";
         public static readonly string MockTrack1_M3U_2 = "https://playback.media-streaming.soundcloud.cloud/hash/aac_160k/2";
@@ -114,7 +117,7 @@ namespace SCPlayerTests
             #EXT-X-TARGETDURATION:10
             #EXT-X-MEDIA-SEQUENCE:0
             #EXT-X-PLAYLIST-TYPE:VOD
-            #EXT-X-MAP:URI="https://playback.media-streaming.soundcloud.cloud/hash/aac_160k/init.mp4"
+            #EXT-X-MAP:URI="{MockTrack1_MapUrl}"
             #EXTINF:10.007800,
             {MockTrack1_M3U_0}
             #EXTINF:10.007800,
@@ -209,6 +212,10 @@ namespace SCPlayerTests
             last.Title = "Second Track";
 
             var player = new MusicPlayer(queries, downloader, settings, audioController);
+            player.ErrorCallback += (m) =>
+            {
+                Assert.Fail($"player threw an error: {m}");
+            };
             await player.LoadNewQueue([first, last], null, true);
 
             Assert.True(player.TracksPlaylist.TryMoveForward(out _));
@@ -218,17 +225,16 @@ namespace SCPlayerTests
             Assert.True(player.IsPlaying);
         }
 
-        [Fact]
-        public async Task TrackAutoplaysAtTheEndOfQueue()
-        {
-            Assert.Fail("todo");
-        }
+        //[Fact]
+        //public async Task TrackAutoplaysAtTheEndOfQueue()
+        //{
+        //    Assert.Fail("todo");
+        //}
 
         /* tests to do:
          *  queue - adding, removing(?), continuing with autoplay at the end
          *  play pause - if works at all
          * */
-
 
         public static Track GetMockTrack()
         {
@@ -253,6 +259,20 @@ namespace SCPlayerTests
                             },
                             IsLegacyTranscoding = true,
                             Preset = "mp3_0_1",
+                            Quality = "sq",
+                            Snipped = false,
+                            Url = MockTrack1_M3U_Request_Url
+                        },
+                        new()
+                        {
+                            Duration = 300001,
+                            Format = new()
+                            {
+                                MimeType = "audio/mp4; codecs=\"mp4a.40.2\"",
+                                Protocol = "hls",
+                            },
+                            IsLegacyTranscoding = true,
+                            Preset = "aac_160k",
                             Quality = "sq",
                             Snipped = false,
                             Url = MockTrack1_M3U_Request_Url

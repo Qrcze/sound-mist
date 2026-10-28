@@ -117,6 +117,24 @@ namespace SCPlayerTests
         }
 
         [Fact]
+        public async Task Get_TrackStream()
+        {
+            //tracks with id 2 and 17 are the oldest available tracks i could find, rather unlikely they'll get deleted lol
+            var tracks = await Connections.Queries.GetTracksById([2, 17]);
+
+            Assert.True(tracks.Count == 2, $"Failed downloading all of the tracks; got: {tracks.Count}");
+
+            Assert.True(tracks[0].Title == "Electro 1", $"First track has unexpected title: {tracks[0].Title} (expected: \"Electro 1\")");
+            Assert.True(tracks[1].Title == "Chaos", $"Second track has unexpected title: {tracks[1].Title} (expected: \"Chaos\")");
+
+            foreach (var track in tracks)
+            {
+                var data = await Connections.Downloader.GetTrackLinks(track, false, CancellationToken.None);
+                Assert.Empty(data.Error);
+            }
+        }
+
+        [Fact]
         public async Task Get_Waveform()
         {
             var tracks = await Connections.Queries.GetTracksById([2]);
