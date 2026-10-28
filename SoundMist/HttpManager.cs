@@ -10,6 +10,8 @@ public class HttpManager : IHttpManager
     private readonly ProgramSettings _programSettings;
     private readonly string _userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 OPR/124.0.0.0";
 
+    private const int SecondsUntilTimeout = 8;
+
     private HttpClient _httpClient;
     private HttpClient _proxiedClient;
     private WebProxy _webProxy;
@@ -37,13 +39,13 @@ public class HttpManager : IHttpManager
         ConfigureHttpClient(_authorizedClient);
         ConfigureHttpClient(_proxiedClient);
         ConfigureHttpClient(_proxiedAuthorizedClient);
-
     }
 
     void ConfigureHttpClient(HttpClient client)
     {
         client.BaseAddress = new Uri(Globals.SoundCloudBaseUrl);
         client.DefaultRequestHeaders.UserAgent.ParseAdd(_userAgent);
+        client.Timeout = TimeSpan.FromSeconds(SecondsUntilTimeout);
     }
 
     public HttpClient DefaultClient
@@ -94,5 +96,4 @@ public class HttpManager : IHttpManager
     {
         return _httpClient;
     }
-
 }

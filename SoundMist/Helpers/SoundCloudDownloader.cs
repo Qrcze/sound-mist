@@ -31,8 +31,9 @@ namespace SoundMist.Helpers
                 using var resonse = await client.GetAsync("https://soundcloud.com", token);
                 resonse.EnsureSuccessStatusCode();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.Error(ex, "Connection to SoundCloud website failed");
                 return false;
             }
             return true;
@@ -134,16 +135,41 @@ namespace SoundMist.Helpers
             return (chunks.SelectMany(x => x).ToArray(), string.Empty);
         }
 
+        private const int _maxChunkDownloadAttempts = 3;
+
         /// <exception cref="HttpRequestException" />
         /// <exception cref="TaskCanceledException" />
         internal async Task<byte[]> DownloadTrackChunk(string link, bool forceProxy, CancellationToken token)
         {
             var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
 
-            using var response = await client.GetAsync(link, token);
-            response.EnsureSuccessStatusCode();
+            HttpResponseMessage? response = null;
+            for (int i = 0; i < _maxChunkDownloadAttempts; i++)
+            {
+                //if response timed out, it'll just return null, but it will throw if it's the last attempt or a different exception
+                response = await TryGettingChunk(link, client, i, token);
+                if (response is not null)
+                    break;
+            }
 
-            return await response.Content.ReadAsByteArrayAsync(token);
+            return await response!.Content.ReadAsByteArrayAsync(token);
+        }
+
+        private static async Task<HttpResponseMessage?> TryGettingChunk(string link, HttpClient client, int attemptNumber, CancellationToken token)
+        {
+            try
+            {
+                using var response = await client.GetAsync(link, token);
+                response.EnsureSuccessStatusCode();
+                return response;
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                if (attemptNumber >= _maxChunkDownloadAttempts - 1)
+                    throw new HttpRequestException($"Failed getting track chunk after {attemptNumber + 1} attempts", ex);
+                _logger.Debug("Chunk download timeout: {a}", attemptNumber + 1);
+                return null;
+            }
         }
 
         /// <summary>
@@ -159,8 +185,15 @@ namespace SoundMist.Helpers
         {
             var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
 
-            using var response = await client.GetAsync(link, token);
-            response.EnsureSuccessStatusCode();
+            HttpResponseMessage? response = null;
+            for (int i = 0; i < _maxChunkDownloadAttempts; i++)
+            {
+                //if response timed out, it'll just return null, but it will throw if it's the last attempt or a different exception
+                response = await TryGettingChunk(link, client, i, token);
+                if (response is not null)
+                    break;
+            }
+
             if (!response.Content.Headers.ContentLength.HasValue)
                 throw new NotSupportedException("Track chunk didn't return its length");
 
