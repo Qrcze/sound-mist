@@ -144,29 +144,47 @@ namespace SoundMist.Helpers
             var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
 
             HttpResponseMessage? response = null;
-            for (int i = 0; i < _maxChunkDownloadAttempts; i++)
+            try
             {
-                //if response timed out, it'll just return null, but it will throw if it's the last attempt or a different exception
-                response = await TryGettingChunk(link, client, i, token);
-                if (response is not null)
-                    break;
-            }
+                for (int i = 0; i < _maxChunkDownloadAttempts; i++)
+                {
+                    //if response timed out, it'll just return null, but it will throw if it's the last attempt or a different exception
+                    response = await TryGettingChunk(link, client, i, token);
+                    if (response is not null)
+                        break;
+                }
 
-            return await response!.Content.ReadAsByteArrayAsync(token);
+                return await response!.Content.ReadAsByteArrayAsync(token);
+            }
+            catch
+            {
+                response?.Dispose();
+                throw;
+            }
         }
 
+        /// <summary>
+        /// Tries to download a chunk, adhering to the <see cref="_maxChunkDownloadAttempts"/> number with the <paramref name="attemptNumber"/>.
+        /// Response needs to be manually disposed of by the caller.
+        /// </summary>
+        /// <param name="link"></param>
+        /// <param name="client"></param>
+        /// <param name="attemptNumber"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         private static async Task<HttpResponseMessage?> TryGettingChunk(string link, HttpClient client, int attemptNumber, CancellationToken token)
         {
             try
             {
-                using var response = await client.GetAsync(link, token);
+                var response = await client.GetAsync(link, token);
                 response.EnsureSuccessStatusCode();
                 return response;
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
                 if (attemptNumber >= _maxChunkDownloadAttempts - 1)
-                    throw new HttpRequestException($"Failed getting track chunk after {attemptNumber + 1} attempts", ex);
+                    throw new HttpRequestException($"Failed getting track chunk after {attemptNumber + 1} attempts", ex); // A different exception, because normal TaskCancelledException is ignored.
                 _logger.Debug("Chunk download timeout: {a}", attemptNumber + 1);
                 return null;
             }
@@ -185,23 +203,34 @@ namespace SoundMist.Helpers
         {
             var client = forceProxy ? _httpManager.GetProxiedClient() : _httpManager.DefaultClient;
 
+            int length;
+            byte[] buffer;
+
             HttpResponseMessage? response = null;
-            for (int i = 0; i < _maxChunkDownloadAttempts; i++)
+            try
             {
-                //if response timed out, it'll just return null, but it will throw if it's the last attempt or a different exception
-                response = await TryGettingChunk(link, client, i, token);
-                if (response is not null)
-                    break;
+                for (int i = 0; i < _maxChunkDownloadAttempts; i++)
+                {
+                    //if response timed out, it'll just return null, but it will throw if it's the last attempt or a different exception
+                    response = await TryGettingChunk(link, client, i, token);
+                    if (response is not null)
+                        break;
+                }
+
+                if (!response.Content.Headers.ContentLength.HasValue)
+                    throw new NotSupportedException("Track chunk didn't return its length");
+
+                length = (int)response.Content.Headers.ContentLength;
+
+                buffer = ArrayPool<byte>.Shared.Rent(length);
+                using var stream = await response.Content.ReadAsStreamAsync(token);
+                await stream.ReadAsync(buffer, token);
             }
-
-            if (!response.Content.Headers.ContentLength.HasValue)
-                throw new NotSupportedException("Track chunk didn't return its length");
-
-            int length = (int)response.Content.Headers.ContentLength;
-
-            var buffer = ArrayPool<byte>.Shared.Rent(length);
-            using var stream = await response.Content.ReadAsStreamAsync(token);
-            await stream.ReadAsync(buffer, token);
+            catch
+            {
+                response?.Dispose();
+                throw;
+            }
 
             return (buffer, length);
         }
