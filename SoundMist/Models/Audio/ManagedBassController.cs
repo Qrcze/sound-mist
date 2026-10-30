@@ -26,6 +26,12 @@ namespace SoundMist.Models.Audio
         {
             _procedures = new FileProcedures() { Length = ProcLength, Read = ProcRead, Close = ProcClose, Seek = ProcSeek };
             Bass.Init();
+
+            #if OS_LINUX
+            int result = Bass.PluginLoad("libbass_aac.so");
+            if (result == 0)
+                _logger.Error("Failed loading bass aac plugin: {err}", Bass.LastError);
+            #endif
         }
 
         ~ManagedBassController() => Stop();
